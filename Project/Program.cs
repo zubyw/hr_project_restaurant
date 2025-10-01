@@ -1,3 +1,20 @@
 ﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Welcome to this amazing program");
+
+// ASCII Art for Kevin's Fine Dining
+Console.WriteLine(@"
+═══════════════════════════════════════════════════════════════
+
+    ██╗  ██╗███████╗██╗   ██╗██╗███╗   ██╗███████╗
+    ██║ ██╔╝██╔════╝██║   ██║██║████╗  ██║██╔════╝
+    █████╔╝ █████╗  ██║   ██║██║██╔██╗ ██║███████╗
+    ██╔═██╗ ██╔══╝  ╚██╗ ██╔╝██║██║╚██╗██║╚════██║
+    ██║  ██╗███████╗ ╚████╔╝ ██║██║ ╚████║███████║
+    ╚═╝  ╚═╝╚══════╝  ╚═══╝  ╚═╝╚═╝  ╚═══╝╚══════╝
+
+            Fine Dining Restaurant
+            
+═══════════════════════════════════════════════════════════════
+");
+
+Console.WriteLine("Welcome to the Restaurant Management System\n");
 Menu.Start();
