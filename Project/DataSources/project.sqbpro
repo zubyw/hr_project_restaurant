@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="project.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="0"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="2446"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="Accounts" custom_title="0" dock_id="1" table="4,8:mainAccounts"/><dock_state state="000000ff00000000fd00000001000000020000000000000000fc0100000001fb000000160064006f0063006b00420072006f00770073006500310100000000ffffffff0000010100ffffff000000000000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings/></tab_browse><tab_sql><sql name="SQL 1*">PRAGMA foreign_keys = ON;
+
+CREATE TABLE Users (
+    ID INTEGER PRIMARY KEY,
+    FirstName TEXT NOT NULL,
+    LastName TEXT NOT NULL,
+    PhoneNumber TEXT,
+    EmailAddress TEXT NOT NULL UNIQUE,
+    Roles TEXT NOT NULL
+);
+
+CREATE TABLE Tables (
+    ID INTEGER PRIMARY KEY,
+    TableNumber INTEGER NOT NULL UNIQUE,
+    TableCapacity INTEGER NOT NULL,
+    IsActive INTEGER NOT NULL CHECK (IsActive IN (0,1))
+);
+
+CREATE TABLE Themes (
+    ID INTEGER PRIMARY KEY,
+    Name TEXT NOT NULL,
+    Course TEXT NOT NULL,
+    IsActive INTEGER NOT NULL CHECK (IsActive IN (0,1))
+);
+
+CREATE TABLE Dishes (
+    ID INTEGER PRIMARY KEY,
+    Name TEXT NOT NULL,
+    Price REAL NOT NULL,
+    Description TEXT,
+    Type TEXT NOT NULL
+);
+
+CREATE TABLE Dishes_Themes (
+    ID INTEGER PRIMARY KEY,
+    DishID INTEGER NOT NULL,
+    ThemeID INTEGER NOT NULL,
+    FOREIGN KEY (DishID) REFERENCES Dishes(ID) ON DELETE CASCADE,
+    FOREIGN KEY (ThemeID) REFERENCES Themes(ID) ON DELETE CASCADE,
+    UNIQUE (DishID, ThemeID)
+);
+
+CREATE TABLE Theme_Calendar (
+    ID INTEGER PRIMARY KEY,
+    ThemeID INTEGER NOT NULL,
+    Date TEXT NOT NULL,
+    TimeSlot TEXT NOT NULL,
+    Description TEXT,
+    FOREIGN KEY (ThemeID) REFERENCES Themes(ID) ON DELETE CASCADE,
+    UNIQUE (ThemeID, Date, TimeSlot)
+);
+
+CREATE TABLE Reservations (
+    ID INTEGER PRIMARY KEY,
+    UserId INTEGER NOT NULL,
+    TableId INTEGER NOT NULL,
+    GuestCount INTEGER NOT NULL,
+    StartAt TEXT NOT NULL,
+    Status TEXT NOT NULL,
+    CanModifyUntil TEXT,
+    CreatedAt TEXT NOT NULL DEFAULT (datetime('now')),
+    UpdatedAt TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (UserId) REFERENCES Users(ID) ON DELETE CASCADE,
+    FOREIGN KEY (TableId) REFERENCES Tables(ID) ON DELETE CASCADE,
+    UNIQUE (TableId, StartAt)
+);
+
+CREATE TABLE Reservations_Dishes (
+    ID INTEGER PRIMARY KEY,
+    ReservationID INTEGER NOT NULL,
+    DishID INTEGER NOT NULL,
+    FOREIGN KEY (ReservationID) REFERENCES Reservations(ID) ON DELETE CASCADE,
+    FOREIGN KEY (DishID) REFERENCES Dishes(ID) ON DELETE CASCADE,
+    UNIQUE (ReservationID, DishID)
+);
+
+CREATE INDEX idx_res_user ON Reservations(UserId);
+CREATE INDEX idx_res_table ON Reservations(TableId);
+CREATE INDEX idx_resdish_res ON Reservations_Dishes(ReservationID);
+CREATE INDEX idx_resdish_dish ON Reservations_Dishes(DishID);
+CREATE INDEX idx_dish_theme_dish ON Dishes_Themes(DishID);
+CREATE INDEX idx_dish_theme_theme ON Dishes_Themes(ThemeID);
+CREATE INDEX idx_theme_cal_theme ON Theme_Calendar(ThemeID);
+
+CREATE TRIGGER trg_reservations_updated_at
+AFTER UPDATE ON Reservations
+FOR EACH ROW
+BEGIN
+    UPDATE Reservations
+    SET UpdatedAt = datetime('now')
+    WHERE ID = NEW.ID;
+END;
+</sql><current_tab id="0"/></tab_sql></sqlb_project>
