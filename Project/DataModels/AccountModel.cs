@@ -1,12 +1,13 @@
 ﻿public class AccountModel
 {
-
     public Int64 Id { get; set; }
-    public string EmailAddress { get; set; }
+    public string EmailAddress { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
 
-    public string Password { get; set; }
-
-    public string FullName { get; set; }
+    public AccountModel()
+    {
+    }
 
     public AccountModel(Int64 id, string email, string password, string fullname)
     {
@@ -15,8 +16,6 @@
         Password = password;
         FullName = fullname;
     }
-
-
 }
 
 

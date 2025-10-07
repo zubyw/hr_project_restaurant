@@ -1,27 +1,44 @@
 static class UserLogin
 {
-    static private AccountsLogic accountsLogic = new AccountsLogic();
+    static private UsersLogic usersLogic = new UsersLogic();
 
 
     public static void Start()
     {
-        Console.WriteLine("Welcome to the login page");
-        Console.WriteLine("Please enter your email address");
-        string email = Console.ReadLine();
-        Console.WriteLine("Please enter your password");
-        string password = Console.ReadLine();
-        AccountModel acc = accountsLogic.CheckLogin(email, password);
-        if (acc != null)
+        Console.Clear();
+        Console.WriteLine("\n=== Login ===");
+        Console.Write("Email address: ");
+        string? email = Console.ReadLine();
+        Console.Write("Password: ");
+        string? password = Console.ReadLine();
+        
+        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
         {
-            Console.WriteLine("Welcome back " + acc.FullName);
-            Console.WriteLine("Your email number is " + acc.EmailAddress);
-
-            //Write some code to go back to the menu
-            //Menu.Start();
+            Console.WriteLine("Email and password are required!");
+            Console.WriteLine("Press any key to try again...");
+            Console.ReadKey();
+            Menu.Start();
+            return;
+        }
+        
+        UserModel? user = usersLogic.CheckLogin(email, password);
+        if (user != null)
+        {
+            // Set current user for role-based access
+            Menu.CurrentUser = user;
+            
+            Console.WriteLine($"Welcome back {user.FirstName} {user.LastName}!");
+            Console.WriteLine("Login successful. Redirecting to main menu...");
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
+            Menu.ShowMainMenu();
         }
         else
         {
-            Console.WriteLine("No account found with that email and password");
+            Console.WriteLine("Invalid email or password!");
+            Console.WriteLine("Press any key to try again...");
+            Console.ReadKey();
+            Menu.Start();
         }
     }
 }
