@@ -128,12 +128,15 @@ public static class DatabaseInitializer
         // Create default admin user if it doesn't exist
         CreateDefaultAdminUser(connection);
 
-        // Database initialized silently
+        // create default tables if none exist
+        CreateDefaultTables(connection);
+
+        // database initialized silently
     }
 
     private static void CreateDefaultAdminUser(SqliteConnection connection)
     {
-        // Check if admin user already exists
+        // Check if admin  already exists 
         var existingUser = connection.QueryFirstOrDefault<UserModel>(
             "SELECT * FROM Users WHERE EmailAddress = @Email", 
             new { Email = "admin@gmail.com" });
@@ -155,6 +158,47 @@ public static class DatabaseInitializer
                 INSERT INTO Users (FirstName, LastName, PhoneNumber, EmailAddress, Password, Roles) 
                 VALUES (@FirstName, @LastName, @PhoneNumber, @EmailAddress, @Password, @Roles)", 
                 adminUser);
+        }
+    }
+
+    private static void CreateDefaultTables(SqliteConnection connection)
+    {
+        // check if there are already tables
+        var existingTables = connection.QueryFirstOrDefault<int>("SELECT COUNT(*) FROM [Table]");
+
+        if (existingTables == 0)
+        {
+            // make every table in the restaurant
+            var tables = new[]
+            {
+                // 2-persons table
+                new { TableNumber = 1, TableCapacity = 2 },
+                new { TableNumber = 2, TableCapacity = 2 },
+                new { TableNumber = 3, TableCapacity = 2 },
+                new { TableNumber = 4, TableCapacity = 2 },
+
+                // 4-person tables  
+                new { TableNumber = 5, TableCapacity = 4 },
+                new { TableNumber = 6, TableCapacity = 4 },
+                new { TableNumber = 7, TableCapacity = 4 },
+                new { TableNumber = 8, TableCapacity = 4 },
+                new { TableNumber = 9, TableCapacity = 4 },
+                new { TableNumber = 10, TableCapacity = 4 },
+
+                // 6-person tables
+                new { TableNumber = 11, TableCapacity = 6 },
+                new { TableNumber = 12, TableCapacity = 6 },
+                new { TableNumber = 13, TableCapacity = 6 },
+                new { TableNumber = 14, TableCapacity = 6 }
+            };
+
+            foreach (var table in tables)
+            {
+                connection.Execute(@"
+                    INSERT INTO [Table] (TableNumber, TableCapacity, IsActive) 
+                    VALUES (@TableNumber, @TableCapacity, 1)", 
+                    table);
+            }
         }
     }
 }
