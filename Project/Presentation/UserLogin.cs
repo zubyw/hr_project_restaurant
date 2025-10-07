@@ -29,8 +29,10 @@ static class UserLogin
             
             Console.WriteLine($"Welcome back {user.FirstName} {user.LastName}!");
             Console.WriteLine("Login successful. Redirecting to main menu...");
-            Console.WriteLine("Press any key to continue...");
-            Console.ReadKey();
+            
+            // Small delay to show the welcome message
+            Thread.Sleep(1500);
+            
             Menu.ShowMainMenu();
         }
         else

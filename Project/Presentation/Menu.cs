@@ -60,28 +60,27 @@ static class Menu
     static public void ShowAdminMenu()
     {
         Console.WriteLine("\n=== Kevin's Fine Dining - Admin Panel ===");
-        Console.WriteLine("1. Manage Users");
-        Console.WriteLine("2. Manage Reservations");
-        Console.WriteLine("3. Manage Tables");
+        Console.WriteLine("1. View Reservations");
+        Console.WriteLine("2. Manage Users");
+        Console.WriteLine("3. Manage Reservations");
         Console.WriteLine("4. Manage Dishes");
-        Console.WriteLine("5. View Reports");
-        Console.WriteLine("6. Logout");
+        Console.WriteLine("5. Logout");
         Console.Write("Please select an option: ");
 
         string? input = Console.ReadLine();
         switch (input)
         {
             case "1":
-                UserManagement.Start();
-                break;
-            case "2":
-                Console.WriteLine("Reservation management coming soon...");
+                Console.WriteLine("View reservations feature coming soon...");
                 Console.WriteLine("Press any key to continue...");
                 Console.ReadKey();
                 ShowMainMenu();
                 break;
+            case "2":
+                UserManagement.Start();
+                break;
             case "3":
-                Console.WriteLine("Table management coming soon...");
+                Console.WriteLine("Reservation management coming soon...");
                 Console.WriteLine("Press any key to continue...");
                 Console.ReadKey();
                 ShowMainMenu();
@@ -93,12 +92,6 @@ static class Menu
                 ShowMainMenu();
                 break;
             case "5":
-                Console.WriteLine("Reports feature coming soon...");
-                Console.WriteLine("Press any key to continue...");
-                Console.ReadKey();
-                ShowMainMenu();
-                break;
-            case "6":
                 Console.WriteLine("Logging out...");
                 CurrentUser = null;
                 Start(); // Go back to login/register menu
