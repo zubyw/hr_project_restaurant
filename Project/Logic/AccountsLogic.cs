@@ -1,7 +1,4 @@
-﻿
-
-//This class is not static so later on we can use inheritance and interfaces
-public class AccountsLogic
+﻿public class AccountsLogic
 {
 
     //Static properties are shared across all instances of the class

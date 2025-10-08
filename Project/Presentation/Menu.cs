@@ -71,10 +71,7 @@ static class Menu
         switch (input)
         {
             case "1":
-                Console.WriteLine("View reservations feature coming soon...");
-                Console.WriteLine("Press any key to continue...");
-                Console.ReadKey();
-                ShowMainMenu();
+                ReservationManagement.Start();
                 break;
             case "2":
                 UserManagement.Start();
