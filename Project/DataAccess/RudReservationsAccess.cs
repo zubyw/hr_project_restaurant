@@ -1,0 +1,49 @@
+using System;
+using System.Collections.Generic;
+using Microsoft.Data.Sqlite;
+using Project.DataModels;
+
+namespace Project.DataAccess
+{
+    public class RudReservationsAccess
+    {
+        private string connectionString = "Data Source=DataSources/project.db";
+
+        // Method to update a reservation
+        public List<ReservationModel> GetReservationsByUserId(int userId)
+        {
+            List<ReservationModel> list = new List<ReservationModel>();
+
+            // DB connection
+            using (SqliteConnection connection = new SqliteConnection(connectionString))
+            {
+                connection.Open();
+                // Query that gets reservations by userId
+                string query = "SELECT * FROM Reservations WHERE UserId = @UserId";
+
+                using (SqliteCommand command = new SqliteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@UserId", userId);
+                    SqliteDataReader reader = command.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        ReservationModel res = new ReservationModel();
+                        res.Id = reader.GetInt32(0);
+                        res.UserId = reader.GetInt32(1);
+                        res.TableId = reader.GetInt32(2);
+                        res.GuestCount = reader.GetInt32(3);
+                        res.StartAt = reader.GetString(4);
+                        res.Status = reader.GetString(5);
+                        res.CanModifyUntil = reader.GetString(6);
+                        res.CreatedAt = reader.GetString(7);
+                        res.UpdatedAt = reader.GetString(8);
+                        list.Add(res);
+                    }
+                    reader.Close();
+                }
+            }
+            return list;
+        }
+    }
+}
