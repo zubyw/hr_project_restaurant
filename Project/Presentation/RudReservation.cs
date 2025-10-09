@@ -74,5 +74,22 @@ namespace Project.Presentation
             Console.WriteLine("Reservation updated!");
             Console.ReadKey();
         }
+
+        // Method that delete the reservation
+        private void Delete(int id)
+        {
+            Console.Clear();
+            Console.WriteLine("Cancel this reservation? (y/n)");
+            string answer = Console.ReadLine();
+
+            // If answer is yes, logic will delete the reservation
+            if (answer.ToLower() == "y")
+            {
+                logic.DeleteReservation(id);
+                Console.WriteLine("Reservation cancelled.");
+            }
+
+            Console.ReadKey();
+        }
     }
 }
