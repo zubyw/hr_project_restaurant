@@ -1,3 +1,5 @@
+using Project.Presentation;
+
 static class Menu
 {
     // Store current logged in user for role-based access
@@ -104,7 +106,7 @@ static class Menu
                 ShowMainMenu();
                 break;
             case "2":
-                Console.WriteLine("View reservations feature coming soon...");
+                Console.WriteLine("Make reservation feature coming soon...");
                 Console.WriteLine("Press any key to continue...");
                 Console.ReadKey();
                 ShowMainMenu();
