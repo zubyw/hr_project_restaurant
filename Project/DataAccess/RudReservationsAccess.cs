@@ -66,5 +66,22 @@ namespace Project.DataAccess
                 }
             }
         }
+
+        // Method that deletes reservation
+        public void DeleteReservation(int id)
+        {
+            using (SqliteConnection connection = new SqliteConnection(connectionString))
+            {
+                connection.Open();
+                // Query that deletes reservation by id
+                string query = "DELETE FROM Reservations WHERE ID = @Id";
+
+                using (SqliteCommand command = new SqliteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
     }
 }
