@@ -10,7 +10,8 @@ static class ReservationManagement
         Console.WriteLine("\n=== Reservation Management (Admin) ===");
         Console.WriteLine("1. View All Reservations");
         Console.WriteLine("2. View Reservations by Date");
-        Console.WriteLine("3. Back to Main Menu");
+        Console.WriteLine("3. Change Reservations");
+        Console.WriteLine("4. Back to Main Menu");
         Console.Write("Please select an option: ");
 
         string? input = Console.ReadLine();
@@ -23,6 +24,12 @@ static class ReservationManagement
                 ViewReservationsByDate();
                 break;
             case "3":
+                Console.WriteLine("Change reservations feature coming soon...");
+                Console.WriteLine("Press any key to continue...");
+                Console.ReadKey();
+                Start();
+                break;
+            case "4":
                 Menu.ShowMainMenu();
                 break;
             default:
