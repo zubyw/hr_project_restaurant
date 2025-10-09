@@ -31,7 +31,7 @@ namespace Project.Presentation
             // Display all reservations with the specific id
             foreach (ReservationModel r in reservations)
             {
-                Console.WriteLine($"ID: {r.Id} | Table: {r.TableId} | Guests: {r.GuestCount} | Date: {r.StartAt} | Status: {r.Status}");
+                Console.WriteLine($"ID: {r.ID} | Table: {r.TableId} | Guests: {r.GuestCount} | Date: {r.StartAt} | Status: {r.Status}");
             }
 
             Console.WriteLine();

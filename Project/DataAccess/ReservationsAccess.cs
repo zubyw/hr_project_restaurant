@@ -1,4 +1,5 @@
 using Microsoft.Data.Sqlite;
+using Project.DataModels;
 using Dapper;
 
 public class ReservationsAccess
