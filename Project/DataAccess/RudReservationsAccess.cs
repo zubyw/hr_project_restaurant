@@ -73,7 +73,7 @@ namespace Project.DataAccess
             using (SqliteConnection connection = new SqliteConnection(connectionString))
             {
                 connection.Open();
-                // Query that deletes reservation by id
+                // Query that deletes reservation
                 string query = "DELETE FROM Reservations WHERE ID = @Id";
 
                 using (SqliteCommand command = new SqliteCommand(query, connection))
