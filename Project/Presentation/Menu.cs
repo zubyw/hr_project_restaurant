@@ -61,37 +61,16 @@ static class Menu
     {
         Console.WriteLine("\n=== Kevin's Fine Dining - Admin Panel ===");
         Console.WriteLine("1. View Reservations");
-        Console.WriteLine("2. Manage Users");
-        Console.WriteLine("3. Manage Reservations");
-        Console.WriteLine("4. Manage Dishes");
-        Console.WriteLine("5. Logout");
+        Console.WriteLine("2. Logout");
         Console.Write("Please select an option: ");
 
         string? input = Console.ReadLine();
         switch (input)
         {
             case "1":
-                Console.WriteLine("View reservations feature coming soon...");
-                Console.WriteLine("Press any key to continue...");
-                Console.ReadKey();
-                ShowMainMenu();
+                ReservationManagement.Start();
                 break;
             case "2":
-                UserManagement.Start();
-                break;
-            case "3":
-                Console.WriteLine("Reservation management coming soon...");
-                Console.WriteLine("Press any key to continue...");
-                Console.ReadKey();
-                ShowMainMenu();
-                break;
-            case "4":
-                Console.WriteLine("Dish management coming soon...");
-                Console.WriteLine("Press any key to continue...");
-                Console.ReadKey();
-                ShowMainMenu();
-                break;
-            case "5":
                 Console.WriteLine("Logging out...");
                 CurrentUser = null;
                 Start(); // Go back to login/register menu
