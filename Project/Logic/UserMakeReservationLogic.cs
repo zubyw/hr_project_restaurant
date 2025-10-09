@@ -1,8 +1,8 @@
-public class UserMakeReservationLogic
+public static class UserMakeReservationLogic
 {
-    public int MinPeople { get; } = 1;
-    public int MaxPeople { get; } = 6;
-    public string DateFormat { get; } = "yyyy-MM-dd";
+    public static int MinPeople { get; } = 1;
+    public static int MaxPeople { get; } = 6;
+    public static string DateFormat { get; } = "yyyy-MM-dd";
 
     public static bool CheckValidDate(string date)
     {
@@ -64,20 +64,38 @@ public class UserMakeReservationLogic
         return false;
     }
 
-// Check if the given daytime is valid.
+    // Check if the given daytime is valid.
     public static bool CheckValidDayTime(string daytime)
     {
-    List<string> validTimes = new List<string> { "17:00", "17:30", "18:00", "18:30", "19:00", "19:30" };
+        List<string> validTimes = new List<string> { "17:00", "17:30", "18:00", "18:30", "19:00", "19:30" };
 
 
-    foreach (string validTime in validTimes)
-    {
-        if (validTime == daytime)
+        foreach (string validTime in validTimes)
         {
-            return true;
+            if (validTime == daytime)
+            {
+                return true;
+            }
         }
+
+        return false;
     }
 
-    return false;
+    public static int GetTableSize(string amountpeople)
+    {
+        int.TryParse(amountpeople, out int intAmountPeople);
+        if ((intAmountPeople == 1) || (intAmountPeople == 2))
+        {
+            return 2;
+        }
+        else if ((intAmountPeople == 3) || (intAmountPeople == 4))
+        {
+            return 4;
+        }
+        else if ((intAmountPeople == 5) || (intAmountPeople == 6))
+        {
+            return 6;
+        }
+        return 0;
     }
 }
