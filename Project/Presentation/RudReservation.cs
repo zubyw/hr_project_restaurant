@@ -9,6 +9,7 @@ namespace Project.Presentation
     {   
         RudReservationsLogic logic = new RudReservationsLogic();
 
+        // In this method it starts the reservation menu
         public void Start(int userId) 
         {
             Console.Clear(); // Clears the console before showing reservationMenu 
@@ -27,7 +28,7 @@ namespace Project.Presentation
                 return;
             }
 
-            // Display all reservations
+            // Display all reservations with the specific id
             foreach (ReservationModel r in reservations)
             {
                 Console.WriteLine($"ID: {r.Id} | Table: {r.TableId} | Guests: {r.GuestCount} | Date: {r.StartAt} | Status: {r.Status}");
@@ -54,8 +55,7 @@ namespace Project.Presentation
                 {
                     Delete(selectedId);
                 }
-            }
+            }            
         }
     }
 }
-
