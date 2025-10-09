@@ -5,14 +5,62 @@ static class UserMakeReservation
     {
         Console.Clear();
         Console.WriteLine("\n===Reservations===");
-        Console.WriteLine("1. Make reservation");
-        Console.WriteLine("2. View all users");
-        Console.WriteLine("3. Search user by email");
-        Console.WriteLine("4. View users by role");
-        Console.WriteLine("5. Update user");
-        Console.WriteLine("6. Delete user");
-        Console.WriteLine("7. Back to main menu");
 
-        string? input = Console.ReadLine();
+        Console.WriteLine("Amount of people: (1-6)");
+        string? AmountPeople = Console.ReadLine();
+        if (string.IsNullOrEmpty(AmountPeople))
+        {
+            Console.WriteLine("All fields are required!");
+            Console.WriteLine("Press any key to try again...");
+            Console.ReadKey();
+            Start();
+            return;
+        }
+        if (!UserMakeReservationLogic.CheckAmountPeople(AmountPeople))
+            {
+                Console.WriteLine("Given amount of people incorrect (1-6)");
+                Console.WriteLine("Press any key to try again...");
+                Console.ReadKey();
+                Start();
+                return;
+            }
+
+        Console.WriteLine("Date: (YYYY-MM-DD)");
+        string? ReservationDate = Console.ReadLine();
+        if (string.IsNullOrEmpty(ReservationDate))
+        {
+            Console.WriteLine("All fields are required!");
+            Console.WriteLine("Press any key to try again...");
+            Console.ReadKey();
+            Start();
+            return;
+        }
+        if (!UserMakeReservationLogic.CheckValidDate(ReservationDate))
+        {
+            Console.WriteLine("Given date format incorrect (YYYY-MM-DD)");
+            Console.WriteLine("Press any key to try again...");
+            Console.ReadKey();
+            Start();
+            return;
+        }
+
+        Console.WriteLine("Arrival Time: (Choose From 17:00 - 17:30 - 18:00 - 18:30 - 19:00 - 19:30)");
+        string? ArrivalTime = Console.ReadLine();
+        if (string.IsNullOrEmpty(ArrivalTime))
+        {
+            Console.WriteLine("All fields are required!");
+            Console.WriteLine("Press any key to try again...");
+            Console.ReadKey();
+            Start();
+            return;
+        }
+        if (!UserMakeReservationLogic.CheckValidDate(ReservationDate))
+        {
+            Console.WriteLine("Given daytime incorrect (17:00 - 17:30 - 18:00 - 18:30 - 19:00 - 19:30)");
+            Console.WriteLine("Press any key to try again...");
+            Console.ReadKey();
+            Start();
+            return;
+        }
     }
 }
