@@ -27,6 +27,7 @@ namespace Project.Presentation
                 return;
             }
 
+            // Display all reservations
             foreach (ReservationModel r in reservations)
             {
                 Console.WriteLine($"ID: {r.Id} | Table: {r.TableId} | Guests: {r.GuestCount} | Date: {r.StartAt} | Status: {r.Status}");
@@ -36,6 +37,7 @@ namespace Project.Presentation
             Console.Write("Enter reservation ID to manage: ");
             string input = Console.ReadLine();
 
+            // UserInput to update or delete
             if (int.TryParse(input, out int selectedId))
             {
                 Console.WriteLine("1. Update reservation");
