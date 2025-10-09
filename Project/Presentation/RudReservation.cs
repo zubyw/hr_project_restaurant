@@ -57,5 +57,22 @@ namespace Project.Presentation
                 }
             }            
         }
+
+        // Method that update the reservation
+        private void Update(int id)
+        {
+            Console.Clear();
+            Console.WriteLine("=== Update Reservation ===");
+            Console.Write("New guest count: ");
+            int guests = Convert.ToInt32(Console.ReadLine());
+
+            Console.Write("New date/time (YYYY-MM-DD HH:MM): ");
+            string startAt = Console.ReadLine();
+            
+            // The logic will be called to update the reservation
+            logic.UpdateReservation(id, guests, startAt);
+            Console.WriteLine("Reservation updated!");
+            Console.ReadKey();
+        }
     }
 }
