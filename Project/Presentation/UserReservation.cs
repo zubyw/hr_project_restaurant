@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 static class UserMakeReservation
 {
 
@@ -62,5 +64,9 @@ static class UserMakeReservation
             Start();
             return;
         }
+        int DiningTableSize = UserMakeReservationLogic.GetTableSize(AmountPeople);
+        
+        int.TryParse(AmountPeople, out int intAmountPeople);
+        string CompleteStartDate = ReservationDate + ArrivalTime;
     }
 }
