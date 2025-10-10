@@ -29,7 +29,7 @@ namespace Project.DataAccess
                     while (reader.Read())
                     {
                         ReservationModel res = new ReservationModel();
-                        res.Id = reader.GetInt32(0);
+                        res.ID = reader.GetInt32(0);
                         res.UserId = reader.GetInt32(1);
                         res.TableId = reader.GetInt32(2);
                         res.GuestCount = reader.GetInt32(3);

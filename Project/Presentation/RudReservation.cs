@@ -31,12 +31,12 @@ namespace Project.Presentation
             // Display all reservations with the specific id
             foreach (ReservationModel r in reservations)
             {
-                Console.WriteLine($"ID: {r.Id} | Table: {r.TableId} | Guests: {r.GuestCount} | Date: {r.StartAt} | Status: {r.Status}");
+                Console.WriteLine($"ID: {r.ID} | Table: {r.TableId} | Guests: {r.GuestCount} | Date: {r.StartAt} | Status: {r.Status}");
             }
 
             Console.WriteLine();
             Console.Write("Enter reservation ID to manage: ");
-            string input = Console.ReadLine();
+            string? input = Console.ReadLine();
 
             // UserInput to update or delete
             if (int.TryParse(input, out int selectedId))
@@ -45,7 +45,7 @@ namespace Project.Presentation
                 Console.WriteLine("2. Cancel reservation");
                 Console.WriteLine("3. Back");
                 Console.Write("Choose: ");
-                string choice = Console.ReadLine();
+                string? choice = Console.ReadLine();
 
                 if (choice == "1")
                 {
@@ -67,11 +67,18 @@ namespace Project.Presentation
             int guests = Convert.ToInt32(Console.ReadLine());
 
             Console.Write("New date/time (YYYY-MM-DD HH:MM): ");
-            string startAt = Console.ReadLine();
+            string? startAt = Console.ReadLine();
             
             // The logic will be called to update the reservation
-            logic.UpdateReservation(id, guests, startAt);
-            Console.WriteLine("Reservation updated!");
+            if (startAt != null)
+            {
+                logic.UpdateReservation(id, guests, startAt);
+                Console.WriteLine("Reservation updated!");
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Update cancelled.");
+            }
             Console.ReadKey();
         }
 
@@ -80,10 +87,10 @@ namespace Project.Presentation
         {
             Console.Clear();
             Console.WriteLine("Cancel this reservation? (y/n)");
-            string answer = Console.ReadLine();
+            string? answer = Console.ReadLine();
 
             // If answer is yes, logic will delete the reservation
-            if (answer.ToLower() == "y")
+            if (answer?.ToLower() == "y")
             {
                 logic.DeleteReservation(id);
                 Console.WriteLine("Reservation cancelled.");
