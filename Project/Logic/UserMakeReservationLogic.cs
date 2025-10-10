@@ -4,6 +4,8 @@ public static class UserMakeReservationLogic
     public static int MaxPeople { get; } = 6;
     public static string DateFormat { get; } = "yyyy-MM-dd";
 
+    public static TableAcces _TableAcces = new TableAcces();
+
     public static bool CheckValidDate(string date)
     {
         // Check if date has 10 chars
@@ -56,7 +58,7 @@ public static class UserMakeReservationLogic
     {
         if (int.TryParse(AmountPeople, out int intAmountPeople))
         {
-            if (intAmountPeople > 1 && intAmountPeople < 6)
+            if (intAmountPeople >= 1 && intAmountPeople <= 6)
             {
                 return true;
             }
@@ -97,5 +99,25 @@ public static class UserMakeReservationLogic
             return 6;
         }
         return 2;
+    }
+
+    public static TableModel? GetAvailableTable(string reservationDate, int tablesize)
+    {
+
+        List<TableModel> allTables = _TableAcces.GetAllTables();
+
+        List<int> reservedTableIds = _TableAcces.GetNonAvailableOnDate(reservationDate, tablesize);
+
+        List<TableModel> availableTables = allTables.Where(t => !reservedTableIds.Contains(t.ID)).ToList();
+
+        // Handle the case where no tables are available
+        if (!availableTables.Any())
+        {
+            Console.WriteLine("No available tables found.");
+            return null;
+        }
+
+        // Find a table that fits the tablesize
+        return availableTables.FirstOrDefault(t => t.TableCapacity >= tablesize);
     }
 }

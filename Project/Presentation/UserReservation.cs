@@ -64,8 +64,9 @@ static class UserMakeReservation
             Start();
             return;
         }
+
         int DiningTableSize = UserMakeReservationLogic.GetTableSize(AmountPeople);
-        
+        TableModel AvailableTable = UserMakeReservationLogic.GetAvailableTable(ReservationDate, DiningTableSize);
         int.TryParse(AmountPeople, out int intAmountPeople);
         string CompleteStartDate = ReservationDate + ArrivalTime;
     }
