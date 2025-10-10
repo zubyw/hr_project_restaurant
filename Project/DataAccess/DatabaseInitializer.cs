@@ -136,10 +136,10 @@ public static class DatabaseInitializer
 
     private static void CreateDefaultAdminUser(SqliteConnection connection)
     {
-        // Check if admin  already exists 
+        // Check if admin already exists 
         var existingUser = connection.QueryFirstOrDefault<UserModel>(
             "SELECT * FROM Users WHERE EmailAddress = @Email", 
-            new { Email = "admin@gmail.com" });
+            new { Email = "admin" });
 
         if (existingUser == null)
         {
@@ -149,8 +149,8 @@ public static class DatabaseInitializer
                 FirstName = "Admin",
                 LastName = "User",
                 PhoneNumber = "0000000000",
-                EmailAddress = "admin@gmail.com",
-                Password = "Wachtwoord!1",
+                EmailAddress = "admin",
+                Password = "admin",
                 Roles = "admin"
             };
             
