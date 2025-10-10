@@ -96,6 +96,6 @@ public static class UserMakeReservationLogic
         {
             return 6;
         }
-        return 0;
+        return 2;
     }
 }
