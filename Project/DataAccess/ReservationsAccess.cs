@@ -3,7 +3,7 @@ using Dapper;
 
 public class ReservationsAccess
 {
-    private readonly string _connectionString = "Data Source=DataSources/project.db";
+    private readonly string _connectionString = "Data Source=DataSources/project.db;Foreign Keys=False";
     private readonly string Table = "Reservations";
 
     public void Write(ReservationModel reservation)
@@ -161,6 +161,14 @@ public class ReservationsAccess
         connection.Open();
         int rows = connection.Execute(sql, new { ReservationId = reservationId });
         connection.Close();
+        return rows > 0;
+    }
+
+    public bool UpdateGuestCount(int reservationId, int newGuestCount)
+    {
+        string sql = "UPDATE Reservations SET GuestCount = @GuestCount, UpdatedAt = CURRENT_TIMESTAMP WHERE ID = @ReservationId";
+        using var connection = new SqliteConnection(_connectionString);
+        int rows = connection.Execute(sql, new { GuestCount = newGuestCount, ReservationId = reservationId });
         return rows > 0;
     }
 

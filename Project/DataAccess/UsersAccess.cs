@@ -3,7 +3,7 @@ using Dapper;
 
 public class UsersAccess
 {
-    private readonly string _connectionString = "Data Source=DataSources/project.db";
+    private readonly string _connectionString = "Data Source=DataSources/project.db;Foreign Keys=False";
     private readonly string Table = "Users";
 
     public void Write(UserModel user)

@@ -3,7 +3,7 @@ using Dapper;
 
 public static class DatabaseInitializer
 {
-    private static readonly string _connectionString = "Data Source=DataSources/project.db";
+    private static readonly string _connectionString = "Data Source=DataSources/project.db;Foreign Keys=False";
 
     public static void Initialize()
     {
