@@ -106,9 +106,8 @@ static class Menu
                 ShowMainMenu();
                 break;
             case "2":
-                Console.WriteLine("Make reservation feature coming soon...");
-                Console.WriteLine("Press any key to continue...");
-                Console.ReadKey();
+                RudReservation rud = new RudReservation();
+                rud.Start(CurrentUser.ID);
                 ShowMainMenu();
                 break;
             case "3":

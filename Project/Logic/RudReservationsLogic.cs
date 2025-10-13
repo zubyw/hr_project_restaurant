@@ -30,7 +30,21 @@ namespace Project.Logic
         {
             access.DeleteReservation(id);
         }
+
+        // method checks if reservation date/time is valid
+        public bool IsValidReservationDateTime(string input)
+        {
+            DateTime date;
+
+            // check if date/time format is correct
+            if (!DateTime.TryParse(input, out date))
+                return false;
+
+            int hour = date.Hour;
+            if (hour >= 17)
+                return true;
+
+            return false;
+        }
     }
-}
-
-
+}              

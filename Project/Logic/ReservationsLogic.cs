@@ -1,3 +1,5 @@
+using Project.DataModels;
+
 public class ReservationsLogic
 {
     private ReservationsAccess _reservationsAccess = new ReservationsAccess();

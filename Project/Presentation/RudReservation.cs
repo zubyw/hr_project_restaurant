@@ -67,10 +67,27 @@ namespace Project.Presentation
             int guests = Convert.ToInt32(Console.ReadLine());
 
             Console.Write("New date/time (YYYY-MM-DD HH:MM): ");
-            string startAt = Console.ReadLine();
-            
-            // The logic will be called to update the reservation
-            logic.UpdateReservation(id, guests, startAt);
+            string input = Console.ReadLine();
+
+            // if input is not empty
+            if (string.IsNullOrEmpty(input))
+            {
+                Console.WriteLine("Invalid input. Try again.");
+                Console.ReadKey();
+                return;
+            }
+
+            // logic layer checks if date and is valid
+            bool isValid = logic.IsValidReservationDateTime(input);
+
+            if (!isValid)
+            {
+                Console.WriteLine("Invalid date or time.");
+                Console.ReadKey();
+                return;
+            }
+
+            logic.UpdateReservation(id, guests, input);
             Console.WriteLine("Reservation updated!");
             Console.ReadKey();
         }

@@ -35,7 +35,7 @@ namespace Project.DataAccess
                         res.GuestCount = reader.GetInt32(3);
                         res.StartAt = reader.GetString(4);
                         res.Status = reader.GetString(5);
-                        res.CanModifyUntil = reader.GetString(6);
+                        res.CanModifyUntil = reader.IsDBNull(6) ? null : reader.GetString(6);
                         res.CreatedAt = reader.GetString(7);
                         res.UpdatedAt = reader.GetString(8);
                         list.Add(res);
