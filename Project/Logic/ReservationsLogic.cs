@@ -134,4 +134,83 @@ public class ReservationsLogic
     {
         return DateTime.TryParseExact(dateString, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out _);
     }
+
+    // vanaf hier heb ik het verder aangevuld.
+
+        public bool ChangeReservationTime(int reservationId, DateTime newTime)
+    {
+        try
+        {
+            if (newTime <= DateTime.Now)
+            {
+                return false;
+            }
+
+            ReservationModel reservation = _reservationsAccess.GetById(reservationId);
+            if (reservation == null)
+            {
+                return false;
+            }
+
+            reservation.StartAt = newTime.ToString("yyyy-MM-dd HH:mm:ss");
+            reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            _reservationsAccess.Update(reservation);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public bool ChangeReservationPersons(int reservationId, int newGuestCount)
+    {
+        try
+        {
+            if (newGuestCount != 2 && newGuestCount != 4 && newGuestCount != 6)
+            {
+                return false;
+            }
+
+            ReservationModel reservation = _reservationsAccess.GetById(reservationId);
+            if (reservation == null)
+            {
+                return false;
+            }
+
+            reservation.GuestCount = newGuestCount;
+            reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            _reservationsAccess.Update(reservation);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public bool CancelReservation(int reservationId)
+    {
+        try
+        {
+            ReservationModel reservation = _reservationsAccess.GetById(reservationId);
+            if (reservation == null)
+            {
+                return false;
+            }
+
+            reservation.Status = "Geannuleerd";
+            reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            _reservationsAccess.Update(reservation);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
 }

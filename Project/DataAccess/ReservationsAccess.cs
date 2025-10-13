@@ -102,4 +102,59 @@ public class ReservationsAccess
         using var connection = new SqliteConnection(_connectionString);
         connection.Execute(sql, new { Id = id });
     }
+
+    // vanaf hier heb ik het uitgebreidt:
+
+        public bool IsTableFree(string dateTime, int tableId, int excludeReservationId)
+    {
+        string sql = $"SELECT COUNT(*) FROM Reservations WHERE TableId = @TableId AND StartAt = @StartAt AND ID != @ReservationId";
+        using SqliteConnection connection = new SqliteConnection(_connectionString);
+        connection.Open();
+        int count = connection.ExecuteScalar<int>(sql, new { TableId = tableId, StartAt = dateTime, ReservationId = excludeReservationId });
+        connection.Close();
+        return count == 0;
+    }
+
+    public List<TableModel> GetFreeTables(string dateTime, int persons)
+    {
+        string sql = "SELECT * FROM [Table] WHERE TableCapacity >= @Persons AND ID NOT IN (SELECT TableId FROM Reservations WHERE StartAt = @StartAt)";
+        using SqliteConnection connection = new SqliteConnection(_connectionString);
+        connection.Open();
+        List<TableModel> tables = connection.Query<TableModel>(sql, new { Persons = persons, StartAt = dateTime }).AsList();
+        connection.Close();
+        return tables;
+    }
+
+    public bool UpdateReservationTime(int reservationId, string newTime)
+    {
+        string sql = "UPDATE Reservations SET StartAt = @NewTime, UpdatedAt = CURRENT_TIMESTAMP WHERE ID = @ReservationId";
+        using SqliteConnection connection = new SqliteConnection(_connectionString);
+        connection.Open();
+        int rows = connection.Execute(sql, new { NewTime = newTime, ReservationId = reservationId });
+        connection.Close();
+        return rows > 0;
+    }
+
+    public bool UpdateReservationTable(int reservationId, int newTableId, int newPersons)
+    {
+        string sql = "UPDATE Reservations SET TableId = @TableId, GuestCount = @Persons, UpdatedAt = CURRENT_TIMESTAMP WHERE ID = @ReservationId";
+        using SqliteConnection connection = new SqliteConnection(_connectionString);
+        connection.Open();
+        int rows = connection.Execute(sql, new { TableId = newTableId, Persons = newPersons, ReservationId = reservationId });
+        connection.Close();
+        return rows > 0;
+    }
+
+    public bool CancelReservation(int reservationId)
+    {
+        string sql = "UPDATE Reservations SET Status = 'geannuleerd', UpdatedAt = CURRENT_TIMESTAMP WHERE ID = @ReservationId";
+        using SqliteConnection connection = new SqliteConnection(_connectionString);
+        connection.Open();
+        int rows = connection.Execute(sql, new { ReservationId = reservationId });
+        connection.Close();
+        return rows > 0;
+    }
+
+
+
 }
