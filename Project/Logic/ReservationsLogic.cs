@@ -1,3 +1,7 @@
+using Microsoft.Data.Sqlite;
+using Dapper;
+using System.Linq;
+
 public class ReservationsLogic
 {
     private ReservationsAccess _reservationsAccess = new ReservationsAccess();
@@ -135,7 +139,7 @@ public class ReservationsLogic
 
     // vanaf hier heb ik het verder aangevuld.
 
-        public bool ChangeReservationTime(int reservationId, DateTime newTime)
+    public bool ChangeReservationTime(int reservationId, DateTime newTime)
     {
         try
         {
@@ -150,12 +154,16 @@ public class ReservationsLogic
                 return false;
             }
 
-            // Format the datetime to include seconds for database storage
-            reservation.StartAt = newTime.ToString("yyyy-MM-dd HH:mm:ss");
-            reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            string newTimeString = newTime.ToString("yyyy-MM-dd HH:mm:ss");
 
-            _reservationsAccess.Update(reservation);
-            return true;
+            // Check if the current table is free at the new time
+            if (!_reservationsAccess.IsTableFree(newTimeString, reservation.TableId, reservationId))
+            {
+                return false; // Table is not available at this time
+            }
+
+            // Use the existing UpdateReservationTime method
+            return _reservationsAccess.UpdateReservationTime(reservationId, newTimeString);
         }
         catch
         {
@@ -178,11 +186,27 @@ public class ReservationsLogic
                 return false;
             }
 
-            reservation.GuestCount = newGuestCount;
-            reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            // Check if current table can accommodate the new guest count
+            if (reservation.TableCapacity >= newGuestCount)
+            {
+                // Current table is fine, just update guest count
+                reservation.GuestCount = newGuestCount;
+                reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                _reservationsAccess.Update(reservation);
+                return true;
+            }
+            else
+            {
+                // Need to find a bigger table
+                var availableTables = _reservationsAccess.GetFreeTablesExcluding(reservation.StartAt, newGuestCount, reservationId);
+                if (!availableTables.Any())
+                {
+                    return false; // No suitable table available
+                }
 
-            _reservationsAccess.Update(reservation);
-            return true;
+                // Use the UpdateReservationTable method which updates both table and guest count
+                return _reservationsAccess.UpdateReservationTable(reservationId, availableTables.First().ID, newGuestCount);
+            }
         }
         catch
         {
@@ -194,17 +218,8 @@ public class ReservationsLogic
     {
         try
         {
-            ReservationModel? reservation = _reservationsAccess.GetById(reservationId);
-            if (reservation == null)
-            {
-                return false;
-            }
-
-            reservation.Status = "Geannuleerd";
-            reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-
-            _reservationsAccess.Update(reservation);
-            return true;
+            // Use the existing CancelReservation method in ReservationsAccess
+            return _reservationsAccess.CancelReservation(reservationId);
         }
         catch
         {

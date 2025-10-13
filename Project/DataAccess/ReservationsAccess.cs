@@ -116,10 +116,20 @@ public class ReservationsAccess
 
     public List<TableModel> GetFreeTables(string dateTime, int persons)
     {
-        string sql = "SELECT * FROM [Table] WHERE TableCapacity >= @Persons AND ID NOT IN (SELECT TableId FROM Reservations WHERE StartAt = @StartAt)";
+        string sql = "SELECT * FROM [Table] WHERE TableCapacity >= @Persons AND ID NOT IN (SELECT TableId FROM Reservations WHERE StartAt = @StartAt AND Status != 'geannuleerd')";
         using SqliteConnection connection = new SqliteConnection(_connectionString);
         connection.Open();
         List<TableModel> tables = connection.Query<TableModel>(sql, new { Persons = persons, StartAt = dateTime }).AsList();
+        connection.Close();
+        return tables;
+    }
+
+    public List<TableModel> GetFreeTablesExcluding(string dateTime, int persons, int excludeReservationId)
+    {
+        string sql = "SELECT * FROM [Table] WHERE TableCapacity >= @Persons AND ID NOT IN (SELECT TableId FROM Reservations WHERE StartAt = @StartAt AND Status != 'geannuleerd' AND ID != @ExcludeId)";
+        using SqliteConnection connection = new SqliteConnection(_connectionString);
+        connection.Open();
+        List<TableModel> tables = connection.Query<TableModel>(sql, new { Persons = persons, StartAt = dateTime, ExcludeId = excludeReservationId }).AsList();
         connection.Close();
         return tables;
     }
