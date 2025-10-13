@@ -20,5 +20,21 @@ namespace Project.DataAccess
                 return list;
             }
         }
+
+        
+        // updates a reservation by ID 
+        public void UpdateReservation(int id, int guestCount, string startAt)
+        {
+            using (SqliteConnection connection = new SqliteConnection(connectionString))
+            {
+                string query = "UPDATE Reservations SET GuestCount = @GuestCount, StartAt = @StartAt, UpdatedAt = datetime('now') WHERE Id = @Id";
+                connection.Execute(query, new
+                {
+                    GuestCount = guestCount,
+                    StartAt = startAt,
+                    Id = id
+                });
+            }
+        }
     }
 }
