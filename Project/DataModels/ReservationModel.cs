@@ -9,7 +9,7 @@ public class ReservationModel
     public string? CanModifyUntil { get; set; }
     public string CreatedAt { get; set; } = string.Empty;
     public string UpdatedAt { get; set; } = string.Empty;
-    
+
     // Navigation properties for joined data
     public string GuestFirstName { get; set; } = string.Empty;
     public string GuestLastName { get; set; } = string.Empty;

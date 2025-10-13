@@ -24,9 +24,7 @@ static class ReservationManagement
                 ViewReservationsByDate();
                 break;
             case "3":
-                Console.WriteLine("Change reservations feature coming soon...");
-                Console.WriteLine("Press any key to continue...");
-                Console.ReadKey();
+                ReservationUpdateMenu.Start();  // dit is een verwijzing naar een presentation-file die ik zelf heb aangemaakt.
                 Start();
                 break;
             case "4":
