@@ -144,12 +144,13 @@ public class ReservationsLogic
                 return false;
             }
 
-            ReservationModel reservation = _reservationsAccess.GetById(reservationId);
+            ReservationModel? reservation = _reservationsAccess.GetById(reservationId);
             if (reservation == null)
             {
                 return false;
             }
 
+            // Format the datetime to include seconds for database storage
             reservation.StartAt = newTime.ToString("yyyy-MM-dd HH:mm:ss");
             reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
@@ -171,7 +172,7 @@ public class ReservationsLogic
                 return false;
             }
 
-            ReservationModel reservation = _reservationsAccess.GetById(reservationId);
+            ReservationModel? reservation = _reservationsAccess.GetById(reservationId);
             if (reservation == null)
             {
                 return false;
@@ -193,7 +194,7 @@ public class ReservationsLogic
     {
         try
         {
-            ReservationModel reservation = _reservationsAccess.GetById(reservationId);
+            ReservationModel? reservation = _reservationsAccess.GetById(reservationId);
             if (reservation == null)
             {
                 return false;
