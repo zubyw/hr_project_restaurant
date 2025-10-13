@@ -190,10 +190,7 @@ public class ReservationsLogic
             if (reservation.TableCapacity >= newGuestCount)
             {
                 // Current table is fine, just update guest count
-                reservation.GuestCount = newGuestCount;
-                reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                _reservationsAccess.Update(reservation);
-                return true;
+                return _reservationsAccess.UpdateGuestCount(reservationId, newGuestCount);
             }
             else
             {
