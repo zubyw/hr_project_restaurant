@@ -36,7 +36,7 @@ namespace Project.Presentation
 
             Console.WriteLine();
             Console.Write("Enter reservation ID to manage: ");
-            string input = Console.ReadLine();
+            string? input = Console.ReadLine();
 
             // UserInput to update or delete
             if (int.TryParse(input, out int selectedId))
@@ -45,7 +45,7 @@ namespace Project.Presentation
                 Console.WriteLine("2. Cancel reservation");
                 Console.WriteLine("3. Back");
                 Console.Write("Choose: ");
-                string choice = Console.ReadLine();
+                string? choice = Console.ReadLine();
 
                 if (choice == "1")
                 {
@@ -67,7 +67,7 @@ namespace Project.Presentation
             int guests = Convert.ToInt32(Console.ReadLine());
 
             Console.Write("New date/time (YYYY-MM-DD HH:MM): ");
-            string input = Console.ReadLine();
+            string? input = Console.ReadLine();
 
             // if input is not empty
             if (string.IsNullOrEmpty(input))
@@ -97,10 +97,10 @@ namespace Project.Presentation
         {
             Console.Clear();
             Console.WriteLine("Cancel this reservation? (y/n)");
-            string answer = Console.ReadLine();
+            string? answer = Console.ReadLine();
 
             // If answer is yes, logic will delete the reservation
-            if (answer.ToLower() == "y")
+            if (answer?.ToLower() == "y")
             {
                 logic.DeleteReservation(id);
                 Console.WriteLine("Reservation cancelled.");

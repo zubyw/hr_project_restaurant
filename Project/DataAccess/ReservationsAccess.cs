@@ -9,7 +9,7 @@ public class ReservationsAccess
 
     public void Write(ReservationModel reservation)
     {
-        string sql = $"INSERT INTO {Table} (UserId, TableId, GuestCount, StartAt, Status, CreatedAt, UpdatedAt) VALUES (@UserId, @TableId, @GuestCount, @StartAt, @Status, @CreatedAt, @UpdatedAt)";
+        string sql = $"INSERT INTO {Table} (UserId, TableId, GuestCount, StartAt, Status, CanModifyUntil, CreatedAt, UpdatedAt) VALUES (@UserId, @TableId, @GuestCount, @StartAt, @Status, @CanModifyUntil, @CreatedAt, @UpdatedAt)";
         using var connection = new SqliteConnection(_connectionString);
         connection.Execute(sql, reservation);
     }
