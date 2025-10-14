@@ -72,7 +72,7 @@ static class UserMakeReservation
         int DiningTableSize = UserMakeReservationLogic.GetTableSize(AmountPeople);
         TableModel? AvailabeTable = UserMakeReservationLogic.GetAvailableTable(ReservationDate, DiningTableSize);
         int.TryParse(AmountPeople, out int intAmountPeople);
-        string CompleteStartDate = ReservationDate + ArrivalTime;
+        string CompleteStartDate = $"{ReservationDate} {ArrivalTime}";
         int userid = _usersLogic.GetIdByEmail(Menu.CurrentUser.EmailAddress);
 
         if (_reservationsLogic.CreateReservation(userid, AvailabeTable.ID, intAmountPeople, CompleteStartDate))
