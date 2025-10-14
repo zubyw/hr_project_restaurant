@@ -79,7 +79,7 @@ static class UserMakeReservation
         {
             Console.WriteLine("Reservation successful. Redirecting to main menu...");
 
-            // Small delay to show the welcome message
+            // Small delay to show the Reservation succesful message
             Thread.Sleep(1500);
 
             Menu.ShowMainMenu();
