@@ -28,7 +28,6 @@ static class Menu
         }
         else if (input == "3")
         {
-            Console.WriteLine("Thank you for using Kevin's Fine Dining System!");
             Environment.Exit(0);
         }
         else

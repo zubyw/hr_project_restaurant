@@ -1,4 +1,5 @@
 using Project.DataModels;
+using System.Linq;
 
 public class ReservationsLogic
 {
@@ -146,7 +147,7 @@ public class ReservationsLogic
                 return false;
             }
 
-            ReservationModel reservation = _reservationsAccess.GetById(reservationId);
+            ReservationModel? reservation = _reservationsAccess.GetById(reservationId);
             if (reservation == null)
             {
                 return false;
@@ -173,17 +174,30 @@ public class ReservationsLogic
                 return false;
             }
 
-            ReservationModel reservation = _reservationsAccess.GetById(reservationId);
+            ReservationModel? reservation = _reservationsAccess.GetById(reservationId);
             if (reservation == null)
             {
                 return false;
             }
 
-            reservation.GuestCount = newGuestCount;
-            reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            // Check if current table can accommodate the new guest count
+            if (reservation.TableCapacity >= newGuestCount)
+            {
+                // Current table is fine, just update guest count
+                return _reservationsAccess.UpdateGuestCount(reservationId, newGuestCount);
+            }
+            else
+            {
+                // Need to find a bigger table
+                var availableTables = _reservationsAccess.GetFreeTablesExcluding(reservation.StartAt, newGuestCount, reservationId);
+                if (!availableTables.Any())
+                {
+                    return false; // No suitable table available
+                }
 
-            _reservationsAccess.Update(reservation);
-            return true;
+                // Use the UpdateReservationTable method which updates both table and guest count
+                return _reservationsAccess.UpdateReservationTable(reservationId, availableTables.First().ID, newGuestCount);
+            }
         }
         catch
         {
@@ -195,7 +209,7 @@ public class ReservationsLogic
     {
         try
         {
-            ReservationModel reservation = _reservationsAccess.GetById(reservationId);
+            ReservationModel? reservation = _reservationsAccess.GetById(reservationId);
             if (reservation == null)
             {
                 return false;
