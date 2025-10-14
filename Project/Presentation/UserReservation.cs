@@ -1,7 +1,6 @@
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Common;
+using System;
 
-static class UserMakeReservation
+static class UserReservation
 {
 
     private static ReservationsLogic _reservationsLogic = new ReservationsLogic();
@@ -9,7 +8,9 @@ static class UserMakeReservation
 
     public static void Start()
     {
-        Console.Clear();
+        try
+        {
+            Console.Clear();
         Console.WriteLine("\n===Reservations===");
 
         Console.WriteLine("Amount of people: (1-6)");
@@ -60,7 +61,7 @@ static class UserMakeReservation
             Start();
             return;
         }
-        if (!UserMakeReservationLogic.CheckValidDate(ReservationDate))
+        if (!UserMakeReservationLogic.CheckValidDayTime(ArrivalTime))
         {
             Console.WriteLine("Given daytime incorrect (17:00 - 17:30 - 18:00 - 18:30 - 19:00 - 19:30)");
             Console.WriteLine("Press any key to try again...");
@@ -70,12 +71,32 @@ static class UserMakeReservation
         }
 
         int DiningTableSize = UserMakeReservationLogic.GetTableSize(AmountPeople);
-        TableModel? AvailabeTable = UserMakeReservationLogic.GetAvailableTable(ReservationDate, DiningTableSize);
+        TableModel? AvailableTable = UserMakeReservationLogic.GetAvailableTable(ReservationDate, DiningTableSize);
+        
+        if (AvailableTable == null)
+        {
+            Console.WriteLine("Sorry, no tables are available for the selected date and time.");
+            Console.WriteLine("Press any key to try again...");
+            Console.ReadKey();
+            Start();
+            return;
+        }
+        
         int.TryParse(AmountPeople, out int intAmountPeople);
-        string CompleteStartDate = $"{ReservationDate} {ArrivalTime}";
+        string CompleteStartDate = $"{ReservationDate} {ArrivalTime}:00";
+        
+        if (Menu.CurrentUser == null)
+        {
+            Console.WriteLine("User not logged in. Please login first.");
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
+            Menu.Start();
+            return;
+        }
+        
         int userid = _usersLogic.GetIdByEmail(Menu.CurrentUser.EmailAddress);
 
-        if (_reservationsLogic.CreateReservation(userid, AvailabeTable.ID, intAmountPeople, CompleteStartDate))
+        if (_reservationsLogic.CreateReservation(userid, AvailableTable.ID, intAmountPeople, CompleteStartDate))
         {
             Console.WriteLine("Reservation successful. Redirecting to main menu...");
 
@@ -91,5 +112,13 @@ static class UserMakeReservation
             Console.ReadKey();
             Menu.ShowMainMenu();
         }
+    }
+    catch
+    {
+        Console.WriteLine("An unexpected error occurred");
+        Console.WriteLine("Press any key to try again...");
+        Console.ReadKey();
+        Menu.ShowMainMenu();
+    }
     }
 }

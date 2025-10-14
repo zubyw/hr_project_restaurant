@@ -100,7 +100,7 @@ static class Menu
         switch (input)
         {
             case "1":
-                UserMakeReservation.Start();
+                UserReservation.Start();
                 break;
             case "2":
                 Console.WriteLine("Make reservation feature coming soon...");
