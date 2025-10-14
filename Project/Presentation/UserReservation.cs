@@ -1,7 +1,11 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Common;
 
 static class UserMakeReservation
 {
+
+    private static ReservationsLogic _reservationsLogic = new ReservationsLogic();
+    private static UsersLogic _usersLogic = new UsersLogic();
 
     public static void Start()
     {
@@ -19,13 +23,13 @@ static class UserMakeReservation
             return;
         }
         if (!UserMakeReservationLogic.CheckAmountPeople(AmountPeople))
-            {
-                Console.WriteLine("Given amount of people incorrect (1-6)");
-                Console.WriteLine("Press any key to try again...");
-                Console.ReadKey();
-                Start();
-                return;
-            }
+        {
+            Console.WriteLine("Given amount of people incorrect (1-6)");
+            Console.WriteLine("Press any key to try again...");
+            Console.ReadKey();
+            Start();
+            return;
+        }
 
         Console.WriteLine("Date: (YYYY-MM-DD)");
         string? ReservationDate = Console.ReadLine();
@@ -69,5 +73,23 @@ static class UserMakeReservation
         TableModel? AvailabeTable = UserMakeReservationLogic.GetAvailableTable(ReservationDate, DiningTableSize);
         int.TryParse(AmountPeople, out int intAmountPeople);
         string CompleteStartDate = ReservationDate + ArrivalTime;
+        int userid = _usersLogic.GetIdByEmail(Menu.CurrentUser.EmailAddress);
+
+        if (_reservationsLogic.CreateReservation(userid, AvailabeTable.ID, intAmountPeople, CompleteStartDate))
+        {
+            Console.WriteLine("Reservation successful. Redirecting to main menu...");
+
+            // Small delay to show the welcome message
+            Thread.Sleep(1500);
+
+            Menu.ShowMainMenu();
+        }
+        else
+        {
+            Console.WriteLine("An unexpected error occurred");
+            Console.WriteLine("Press any key to try again...");
+            Console.ReadKey();
+            Menu.ShowMainMenu();
+        }
     }
 }

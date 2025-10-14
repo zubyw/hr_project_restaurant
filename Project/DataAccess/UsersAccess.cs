@@ -61,4 +61,10 @@ public class UsersAccess
         using var connection = new SqliteConnection(_connectionString);
         connection.Execute(sql, new { Id = id });
     }
+    public int GetIdByEmail(string email)
+    {
+        string sql = $"SELECT ID FROM {Table} WHERE EmailAddress = @Email";
+        using var connection = new SqliteConnection(_connectionString);
+        return connection.QueryFirstOrDefault<int>(sql, new { Email = email });
+    }
 }

@@ -132,4 +132,20 @@ public class UsersLogic
             return null;
         }
     }
+    public int GetIdByEmail(string email)
+    {
+        try
+        {
+            int id = _usersAccess.GetIdByEmail(email);
+            if (id != 0 )
+            {
+                return id;
+            }
+            return 0;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
 }
