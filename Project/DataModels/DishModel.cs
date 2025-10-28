@@ -6,7 +6,6 @@ public class DishModel
     public string Type { get; set; }
 
 
-    public DishModel(Int64 id, string email, string password, string fullname)
     public DishModel(string n, decimal p, string d, string t)
     {
         Name = n;
