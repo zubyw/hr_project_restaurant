@@ -1,18 +1,10 @@
 public class DishModel
 {
-    public string Name { get; set; }
-    public decimal Price { get; set; }
-    public string Description { get; set; }
-    public string Type { get; set; }
 
-
-    public DishModel(string n, decimal p, string d, string t)
-    {
-        Name = n;
-        Price = p;
-        Description = d;
-        Type = t;
-    }
-
+    public int ID { get; set; }
+    public required string Name { get; set; }
+    public required decimal Price { get; set; }
+    public required string Description { get; set; }
+    public required string Type { get; set; }
 
 }
