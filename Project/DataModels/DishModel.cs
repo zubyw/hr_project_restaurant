@@ -7,11 +7,13 @@ public class DishModel
 
 
     public DishModel(Int64 id, string email, string password, string fullname)
+    public DishModel(string n, decimal p, string d, string t)
     {
-        Id = id;
-        EmailAddress = email;
-        Password = password;
-        FullName = fullname;
+        Name = n;
+        Price = p;
+        Description = d;
+        Type = t;
     }
-}
 
+
+}
