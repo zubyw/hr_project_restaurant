@@ -4,106 +4,57 @@ public class UsersLogic
 
     public bool CreateUser(string firstName, string lastName, string phoneNumber, string emailAddress, string password, string roles)
     {
-        try
+        // Check if user already exists
+        var existingUser = _usersAccess.GetByEmail(emailAddress);
+        if (existingUser != null)
         {
-            // Check if user already exists
-            var existingUser = _usersAccess.GetByEmail(emailAddress);
-            if (existingUser != null)
-            {
-                return false; // User already exists
-            }
-
-            var newUser = new UserModel
-            {
-                FirstName = firstName,
-                LastName = lastName,
-                PhoneNumber = phoneNumber,
-                EmailAddress = emailAddress,
-                Password = password,
-                Roles = roles
-            };
-
-            _usersAccess.Write(newUser);
-            return true;
+            return false; // User already exists
         }
-        catch
+
+        var newUser = new UserModel
         {
-            return false;
-        }
+            FirstName = firstName,
+            LastName = lastName,
+            PhoneNumber = phoneNumber,
+            EmailAddress = emailAddress,
+            Password = password,
+            Roles = roles
+        };
+
+        _usersAccess.Write(newUser);
+        return true;
     }
 
     public UserModel? GetUserByEmail(string emailAddress)
     {
-        try
-        {
-            return _usersAccess.GetByEmail(emailAddress);
-        }
-        catch
-        {
-            return null;
-        }
+        return _usersAccess.GetByEmail(emailAddress);
     }
 
     public UserModel? GetUserById(int id)
     {
-        try
-        {
-            return _usersAccess.GetById(id);
-        }
-        catch
-        {
-            return null;
-        }
+        return _usersAccess.GetById(id);
     }
 
     public List<UserModel> GetAllUsers()
     {
-        try
-        {
-            return _usersAccess.GetAll();
-        }
-        catch
-        {
-            return new List<UserModel>();
-        }
+        return _usersAccess.GetAll();
     }
 
     public List<UserModel> GetUsersByRole(string role)
     {
-        try
-        {
-            return _usersAccess.GetByRole(role);
-        }
-        catch
-        {
-            return new List<UserModel>();
-        }
+        return _usersAccess.GetByRole(role);
     }
 
     public bool UpdateUser(UserModel user)
     {
-        try
-        {
-            _usersAccess.Update(user);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        _usersAccess.Update(user);
+        return true;
     }
 
     public bool DeleteUser(int userId)
     {
-        try
-        {
-            _usersAccess.DeleteById(userId);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        _usersAccess.DeleteById(userId);
+        return true;
     }
 
     public bool IsValidEmail(string email)
@@ -118,34 +69,20 @@ public class UsersLogic
 
     public UserModel? CheckLogin(string email, string password)
     {
-        try
+        var user = _usersAccess.GetByEmail(email);
+        if (user != null && user.Password == password)
         {
-            var user = _usersAccess.GetByEmail(email);
-            if (user != null && user.Password == password)
-            {
-                return user;
-            }
-            return null;
+            return user;
         }
-        catch
-        {
-            return null;
-        }
+        return null;
     }
     public int GetIdByEmail(string email)
     {
-        try
+        int id = _usersAccess.GetIdByEmail(email);
+        if (id != 0 )
         {
-            int id = _usersAccess.GetIdByEmail(email);
-            if (id != 0 )
-            {
-                return id;
-            }
-            return 0;
+            return id;
         }
-        catch
-        {
-            return 0;
-        }
+        return 0;
     }
 }
