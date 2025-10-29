@@ -151,4 +151,38 @@ public class ReservationsLogic
         return true;
     }
 
+    // Methods for guest reservation management (merged from RudReservationsLogic)
+    public List<ReservationModel> GetReservationsByUserIdForGuest(int userId)
+    {
+        return _reservationsAccess.GetReservationsByUserIdSimple(userId);
+    }
+
+    public void UpdateReservationForGuest(int id, int guestCount, string startAt)
+    {
+        if (guestCount <= 0 || string.IsNullOrEmpty(startAt))
+            return;
+
+        _reservationsAccess.UpdateReservationSimple(id, guestCount, startAt);
+    }
+
+    public void DeleteReservationForGuest(int id)
+    {
+        _reservationsAccess.DeleteReservationSimple(id);
+    }
+
+    public bool IsValidReservationDateTime(string input)
+    {
+        DateTime date;
+
+        // check if date/time format is correct
+        if (!DateTime.TryParse(input, out date))
+            return false;
+
+        int hour = date.Hour;
+        if (hour >= 17)
+            return true;
+
+        return false;
+    }
+
 }
