@@ -44,7 +44,7 @@ public class DishAccess
         List<DishModel> AllDishesByType = connection.Query<DishModel>(DishesSql, new { Type = type }).ToList();
         return AllDishesByType;
     }
-    
+
 
     public List<int> GetallDishIdByThemeId(int themeid)
     {
@@ -53,8 +53,19 @@ public class DishAccess
         FROM Dish_Themes
         WHERE ThemeID = @ThemeId";
         using var connection = new SqliteConnection(_connectionString);
-        List<int> AllDishIdByThemeId = connection.Query<int>(DishesSql, new { ThemeId = themeid}).ToList();
+        List<int> AllDishIdByThemeId = connection.Query<int>(DishesSql, new { ThemeId = themeid }).ToList();
         return AllDishIdByThemeId;
     }
 
+    public List<DishModel> GetDishesByIds(List<int> dishIds)
+{
+    string sql = @"
+        SELECT ID, Name, Price, Description, Type
+        FROM Dishes
+        WHERE ID IN @Ids";
+    using var connection = new SqliteConnection(_connectionString);
+    List<DishModel> AllDishesFromIds = connection.Query<DishModel>(sql, new { Ids = dishIds }).ToList();
+
+    return AllDishesFromIds;
+}
 }
