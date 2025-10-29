@@ -52,6 +52,9 @@ public class DishAccess
         SELECT DishID
         FROM Dish_Themes
         WHERE ThemeID = @ThemeId";
+
+        // SQL Joins
+
         using var connection = new SqliteConnection(_connectionString);
         List<int> AllDishIdByThemeId = connection.Query<int>(DishesSql, new { ThemeId = themeid }).ToList();
         return AllDishIdByThemeId;
