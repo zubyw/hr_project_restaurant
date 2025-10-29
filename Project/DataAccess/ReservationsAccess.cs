@@ -160,6 +160,38 @@ public bool CancelReservation(ReservationModel reservation)
 }
 
 
+    // Methods from RudReservationsAccess (merged for consolidation)
+    public List<ReservationModel> GetReservationsByUserIdSimple(int userId)
+    {
+        using (SqliteConnection connection = new SqliteConnection(_connectionString))
+        {
+            string query = "SELECT * FROM Reservations WHERE UserId = @UserId";
+            List<ReservationModel> list = connection.Query<ReservationModel>(query, new { UserId = userId }).AsList();
+            return list;
+        }
+    }
 
+    public void UpdateReservationSimple(int id, int guestCount, string startAt)
+    {
+        using (SqliteConnection connection = new SqliteConnection(_connectionString))
+        {
+            string query = "UPDATE Reservations SET GuestCount = @GuestCount, StartAt = @StartAt, UpdatedAt = datetime('now') WHERE Id = @Id";
+            connection.Execute(query, new
+            {
+                GuestCount = guestCount,
+                StartAt = startAt,
+                Id = id
+            });
+        }
+    }
+
+    public void DeleteReservationSimple(int id)
+    {
+        using (SqliteConnection connection = new SqliteConnection(_connectionString))
+        {
+            string query = "DELETE FROM Reservations WHERE Id = @Id";
+            connection.Execute(query, new { Id = id });
+        }
+    }
 
 }
