@@ -54,22 +54,23 @@ public class ThemeAccess
     }
     
     public int? GetActiveThemeID()
-{
-    using var connection = new SqliteConnection(_connectionString);
-    connection.Open();
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
 
-    DateTime today = DateTime.Today;
+        DateTime today = DateTime.Today;
 
-    string sql = @"
-        SELECT ThemeID 
-        FROM ThemesCalendar
-        WHERE date(TimeSlot) = @Today
-        LIMIT 1;
-    ";
+        string sql = @"
+            SELECT ThemeId 
+            FROM Themes_Calendar
+            WHERE date(TimeSlot) <= @Today
+            ORDER BY date(TimeSlot) DESC
+            LIMIT 1;
+        ";
 
-    int? themeId = connection.ExecuteScalar<int?>(sql, new { Today = today });
+        int? themeId = connection.ExecuteScalar<int?>(sql, new { Today = today.ToString("yyyy-MM-dd") });
 
-    return themeId;
-}
+        return themeId;
+    }
 
 }

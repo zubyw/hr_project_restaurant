@@ -50,9 +50,9 @@ public class DishAccess
     public List<int> GetallDishIdByThemeId(int themeid)
     {
         string DishesSql = @"
-        SELECT DishID
-        FROM Dish_Themes
-        WHERE ThemeID = @ThemeId";
+        SELECT DishId
+        FROM Dishes_Themes
+        WHERE ThemeId = @ThemeId";
 
         // SQL Joins
 
@@ -75,13 +75,13 @@ public class DishAccess
 
     public void ReservedDishes(DishModel dish, ReservationModel reservation)
     {
-        string sql = $"INSERT INTO Reservations_Dishes (ReservationID, DishID) VALUES (@ReservationID, @DishID)";
+        string sql = $"INSERT INTO Reservations_Dishes (ReservationId, DishId) VALUES (@ReservationId, @DishId)";
         using var connection = new SqliteConnection(_connectionString);
 
         var parameters = new
         {
-            ReservationID = reservation.ID,
-            DishID = dish.ID
+            ReservationId = reservation.ID,
+            DishId = dish.ID
         };
     
         connection.Execute(sql, parameters);
