@@ -127,7 +127,7 @@ static class UserReservation
 
         if (_reservationsLogic.CreateReservation(userid, AvailableTable.ID, intAmountPeople, CompleteStartDate))
         {
-            // Get the reservation ID (last inserted)
+            // Get the reservation ID
             var userReservations = _reservationsLogic.GetReservationsByUserId(userid);
             var newReservation = userReservations.OrderByDescending(r => r.ID).FirstOrDefault();
             

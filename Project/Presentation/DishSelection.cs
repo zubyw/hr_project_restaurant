@@ -68,7 +68,7 @@ public static class DishSelection
             
             // Header
             Console.WriteLine("╔════════════════════════════════════════════════════════════════════════════╗");
-            ColorConsole.WriteTitle($"║  SELECT {courseType.ToUpper()} - Guest #{guestNumber}".PadRight(77) + "║");
+            Console.WriteLine($"║  SELECT {courseType.ToUpper()} - Guest #{guestNumber}".PadRight(77) + "║");
             Console.WriteLine("╠════════════════════════════════════════════════════════════════════════════╣");
             Console.WriteLine("║  Use ↑↓ Arrow Keys to Navigate  |  Press ENTER to Select  |  ESC to Cancel ║");
             Console.WriteLine("╚════════════════════════════════════════════════════════════════════════════╝");
@@ -82,8 +82,6 @@ public static class DishSelection
                 
                 if (isSelected)
                 {
-                    Console.BackgroundColor = ConsoleColor.DarkCyan;
-                    Console.ForegroundColor = ConsoleColor.White;
                     Console.Write("  ► ");
                 }
                 else
@@ -126,8 +124,8 @@ public static class DishSelection
                     // Confirm selection
                     var selected = dishes[selectedIndex];
                     Console.WriteLine();
-                    ColorConsole.WriteSuccess($"✓ Selected: {selected.Name}");
-                    Thread.Sleep(800);
+                    Console.WriteLine($"✓ Selected: {selected.Name}");
+                    Thread.Sleep(1200);
                     return selected;
                     
                 case ConsoleKey.Escape:
@@ -144,7 +142,7 @@ public static class DishSelection
         
         // Header
         Console.WriteLine("╔════════════════════════════════════════════════════════════════════════════╗");
-        ColorConsole.WriteTitle("║    RESERVATION SUMMARY - PLEASE CONFIRM".PadRight(77) + "║");
+        Console.WriteLine("║    RESERVATION SUMMARY - PLEASE CONFIRM".PadRight(77) + "║");
         Console.WriteLine("╚════════════════════════════════════════════════════════════════════════════╝");
         Console.WriteLine();
         
@@ -155,7 +153,7 @@ public static class DishSelection
         {
             int startIndex = (guestNumber - 1) * 3;
             
-            ColorConsole.WriteHighlight($"Guest #{guestNumber}:");
+            Console.WriteLine($"Guest #{guestNumber}:");
             Console.WriteLine($"    Starter:  {selectedDishes[startIndex].Name.PadRight(30)} €{selectedDishes[startIndex].Price:F2}");
             Console.WriteLine($"    Main:     {selectedDishes[startIndex + 1].Name.PadRight(30)} €{selectedDishes[startIndex + 1].Price:F2}");
             Console.WriteLine($"    Dessert:  {selectedDishes[startIndex + 2].Name.PadRight(30)} €{selectedDishes[startIndex + 2].Price:F2}");
@@ -167,7 +165,7 @@ public static class DishSelection
         }
         
         Console.WriteLine("─────────────────────────────────────────────────────────────────────────────");
-        ColorConsole.WriteSuccess($"Total Price: €{totalPrice:F2}");
+        Console.WriteLine($"Total Price: €{totalPrice:F2}");
         Console.WriteLine("─────────────────────────────────────────────────────────────────────────────");
         Console.WriteLine();
         
@@ -178,7 +176,7 @@ public static class DishSelection
         {
             Console.Clear();
             Console.WriteLine();
-            ColorConsole.WriteSuccess("✅ Your reservation with menu selection has been saved!");
+            Console.WriteLine("✅ Your reservation with menu selection has been saved!");
             Console.WriteLine();
             Thread.Sleep(3000);
             return true;
