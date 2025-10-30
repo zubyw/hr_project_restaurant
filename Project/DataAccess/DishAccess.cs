@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using Dapper;
+using Project.DataModels;
 
 public class DishAccess
 {
@@ -61,14 +62,28 @@ public class DishAccess
     }
 
     public List<DishModel> GetDishesByIds(List<int> dishIds)
-{
-    string sql = @"
+    {
+        string sql = @"
         SELECT ID, Name, Price, Description, Type
         FROM Dishes
         WHERE ID IN @Ids";
-    using var connection = new SqliteConnection(_connectionString);
-    List<DishModel> AllDishesFromIds = connection.Query<DishModel>(sql, new { Ids = dishIds }).ToList();
+        using var connection = new SqliteConnection(_connectionString);
+        List<DishModel> AllDishesFromIds = connection.Query<DishModel>(sql, new { Ids = dishIds }).ToList();
 
-    return AllDishesFromIds;
-}
+        return AllDishesFromIds;
+    }
+
+    public void ReservedDishes(DishModel dish, ReservationModel reservation)
+    {
+        string sql = $"INSERT INTO Reservations_Dishes (ReservationID, DishID) VALUES (@ReservationID, @DishID)";
+        using var connection = new SqliteConnection(_connectionString);
+
+        var parameters = new
+        {
+            ReservationID = reservation.ID,
+            DishID = dish.ID
+        };
+    
+        connection.Execute(sql, parameters);
+    }
 }

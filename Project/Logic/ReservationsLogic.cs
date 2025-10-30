@@ -33,7 +33,7 @@ public class ReservationsLogic
 
     public bool CreateReservation(int userId, int tableId, int guestCount, string startAt, string status = "Pending")
     {
-        var reservation = new ReservationModel
+        ReservationModel reservation = new ReservationModel
         {
             UserId = userId,
             TableId = tableId,
@@ -81,7 +81,6 @@ public class ReservationsLogic
         return DateTime.TryParseExact(dateString, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out _);
     }
 
-    // vanaf hier heb ik het verder aangevuld.
 
     public bool ChangeReservationTime(int reservationId, DateTime newTime)
     {
