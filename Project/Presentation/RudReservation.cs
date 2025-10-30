@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using Project.Logic;
 using Project.DataModels;
 
 namespace Project.Presentation
 {
     public class RudReservation
     {   
-        RudReservationsLogic logic = new RudReservationsLogic();
+        ReservationsLogic logic = new ReservationsLogic();
 
         // In this method it starts the reservation menu
         public void Start(int userId) 
@@ -17,7 +16,7 @@ namespace Project.Presentation
             Console.WriteLine();
 
             // All reservations will be loaded that belongs to the loggin in user
-            List<ReservationModel> reservations = logic.GetReservations(userId);
+            List<ReservationModel> reservations = logic.GetReservationsByUserIdForGuest(userId);
 
             // If no reservations are found, return to previous menu
             if (reservations.Count == 0)
@@ -87,7 +86,7 @@ namespace Project.Presentation
                 return;
             }
 
-            logic.UpdateReservation(id, guests, input);
+            logic.UpdateReservationForGuest(id, guests, input);
             Console.WriteLine("Reservation updated!");
             Console.ReadKey();
         }
@@ -102,7 +101,7 @@ namespace Project.Presentation
             // If answer is yes, logic will delete the reservation
             if (answer?.ToLower() == "y")
             {
-                logic.DeleteReservation(id);
+                logic.DeleteReservationForGuest(id);
                 Console.WriteLine("Reservation cancelled.");
             }
 

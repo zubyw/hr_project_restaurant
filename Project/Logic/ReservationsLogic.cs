@@ -81,73 +81,99 @@ public class ReservationsLogic
         return DateTime.TryParseExact(dateString, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out _);
     }
 
+<<<<<<< HEAD
+=======
+    // vanaf hier heb ik het verder aangevuld. Ook hier heb ik de datamodels gebruikt ten opzichte van vorige keer:
+>>>>>>> 2f2fb3a4ba169f491920829a6b1047b96348d0e6
 
-    public bool ChangeReservationTime(int reservationId, DateTime newTime)
+public bool ChangeReservationTime(int reservationId, DateTime newTime)
+{
+    if (newTime <= DateTime.Now) return false;
+
+    ReservationModel reservation = _reservationsAccess.GetById(reservationId);
+    if (reservation == null) return false;
+
+    reservation.StartAt = newTime.ToString("yyyy-MM-dd HH:mm:ss");
+    reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+    _reservationsAccess.Update(reservation);
+    return true;
+}
+
+public bool ChangeReservationPersons(int reservationId, int newGuestCount)
+{
+    if (newGuestCount != 2 && newGuestCount != 4 && newGuestCount != 6) return false;
+
+    ReservationModel reservation = _reservationsAccess.GetById(reservationId);
+    if (reservation == null) return false;
+
+    if (reservation.TableCapacity >= newGuestCount)
     {
-        if (newTime <= DateTime.Now)
-        {
-            return false;
-        }
-
-        ReservationModel? reservation = _reservationsAccess.GetById(reservationId);
-        if (reservation == null)
-        {
-            return false;
-        }
-
-        reservation.StartAt = newTime.ToString("yyyy-MM-dd HH:mm:ss");
+        reservation.GuestCount = newGuestCount;
         reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-
-        _reservationsAccess.Update(reservation);
+        _reservationsAccess.UpdateGuestCount(reservation);
         return true;
     }
 
-    public bool ChangeReservationPersons(int reservationId, int newGuestCount)
+    // Zoek een geschikte vrije tafel
+    System.Collections.Generic.List<TableModel> availableTables = _reservationsAccess.GetFreeTables(reservation);
+    if (availableTables.Count == 0) return false;
+
+    // Werk het reservation  bij met de nieuwe tafel en (nieuwe) guest count
+    TableModel newTable = availableTables[0];
+    reservation.TableId = newTable.ID;
+    reservation.GuestCount = newGuestCount;
+    reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+    _reservationsAccess.UpdateReservationTable(reservation);
+    return true;
+}
+
+public bool CancelReservation(int reservationId)
+{
+    ReservationModel reservation = _reservationsAccess.GetById(reservationId);
+    if (reservation == null) return false;
+
+    reservation.Status = "Geannuleerd";
+    reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+    _reservationsAccess.CancelReservation(reservation);
+    return true;
+}
+
+
+    // Methods for guest reservation management (merged from RudReservationsLogic)
+    public List<ReservationModel> GetReservationsByUserIdForGuest(int userId)
     {
-        if (newGuestCount != 2 && newGuestCount != 4 && newGuestCount != 6)
-        {
-            return false;
-        }
-
-        ReservationModel? reservation = _reservationsAccess.GetById(reservationId);
-        if (reservation == null)
-        {
-            return false;
-        }
-
-        // Check if current table can accommodate the new guest count
-        if (reservation.TableCapacity >= newGuestCount)
-        {
-            // Current table is fine, just update guest count
-            return _reservationsAccess.UpdateGuestCount(reservationId, newGuestCount);
-        }
-        else
-        {
-            // Need to find a bigger table
-            var availableTables = _reservationsAccess.GetFreeTablesExcluding(reservation.StartAt, newGuestCount, reservationId);
-            if (!availableTables.Any())
-            {
-                return false; // No suitable table available
-            }
-
-            // Use the UpdateReservationTable method which updates both table and guest count
-            return _reservationsAccess.UpdateReservationTable(reservationId, availableTables.First().ID, newGuestCount);
-        }
+        return _reservationsAccess.GetReservationsByUserIdSimple(userId);
     }
 
-    public bool CancelReservation(int reservationId)
+    public void UpdateReservationForGuest(int id, int guestCount, string startAt)
     {
-        ReservationModel? reservation = _reservationsAccess.GetById(reservationId);
-        if (reservation == null)
-        {
+        if (guestCount <= 0 || string.IsNullOrEmpty(startAt))
+            return;
+
+        _reservationsAccess.UpdateReservationSimple(id, guestCount, startAt);
+    }
+
+    public void DeleteReservationForGuest(int id)
+    {
+        _reservationsAccess.DeleteReservationSimple(id);
+    }
+
+    public bool IsValidReservationDateTime(string input)
+    {
+        DateTime date;
+
+        // check if date/time format is correct
+        if (!DateTime.TryParse(input, out date))
             return false;
-        }
 
-        reservation.Status = "Geannuleerd";
-        reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        int hour = date.Hour;
+        if (hour >= 17)
+            return true;
 
-        _reservationsAccess.Update(reservation);
-        return true;
+        return false;
     }
 
 }
