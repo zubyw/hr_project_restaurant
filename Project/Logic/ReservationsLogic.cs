@@ -81,10 +81,6 @@ public class ReservationsLogic
         return DateTime.TryParseExact(dateString, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out _);
     }
 
-<<<<<<< HEAD
-=======
-    // vanaf hier heb ik het verder aangevuld. Ook hier heb ik de datamodels gebruikt ten opzichte van vorige keer:
->>>>>>> 2f2fb3a4ba169f491920829a6b1047b96348d0e6
 
 public bool ChangeReservationTime(int reservationId, DateTime newTime)
 {
