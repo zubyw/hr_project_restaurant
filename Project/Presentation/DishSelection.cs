@@ -82,6 +82,8 @@ public static class DishSelection
                 
                 if (isSelected)
                 {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
                     Console.Write("  ► ");
                 }
                 else
