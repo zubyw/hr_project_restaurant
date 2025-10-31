@@ -11,9 +11,9 @@ static class UserReservation
     {
         try
         {
-            Console.Clear();
+        Console.Clear();
         Console.WriteLine("\n===Reservations===");
-
+        Console.WriteLine();
         Console.WriteLine("Amount of people: (1-6)");
         string? AmountPeople = Console.ReadLine();
         if (string.IsNullOrEmpty(AmountPeople))
@@ -32,7 +32,9 @@ static class UserReservation
             Start();
             return;
         }
-
+        Console.Clear();
+        Console.WriteLine("\n===Reservations===");
+        Console.WriteLine();
         Console.WriteLine("Date: (YYYY-MM-DD)");
         string? ReservationDate = Console.ReadLine();
         if (string.IsNullOrEmpty(ReservationDate))
@@ -52,24 +54,9 @@ static class UserReservation
             return;
         }
 
-        Console.WriteLine("Arrival Time: (Choose From 17:00 - 17:30 - 18:00 - 18:30 - 19:00 - 19:30)");
-        string? ArrivalTime = Console.ReadLine();
-        if (string.IsNullOrEmpty(ArrivalTime))
-        {
-            Console.WriteLine("All fields are required!");
-            Console.WriteLine("Press any key to try again...");
-            Console.ReadKey();
-            Start();
-            return;
-        }
-        if (!UserMakeReservationLogic.CheckValidDayTime(ArrivalTime))
-        {
-            Console.WriteLine("Given daytime incorrect (17:00 - 17:30 - 18:00 - 18:30 - 19:00 - 19:30)");
-            Console.WriteLine("Press any key to try again...");
-            Console.ReadKey();
-            Start();
-            return;
-        }
+        Console.WriteLine("Select Arrival Time:");
+        string ArrivalTime = _reservationsLogic.SelectArrivalTime();
+        Console.WriteLine($"You selected: {ArrivalTime}");
 
         int DiningTableSize = UserMakeReservationLogic.GetTableSize(AmountPeople);
         TableModel? AvailableTable = UserMakeReservationLogic.GetAvailableTable(ReservationDate, DiningTableSize);

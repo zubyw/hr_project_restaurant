@@ -171,5 +171,52 @@ public bool CancelReservation(int reservationId)
 
         return false;
     }
+    public string SelectArrivalTime()
+    {
+        List<string> timeSlots = new List<string> { "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30" };
+        int selectedIndex = 0;
+        ConsoleKey key = ConsoleKey.NoName;
+
+        while (key != ConsoleKey.Enter)
+        {
+            Console.Clear();
+            Console.WriteLine("\n===Reservations===");
+            Console.WriteLine();
+            Console.WriteLine("Select Arrival Time:");
+
+            for (int i = 0; i < timeSlots.Count; i++)
+            {
+                bool isSelected = i == selectedIndex;
+
+                if (isSelected)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.Write("  ► ");
+                }
+                else
+                {
+                    Console.Write("    ");
+                }
+
+                Console.Write(timeSlots[i]);
+
+                if (isSelected)
+                    Console.ResetColor();
+
+                Console.WriteLine();
+            }
+
+            key = Console.ReadKey(true).Key;
+
+            if (key == ConsoleKey.UpArrow)
+                selectedIndex = (selectedIndex == 0) ? timeSlots.Count - 1 : selectedIndex - 1;
+            else if (key == ConsoleKey.DownArrow)
+                selectedIndex = (selectedIndex + 1) % timeSlots.Count;
+        }
+
+        return timeSlots[selectedIndex];
+    }
+
 
 }
