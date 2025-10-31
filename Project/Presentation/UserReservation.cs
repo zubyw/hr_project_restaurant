@@ -1,4 +1,5 @@
 using System;
+using Project.DataModels;
 
 static class UserReservation
 {
@@ -94,28 +95,73 @@ static class UserReservation
             return;
         }
         
+        // ===== DISH SELECTION STEP =====
+        // Get current theme
+        var dishLogic = new DishLogic();
+        int? currentThemeId = dishLogic.GetCurrentThemeId();
+        
+        List<DishModel> selectedDishes = new List<DishModel>();
+        
+        if (currentThemeId.HasValue)
+        {
+            // Show dish selection menu
+            selectedDishes = DishSelection.SelectDishesForReservation(intAmountPeople, currentThemeId.Value);
+            
+            if (selectedDishes.Count == 0)
+            {
+                // User cancelled or something went wrong
+                ColorConsole.WriteWarning("Dish selection cancelled. Returning to main menu...");
+                Thread.Sleep(1500);
+                Menu.ShowMainMenu();
+                return;
+            }
+        }
+        else
+        {
+            ColorConsole.WriteWarning("No theme available for the current month. Proceeding without dish selection...");
+            Thread.Sleep(2000);
+        }
+        
+        // ===== CREATE RESERVATION =====
         int userid = _usersLogic.GetIdByEmail(Menu.CurrentUser.EmailAddress);
 
         if (_reservationsLogic.CreateReservation(userid, AvailableTable.ID, intAmountPeople, CompleteStartDate))
         {
-            Console.WriteLine("Reservation successful. Redirecting to main menu...");
-
-            // Small delay to show the Reservation succesful message
-            Thread.Sleep(1500);
-
+            // Get the reservation ID
+            var userReservations = _reservationsLogic.GetReservationsByUserId(userid);
+            var newReservation = userReservations.OrderByDescending(r => r.ID).FirstOrDefault();
+            
+            // Save selected dishes to the reservation
+            if (newReservation != null && selectedDishes.Count > 0)
+            {
+                try
+                {
+                    dishLogic.ReserveDishes(selectedDishes, newReservation);
+                }
+                catch (Exception ex)
+                {
+                    ColorConsole.WriteError($"Warning: Could not save dish selections: {ex.Message}");
+                    Thread.Sleep(2000);
+                }
+            }
+            
+            // Success message already shown in DishSelection, just redirect
+            Thread.Sleep(500);
             Menu.ShowMainMenu();
+            return;
         }
         else
         {
-            Console.WriteLine("An unexpected error occurred");
+            Console.WriteLine("An unexpected error occurred creating the reservation");
             Console.WriteLine("Press any key to try again...");
             Console.ReadKey();
             Menu.ShowMainMenu();
+            return;
         }
     }
-    catch
+    catch (Exception ex)
     {
-        Console.WriteLine("An unexpected error occurred");
+        Console.WriteLine($"An unexpected error occurred: {ex.Message}");
         Console.WriteLine("Press any key to try again...");
         Console.ReadKey();
         Menu.ShowMainMenu();
