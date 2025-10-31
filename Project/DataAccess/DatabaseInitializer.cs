@@ -83,6 +83,7 @@ public static class DatabaseInitializer
                 GuestCount INTEGER NOT NULL,
                 StartAt TEXT NOT NULL,
                 Status TEXT NOT NULL,
+                CanModifyUntil TEXT,
                 CancelledByUserId INTEGER,
                 CreatedAt TEXT NOT NULL,
                 UpdatedAt TEXT NOT NULL,
@@ -91,6 +92,16 @@ public static class DatabaseInitializer
                 FOREIGN KEY (CancelledByUserId) REFERENCES Users(ID)
             )";
         connection.Execute(createReservationsTable);
+
+        // Add CanModifyUntil column if it doesn't exist (for existing databases)
+        try
+        {
+            connection.Execute("ALTER TABLE Reservations ADD COLUMN CanModifyUntil TEXT");
+        }
+        catch
+        {
+            // Column already exists, ignore error
+        }
 
         // Create junction tables
         var createDishesThemesTable = @"
