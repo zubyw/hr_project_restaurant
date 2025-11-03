@@ -10,33 +10,54 @@ static class Menu
     //You could edit this to show different menus depending on the user's role
     static public void Start()
     {
-        Console.Clear();
-        Console.WriteLine("\n=== Kevin's Fine Dining - Authentication ===");
-        Console.WriteLine("1. Login");
-        Console.WriteLine("2. Register");
-        Console.WriteLine("3. Exit");
-        Console.Write("Please select an option: ");
+        string[] options = new string[] { "Login", "Register", "Exit" };
+        int selectedIndex = 0;
 
-        string? input = Console.ReadLine();
-        if (input == "1")
+        ConsoleKey key;
+        do
         {
-            UserLogin.Start();
-        }
-        else if (input == "2")
-        {
-            UserRegistration.Start();
-        }
-        else if (input == "3")
-        {
-            Environment.Exit(0);
-        }
-        else
-        {
-            Console.WriteLine("Invalid input. Please try again.");
-            Console.WriteLine("Press any key to continue...");
-            Console.ReadKey();
-            Start();
-        }
+            Console.Clear();
+            Console.WriteLine("\n=== Kevin's Fine Dining - Authentication ===");
+            
+            // Display options
+            for (int i = 0; i < options.Length; i++)
+            {
+                if (i == selectedIndex)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                Console.WriteLine($"  {options[i]}");
+                Console.ResetColor();
+            }
+
+            key = Console.ReadKey(true).Key;
+
+            // Handle arrow keys
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
+                    break;
+                case ConsoleKey.DownArrow:
+                    selectedIndex = (selectedIndex + 1) % options.Length;
+                    break;
+                case ConsoleKey.Enter:
+                    switch (selectedIndex)
+                    {
+                        case 0:
+                            UserLogin.Start();
+                            break;
+                        case 1:
+                            UserRegistration.Start();
+                            break;
+                        case 2:
+                            Environment.Exit(0);
+                            break;
+                    }
+                    break;
+            }
+        } while (key != ConsoleKey.Enter);
     }
 
     // This menu shows after successful login
@@ -60,70 +81,119 @@ static class Menu
     // Admin menu with full access
     static public void ShowAdminMenu()
     {
-        Console.WriteLine("\n=== Kevin's Fine Dining - Admin Panel ===");
-        Console.WriteLine("1. View Reservations");
-        Console.WriteLine("2. Logout");
-        Console.Write("Please select an option: ");
+        string[] options = new string[] { "View Reservations", "Logout" };
+        int selectedIndex = 0;
 
-        string? input = Console.ReadLine();
-        switch (input)
+        ConsoleKey key;
+        do
         {
-            case "1":
-                ReservationManagement.Start();
-                break;
-            case "2":
-                Console.WriteLine("Logging out...");
-                CurrentUser = null;
-                Start(); // Go back to login/register menu
-                break;
-            default:
-                Console.WriteLine("Invalid input. Please try again.");
-                Console.WriteLine("Press any key to continue...");
-                Console.ReadKey();
-                ShowMainMenu();
-                break;
-        }
+            Console.Clear();
+            Console.WriteLine("\n=== Kevin's Fine Dining - Admin Panel ===");
+            
+            // Display options
+            for (int i = 0; i < options.Length; i++)
+            {
+                if (i == selectedIndex)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                Console.WriteLine($"  {options[i]}");
+                Console.ResetColor();
+            }
+
+            key = Console.ReadKey(true).Key;
+
+            // Handle arrow keys
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
+                    break;
+                case ConsoleKey.DownArrow:
+                    selectedIndex = (selectedIndex + 1) % options.Length;
+                    break;
+                case ConsoleKey.Enter:
+                    switch (selectedIndex)
+                    {
+                        case 0:
+                            ReservationManagement.Start();
+                            break;
+                        case 1:
+                            Console.WriteLine("Logging out...");
+                            CurrentUser = null;
+                            Start(); // Go back to login/register menu
+                            break;
+                    }
+                    break;
+            }
+        } while (key != ConsoleKey.Enter);
     }
 
     // Customer menu with limited access
     static public void ShowCustomerMenu()
     {
-        Console.WriteLine($"\n=== Welcome {CurrentUser?.FirstName} {CurrentUser?.LastName} ===");
-        Console.WriteLine("1. Make a Reservation");
-        Console.WriteLine("2. View My Reservations");
-        Console.WriteLine("3. Update Profile");
-        Console.WriteLine("4. Logout");
-        Console.Write("Please select an option: ");
+        string[] options = new string[] { "Make a Reservation", "View My Reservations", "Update Profile", "Logout" };
+        int selectedIndex = 0;
 
-        string? input = Console.ReadLine();
-        switch (input)
+        ConsoleKey key;
+        do
         {
-            case "1":
-                UserReservation.Start();
-                break;
-            case "2":
-                RudReservation rud = new RudReservation();
-                rud.Start(CurrentUser.ID);
-                ShowMainMenu();
-                break;
-            case "3":
-                Console.WriteLine("Update profile feature coming soon...");
-                Console.WriteLine("Press any key to continue...");
-                Console.ReadKey();
-                ShowMainMenu();
-                break;
-            case "4":
-                Console.WriteLine("Logging out...");
-                CurrentUser = null;
-                Start(); // Go back to login/register menu
-                break;
-            default:
-                Console.WriteLine("Invalid input. Please try again.");
-                Console.WriteLine("Press any key to continue...");
-                Console.ReadKey();
-                ShowMainMenu();
-                break;
-        }
+            Console.Clear();
+            Console.WriteLine($"\n=== Welcome {CurrentUser?.FirstName} {CurrentUser?.LastName} ===");
+            
+            // Display options
+            for (int i = 0; i < options.Length; i++)
+            {
+                if (i == selectedIndex)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                Console.WriteLine($"  {options[i]}");
+                Console.ResetColor();
+            }
+
+            key = Console.ReadKey(true).Key;
+
+            // Handle arrow keys
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
+                    break;
+                case ConsoleKey.DownArrow:
+                    selectedIndex = (selectedIndex + 1) % options.Length;
+                    break;
+                case ConsoleKey.Enter:
+                    switch (selectedIndex)
+                    {
+                        case 0:
+                            UserReservation.Start();
+                            break;
+                        case 1:
+                            if (CurrentUser != null)
+                            {
+                                RudReservation rud = new RudReservation();
+                                rud.Start(CurrentUser.ID);
+                                ShowMainMenu();
+                            }
+                            break;
+                        case 2:
+                            Console.WriteLine("Update profile feature coming soon...");
+                            Console.WriteLine("Press any key to continue...");
+                            Console.ReadKey();
+                            ShowMainMenu();
+                            break;
+                        case 3:
+                            Console.WriteLine("Logging out...");
+                            CurrentUser = null;
+                            Start(); // Go back to login/register menu
+                            break;
+                    }
+                    break;
+            }
+        } while (key != ConsoleKey.Enter);
     }
 
     // Helper method to check if current user is admin
