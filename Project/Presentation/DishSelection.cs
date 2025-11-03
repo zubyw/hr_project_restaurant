@@ -99,17 +99,12 @@ public static class DishSelection
                 {
                     Console.BackgroundColor = ConsoleColor.DarkCyan;
                     Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write("  ► ");
-                }
-                else
-                {
-                    Console.Write("    ");
                 }
                 if (i < dishes.Count)
                 {
                     var dish = dishes[i];
                     string dishLine = $"{i + 1}. {dish.Name.PadRight(30)} - €{dish.Price:F2}";
-                    Console.Write(dishLine);
+                    Console.WriteLine($"  {dishLine}");
 
                     if (isSelected)
                     {
@@ -128,7 +123,7 @@ public static class DishSelection
                 else
                 {
                     string noneOption = "5. No Dish";
-                    Console.Write(noneOption);
+                    Console.WriteLine($"  {noneOption}");
 
                     if (isSelected)
                         Console.ResetColor();

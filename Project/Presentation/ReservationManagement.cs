@@ -8,32 +8,54 @@ static class ReservationManagement
 
     public static void Start()
     {
-        Console.Clear();
-        Console.WriteLine("\n=== Reservation Management (Admin) ===");
-        Console.WriteLine("1. View All Reservations");
-        Console.WriteLine("2. View Reservations by Date");
-        Console.WriteLine("3. Back to Main Menu");
-        Console.Write("Please select an option: ");
+        string[] options = new string[] { "View All Reservations", "View Reservations by Date", "Back to Main Menu" };
+        int selectedIndex = 0;
 
-        string? input = Console.ReadLine();
-        switch (input)
+        ConsoleKey key;
+        do
         {
-            case "1":
-                ViewAllReservationsWithOptions();
-                break;
-            case "2":
-                ViewReservationsByDate();
-                break;
-            case "3":
-                Menu.ShowMainMenu();
-                break;
-            default:
-                Console.WriteLine("Invalid input. Please try again.");
-                Console.WriteLine("Press any key to continue...");
-                Console.ReadKey();
-                Start();
-                break;
-        }
+            Console.Clear();
+            Console.WriteLine("\n=== Reservation Management (Admin) ===");
+            
+            // Display options
+            for (int i = 0; i < options.Length; i++)
+            {
+                if (i == selectedIndex)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                Console.WriteLine($"  {options[i]}");
+                Console.ResetColor();
+            }
+
+            key = Console.ReadKey(true).Key;
+
+            // Handle arrow keys
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
+                    break;
+                case ConsoleKey.DownArrow:
+                    selectedIndex = (selectedIndex + 1) % options.Length;
+                    break;
+                case ConsoleKey.Enter:
+                    switch (selectedIndex)
+                    {
+                        case 0:
+                            ViewAllReservationsWithOptions();
+                            break;
+                        case 1:
+                            ViewReservationsByDate();
+                            break;
+                        case 2:
+                            Menu.ShowMainMenu();
+                            break;
+                    }
+                    break;
+            }
+        } while (key != ConsoleKey.Enter);
     }
 
     private static void ViewAllReservationsWithOptions()
@@ -57,32 +79,63 @@ static class ReservationManagement
             DisplayReservationsTable(reservations);
 
             Console.WriteLine("\nOptions:");
-            Console.WriteLine("1. Change reservation time");
-            Console.WriteLine("2. Change number of guests");
-            Console.WriteLine("3. Cancel reservation");
-            Console.WriteLine("4. Back to main menu");
-            Console.Write("Select an option: ");
             
-            string? choice = Console.ReadLine();
-            
-            switch (choice)
+            string[] options = new string[] { "Change reservation time", "Change number of guests", "Cancel reservation", "Back to main menu" };
+            int selectedIndex = 0;
+
+            ConsoleKey key;
+            bool choosingOption = true;
+            while (choosingOption)
             {
-                case "1":
-                    ChangeReservationTime(reservations);
-                    continue; // Show updated list after attempting a change
-                case "2":
-                    ChangeGuestCount(reservations);
-                    continue; // Show updated list after attempting a change
-                case "3":
-                    CancelReservation(reservations);
-                    continue; // Show updated list after attempting a change
-                case "4":
-                    Start();
-                    return;
-                default:
-                    Console.WriteLine("Invalid choice. Press any key to continue...");
-                    Console.ReadKey();
-                    continue;
+                // Display options
+                for (int i = 0; i < options.Length; i++)
+                {
+                    if (i == selectedIndex)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkCyan;
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+                    Console.WriteLine($"  {options[i]}");
+                    Console.ResetColor();
+                }
+
+                key = Console.ReadKey(true).Key;
+
+                switch (key)
+                {
+                    case ConsoleKey.UpArrow:
+                        selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
+                        Console.Clear();
+                        Console.WriteLine("\n=== All Reservations ===");
+                        DisplayReservationsTable(reservations);
+                        Console.WriteLine("\nOptions:");
+                        break;
+                    case ConsoleKey.DownArrow:
+                        selectedIndex = (selectedIndex + 1) % options.Length;
+                        Console.Clear();
+                        Console.WriteLine("\n=== All Reservations ===");
+                        DisplayReservationsTable(reservations);
+                        Console.WriteLine("\nOptions:");
+                        break;
+                    case ConsoleKey.Enter:
+                        choosingOption = false;
+                        switch (selectedIndex)
+                        {
+                            case 0:
+                                ChangeReservationTime(reservations);
+                                break;
+                            case 1:
+                                ChangeGuestCount(reservations);
+                                break;
+                            case 2:
+                                CancelReservation(reservations);
+                                break;
+                            case 3:
+                                Start();
+                                return;
+                        }
+                        break;
+                }
             }
         }
     }
@@ -113,32 +166,71 @@ static class ReservationManagement
             dateToSearch = input;
         }
 
-        Console.WriteLine($"\nReservations for {dateToSearch}:");
-        var reservations = _reservationsLogic.GetReservationsByDate(dateToSearch);
-        
-        if (reservations.Count == 0)
-        {
-            Console.WriteLine("No reservations found for this date.");
-        }
-        else
-        {
-            DisplayReservationsTable(reservations);
-            
-            // Display summary
-            var totalGuests = reservations.Sum(r => r.GuestCount);
-            var confirmedReservations = reservations.Count(r => r.Status.Equals("Confirmed", StringComparison.OrdinalIgnoreCase));
-            var pendingReservations = reservations.Count(r => r.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase));
-            
-            Console.WriteLine($"\n--- Summary for {dateToSearch} ---");
-            Console.WriteLine($"Total Reservations: {reservations.Count}");
-            Console.WriteLine($"Confirmed: {confirmedReservations}");
-            Console.WriteLine($"Pending: {pendingReservations}");
-            Console.WriteLine($"Total Guests: {totalGuests}");
-        }
+        string[] options = new string[] { "View Another Date", "Back to Main Menu" };
+        int selectedIndex = 0;
 
-        Console.WriteLine("\nPress any key to continue...");
-        Console.ReadKey();
-        Start();
+        do
+        {
+            Console.Clear();
+            Console.WriteLine($"\n=== Reservations for {dateToSearch} ===");
+            var reservations = _reservationsLogic.GetReservationsByDate(dateToSearch);
+            
+            if (reservations.Count == 0)
+            {
+                Console.WriteLine("No reservations found for this date.");
+            }
+            else
+            {
+                DisplayReservationsTable(reservations);
+                
+                // Display summary
+                var totalGuests = reservations.Sum(r => r.GuestCount);
+                var confirmedReservations = reservations.Count(r => r.Status.Equals("Confirmed", StringComparison.OrdinalIgnoreCase));
+                var pendingReservations = reservations.Count(r => r.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase));
+                
+                Console.WriteLine($"\n--- Summary for {dateToSearch} ---");
+                Console.WriteLine($"Total Reservations: {reservations.Count}");
+                Console.WriteLine($"Confirmed: {confirmedReservations}");
+                Console.WriteLine($"Pending: {pendingReservations}");
+                Console.WriteLine($"Total Guests: {totalGuests}");
+            }
+
+            Console.WriteLine("\nOptions:");
+            // Display options
+            for (int i = 0; i < options.Length; i++)
+            {
+                if (i == selectedIndex)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                Console.WriteLine($"  {options[i]}");
+                Console.ResetColor();
+            }
+
+            var key = Console.ReadKey(true).Key;
+
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
+                    break;
+                case ConsoleKey.DownArrow:
+                    selectedIndex = (selectedIndex + 1) % options.Length;
+                    break;
+                case ConsoleKey.Enter:
+                    switch (selectedIndex)
+                    {
+                        case 0:
+                            ViewReservationsByDate();
+                            return;
+                        case 1:
+                            Start();
+                            return;
+                    }
+                    break;
+            }
+        } while (true);
     }
 
     private static void DisplayReservationsTable(List<ReservationModel> reservations, bool showHeader = true)
@@ -281,45 +373,62 @@ static class ReservationManagement
 
     private static void CancelReservation(List<ReservationModel> reservations)
     {
-        Console.Write("\nEnter reservation ID to cancel: ");
-        if (!int.TryParse(Console.ReadLine(), out int reservationId))
+        while (true)
         {
-            Console.WriteLine("Invalid ID. Press any key to continue...");
-            Console.ReadKey();
-            return;
-        }
+            Console.Clear();
+            Console.WriteLine("\n=== All Reservations ===");
+            DisplayReservationsTable(reservations);
+            
+            Console.Write("\nEnter reservation ID to cancel (or press Enter to go back): ");
+            string? input = Console.ReadLine();
+            
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return;
+            }
 
-        var reservation = reservations.FirstOrDefault(r => r.ID == reservationId);
-        if (reservation == null)
-        {
-            Console.WriteLine("Reservation not found. Press any key to continue...");
-            Console.ReadKey();
-            return;
-        }
+            if (!int.TryParse(input, out int reservationId))
+            {
+                Console.WriteLine("Invalid ID. Press any key to continue...");
+                Console.ReadKey();
+                continue;
+            }
 
-        Console.WriteLine($"\nReservation to cancel: {reservation.GuestFirstName} {reservation.GuestLastName}");
-        Console.WriteLine($"Date/time: {DateTime.Parse(reservation.StartAt):yyyy-MM-dd HH:mm}");
-        Console.Write("Are you sure you want to cancel this reservation? (y/n): ");
-        
-        if (Console.ReadLine()?.ToLower() != "y")
-        {
-            Console.WriteLine("Cancellation aborted.");
+            var reservation = reservations.FirstOrDefault(r => r.ID == reservationId);
+            if (reservation == null)
+            {
+                Console.WriteLine("Reservation not found. Press any key to continue...");
+                Console.ReadKey();
+                continue;
+            }
+
+            Console.WriteLine($"\nReservation to cancel: {reservation.GuestFirstName} {reservation.GuestLastName}");
+            Console.WriteLine($"Date/time: {DateTime.Parse(reservation.StartAt):yyyy-MM-dd HH:mm}");
+            Console.Write("Are you sure you want to cancel this reservation? (y/n): ");
+            
+            if (Console.ReadLine()?.ToLower() != "y")
+            {
+                Console.WriteLine("Cancellation aborted.");
+                Console.WriteLine("Press any key to continue...");
+                Console.ReadKey();
+                return;
+            }
+
+            bool success = _reservationsLogic.CancelReservation(reservationId);
+            if (success)
+            {
+                Console.WriteLine("✓ Reservation cancelled successfully!");
+                // Refresh the reservations list
+                reservations = _reservationsLogic.GetAllReservations();
+            }
+            else
+            {
+                Console.WriteLine("✗ Failed to cancel reservation.");
+            }
+            
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
             return;
         }
-
-        bool success = _reservationsLogic.CancelReservation(reservationId);
-        if (success)
-        {
-            Console.WriteLine("✓ Reservation cancelled successfully!");
-        }
-        else
-        {
-            Console.WriteLine("✗ Failed to cancel reservation.");
-        }
-        
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey();
     }
 }
