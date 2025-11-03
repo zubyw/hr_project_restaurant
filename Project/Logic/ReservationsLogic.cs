@@ -32,25 +32,27 @@ public class ReservationsLogic
         return CheckTime(time);
     }
 
-    public bool CreateReservation(int userId, int tableId, int guestCount, string startAt, string status = "Pending")
+    private bool IsOwner(int reservationId, int userId)
     {
+        ReservationModel res = _reservationsAccess.GetById(reservationId);
+        if (res == null) return false;
+        return res.UserId == userId;
+    }
+
+    public bool UpdateReservationForGuest(int id, int userId, int guestCount, string startAt)
+    {
+        if (!IsOwner(id, userId)) return false;
         if (!CheckGuestCount(guestCount)) return false;
         if (!CheckDateTime(startAt)) return false;
 
-        ReservationModel r = new ReservationModel
-        {
-            UserId = userId,
-            TableId = tableId,
-            GuestCount = guestCount,
-            StartAt = startAt,
-            Status = status,
-            CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-            UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
-        };
-
-        _reservationsAccess.Write(r);
+        _reservationsAccess.UpdateReservationSimple(id, guestCount, startAt);
         return true;
     }
 
-    // overige CRUD methods ongewijzigd...
+    public bool DeleteReservationForGuest(int id, int userId)
+    {
+        if (!IsOwner(id, userId)) return false;
+        _reservationsAccess.DeleteReservationSimple(id);
+        return true;
+    }
 }
