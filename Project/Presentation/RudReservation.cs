@@ -6,19 +6,20 @@ namespace Project.Presentation
 {
     public class RudReservation
     {   
+        // Logic layer instance
         ReservationsLogic logic = new ReservationsLogic();
 
-        // In this method it starts the reservation menu
+        // Starts the reservation menu
         public void Start(int userId) 
         {
-            Console.Clear(); // Clears the console before showing reservationMenu 
+            Console.Clear();
             Console.WriteLine("=== My Reservations ===");
             Console.WriteLine();
 
-            // All reservations will be loaded that belongs to the loggin in user
+            // Load all reservations for the logged-in user
             List<ReservationModel> reservations = logic.GetReservationsByUserIdForGuest(userId);
 
-            // If no reservations are found, return to previous menu
+            // If none, go back
             if (reservations.Count == 0)
             {
                 Console.WriteLine("No reservations found.");
@@ -27,17 +28,25 @@ namespace Project.Presentation
                 return;
             }
 
-            // Display all reservations with the specific id
+            // Table layout (guest view)
+            Console.WriteLine();
+            Console.WriteLine("┌──────┬────────┬────────┬─────────────────────┬───────────┐");
+            Console.WriteLine("│  ID  │ Table  │ Guests │      Date/Time      │  Status   │");
+            Console.WriteLine("├──────┼────────┼────────┼─────────────────────┼───────────┤");
+
             foreach (ReservationModel r in reservations)
             {
-                Console.WriteLine($"ID: {r.ID} | Table: {r.TableId} | Guests: {r.GuestCount} | Date: {r.StartAt} | Status: {r.Status}");
+                string dateTime = DateTime.Parse(r.StartAt).ToString("MM-dd-yyyy HH:mm");
+                Console.WriteLine($"│ {r.ID,4} │ {r.TableId,6} │ {r.GuestCount,6} │ {dateTime,-19} │ {r.Status,-9} │");
             }
 
+            Console.WriteLine("└──────┴────────┴────────┴─────────────────────┴───────────┘");
             Console.WriteLine();
+
+            // Choose reservation to manage
             Console.Write("Enter reservation ID to manage: ");
             string? input = Console.ReadLine();
 
-            // UserInput to update or delete
             if (int.TryParse(input, out int selectedId))
             {
                 Console.WriteLine("1. Update reservation");
@@ -46,29 +55,25 @@ namespace Project.Presentation
                 Console.Write("Choose: ");
                 string? choice = Console.ReadLine();
 
-                if (choice == "1")
-                {
-                    Update(selectedId);
-                }
-                else if (choice == "2")
-                {
-                    Delete(selectedId);
-                }
-            }            
+                if (choice == "1") Update(selectedId);
+                else if (choice == "2") Delete(selectedId);
+            }
         }
 
-        // Method that update the reservation
+        // Update a reservation
         private void Update(int id)
         {
             Console.Clear();
             Console.WriteLine("=== Update Reservation ===");
+
+            // New guest count
             Console.Write("New guest count: ");
             int guests = Convert.ToInt32(Console.ReadLine());
 
+            // New date/time
             Console.Write("New date/time (YYYY-MM-DD HH:MM): ");
             string? input = Console.ReadLine();
 
-            // if input is not empty
             if (string.IsNullOrEmpty(input))
             {
                 Console.WriteLine("Invalid input. Try again.");
@@ -76,9 +81,8 @@ namespace Project.Presentation
                 return;
             }
 
-            // logic layer checks if date and is valid
+            // Validate date/time
             bool isValid = logic.IsValidReservationDateTime(input);
-
             if (!isValid)
             {
                 Console.WriteLine("Invalid date or time.");
@@ -86,20 +90,20 @@ namespace Project.Presentation
                 return;
             }
 
+            // Apply update
             logic.UpdateReservationForGuest(id, guests, input);
             Console.WriteLine("Reservation updated!");
             Console.ReadKey();
         }
 
-        // Method that delete the reservation
+        // Cancel a reservation
         private void Delete(int id)
         {
             Console.Clear();
             Console.WriteLine("Cancel this reservation? (y/n)");
             string? answer = Console.ReadLine();
 
-            // If answer is yes, logic will delete the reservation
-            if (answer?.ToLower() == "y")
+            if (answer != null && answer.ToLower() == "y")
             {
                 logic.DeleteReservationForGuest(id);
                 Console.WriteLine("Reservation cancelled.");
