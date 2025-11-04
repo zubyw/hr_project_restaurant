@@ -1,9 +1,25 @@
 using System;
+using Project.DataModels;
 
 static class ReservationUpdateMenu
 {
     private static ReservationsLogic _reservationsLogic = new ReservationsLogic();
 
+    // ensure reservation exists and belongs to current user
+    private static bool ReservationExistsForCurrentUser(int reservationId)
+    {
+        ReservationModel? r = _reservationsLogic.GetReservationById(reservationId);
+        if (r == null) return false;
+
+        if (ReservationsLogic.CurrentUserId.HasValue &&
+            r.UserId != ReservationsLogic.CurrentUserId.Value)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    // Main update menu
     public static void Start()
     {
         Console.Clear();
@@ -36,23 +52,52 @@ static class ReservationUpdateMenu
         }
     }
 
+    // Change time → date then arrow-time (no typing HH:mm)
     private static void ChangeReservationTime()
     {
         Console.Clear();
         Console.Write("Enter reservation ID: ");
-        if (!int.TryParse(Console.ReadLine(), out int reservationId))
+        int reservationId;
+        if (!int.TryParse(Console.ReadLine(), out reservationId))
         {
             Console.WriteLine("Invalid ID. Press any key to return...");
             Console.ReadKey();
             return;
         }
 
-        Console.Write("Enter new date/time (YYYY-MM-DD HH:mm): ");
-        string? input = Console.ReadLine();
-
-        if (!DateTime.TryParseExact(input, "yyyy-MM-dd HH:mm", null, System.Globalization.DateTimeStyles.None, out DateTime newTime))
+        if (!ReservationExistsForCurrentUser(reservationId))
         {
-            Console.WriteLine("Invalid date format. Press any key to return...");
+            Console.WriteLine("Reservation not found for this user.");
+            Console.ReadKey();
+            return;
+        }
+
+        Console.Write("Enter date (YYYY-MM-DD): ");
+        string? dateIn = Console.ReadLine();
+        DateTime dateOnly;
+        if (string.IsNullOrEmpty(dateIn) ||
+            !DateTime.TryParseExact(dateIn, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out dateOnly))
+        {
+            Console.WriteLine("Invalid date. Press any key to return...");
+            Console.ReadKey();
+            return;
+        }
+
+        Console.WriteLine("Select Arrival Time:");
+        string selectedTime = SelectArrivalTimeMenu(); // "HH:mm"
+
+        string combined = $"{dateOnly:yyyy-MM-dd} {selectedTime}";
+        DateTime newTime;
+        if (!DateTime.TryParseExact(combined, "yyyy-MM-dd HH:mm", null, System.Globalization.DateTimeStyles.None, out newTime))
+        {
+            Console.WriteLine("Invalid date/time. Press any key to return...");
+            Console.ReadKey();
+            return;
+        }
+
+        if (!_reservationsLogic.IsValidReservationDateTime(combined))
+        {
+            Console.WriteLine("Invalid time (must be after 17:00). Press any key to return...");
             Console.ReadKey();
             return;
         }
@@ -63,21 +108,31 @@ static class ReservationUpdateMenu
         Console.ReadKey();
     }
 
+    // Change guests → enforce 1–6
     private static void ChangeGuestCount()
     {
         Console.Clear();
         Console.Write("Enter reservation ID: ");
-        if (!int.TryParse(Console.ReadLine(), out int reservationId))
+        int reservationId;
+        if (!int.TryParse(Console.ReadLine(), out reservationId))
         {
             Console.WriteLine("Invalid ID. Press any key to return...");
             Console.ReadKey();
             return;
         }
 
-        Console.Write("Enter new number of guests (2, 4, or 6): ");
-        if (!int.TryParse(Console.ReadLine(), out int newCount))
+        if (!ReservationExistsForCurrentUser(reservationId))
         {
-            Console.WriteLine("Invalid number. Press any key to return...");
+            Console.WriteLine("Reservation not found for this user.");
+            Console.ReadKey();
+            return;
+        }
+
+        Console.Write("Enter new number of guests (1–6): ");
+        int newCount;
+        if (!int.TryParse(Console.ReadLine(), out newCount) || newCount < 1 || newCount > 6)
+        {
+            Console.WriteLine("Guest count must be between 1 and 6. Press any key to return...");
             Console.ReadKey();
             return;
         }
@@ -88,13 +143,22 @@ static class ReservationUpdateMenu
         Console.ReadKey();
     }
 
+    // Cancel reservation (only own)
     private static void CancelReservation()
     {
         Console.Clear();
         Console.Write("Enter reservation ID: ");
-        if (!int.TryParse(Console.ReadLine(), out int reservationId))
+        int reservationId;
+        if (!int.TryParse(Console.ReadLine(), out reservationId))
         {
             Console.WriteLine("Invalid ID. Press any key to return...");
+            Console.ReadKey();
+            return;
+        }
+
+        if (!ReservationExistsForCurrentUser(reservationId))
+        {
+            Console.WriteLine("Reservation not found for this user.");
             Console.ReadKey();
             return;
         }
@@ -103,5 +167,57 @@ static class ReservationUpdateMenu
         Console.WriteLine(success ? "Reservation cancelled." : "Failed to cancel reservation.");
         Console.WriteLine("Press any key to return...");
         Console.ReadKey();
+    }
+
+    // Arrow-key time slot menu (same look as create flow)
+    private static string SelectArrivalTimeMenu()
+    {
+        string[] timeSlots = new string[]
+        {
+            "17:00","17:30","18:00","18:30",
+            "19:00","19:30","20:00","20:30"
+        };
+
+        int selectedIndex = 0;
+        ConsoleKey key = ConsoleKey.NoName;
+
+        while (key != ConsoleKey.Enter)
+        {
+            Console.Clear();
+            Console.WriteLine("=== Reservations ===");
+            Console.WriteLine("Select arrival time:");
+            Console.WriteLine();
+
+            for (int i = 0; i < timeSlots.Length; i++)
+            {
+                if (i == selectedIndex)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.Write("> ");
+                    Console.WriteLine(timeSlots[i]);
+                    Console.ResetColor();
+                }
+                else
+                {
+                    Console.Write("  ");
+                    Console.WriteLine(timeSlots[i]);
+                }
+            }
+
+            key = Console.ReadKey(true).Key;
+
+            if (key == ConsoleKey.UpArrow)
+            {
+                if (selectedIndex == 0) selectedIndex = timeSlots.Length - 1;
+                else selectedIndex = selectedIndex - 1;
+            }
+            else if (key == ConsoleKey.DownArrow)
+            {
+                selectedIndex = (selectedIndex + 1) % timeSlots.Length;
+            }
+        }
+
+        return timeSlots[selectedIndex];
     }
 }
