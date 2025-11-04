@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization; // <-- toegevoegd
 using Project.DataModels;
 
 namespace Project.Presentation
@@ -124,10 +125,20 @@ namespace Project.Presentation
 
             DateTime dateOnly;
             if (string.IsNullOrEmpty(dateIn) ||
-                !DateTime.TryParseExact(dateIn, "yyyy-MM-dd", null,
-                    System.Globalization.DateTimeStyles.None, out dateOnly))
+                !DateTime.TryParseExact(dateIn, "yyyy-MM-dd", CultureInfo.InvariantCulture,
+                    DateTimeStyles.None, out dateOnly))
             {
                 Console.WriteLine("Given date format incorrect (YYYY-MM-DD)");
+                Console.WriteLine("Press any key to try again...");
+                Console.ReadKey();
+                Start(userId);
+                return;
+            }
+
+            // ⛔ Verleden datum blokkeren
+            if (dateOnly.Date < DateTime.Today)
+            {
+                Console.WriteLine("You cannot select a date in the past.");
                 Console.WriteLine("Press any key to try again...");
                 Console.ReadKey();
                 Start(userId);
@@ -138,9 +149,31 @@ namespace Project.Presentation
             Console.WriteLine("Select Arrival Time:");
             string selectedTime = logic.SelectArrivalTime(); // returns "HH:mm"
 
-            // Combine to "yyyy-MM-dd HH:mm" (no seconds)
-            string combined = $"{dateOnly:yyyy-MM-dd} {selectedTime}";
+            // Parse "HH:mm" naar TimeSpan
+            if (!TimeSpan.TryParseExact(selectedTime, "hh\\:mm", CultureInfo.InvariantCulture, out TimeSpan timeOfDay))
+            {
+                Console.WriteLine("Invalid time selected.");
+                Console.WriteLine("Press any key to try again...");
+                Console.ReadKey();
+                Start(userId);
+                return;
+            }
 
+            // Volledige starttijd
+            DateTime startAt = dateOnly.Date + timeOfDay;
+
+            // ⛔ Vandaag + tijd al voorbij blokkeren
+            if (startAt < DateTime.Now)
+            {
+                Console.WriteLine("You cannot select a time in the past.");
+                Console.WriteLine("Press any key to try again...");
+                Console.ReadKey();
+                Start(userId);
+                return;
+            }
+
+            // Combine to "yyyy-MM-dd HH:mm" (no seconds) en run je bestaande business rules (≥ 17:00, etc.)
+            string combined = startAt.ToString("yyyy-MM-dd HH:mm");
             if (!logic.IsValidReservationDateTime(combined))
             {
                 Console.WriteLine("Invalid date or time (must be >= 17:00).");
