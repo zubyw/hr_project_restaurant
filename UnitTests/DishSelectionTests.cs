@@ -114,7 +114,7 @@ namespace UnitTests
 
 
             // assert
-            Assert.AreEqual(uitkomsten.Count(), 3);
+            Assert.AreEqual(uitkomsten.Count(), 2);
             List<DishModel> dishuitkomsten = _dishAccess.GetAllDishesByReservation(insertedReservation);
             Assert.AreEqual(dishuitkomsten[0].ID, recentDishes[0].ID);
             Assert.AreEqual(dishuitkomsten[1].ID, recentDishes[1].ID);

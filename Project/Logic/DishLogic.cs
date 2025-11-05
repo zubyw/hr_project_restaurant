@@ -18,8 +18,11 @@ namespace Project.Logic
             List<int> returnedlist = [];
             foreach (DishModel dish in reserveddishes)
             {
-                int x = _dishaccess.ReservedDishes(dish, reservation);
-                returnedlist.Add(x);
+                if (dish is not null)
+                {
+                    int x = _dishaccess.ReservedDishes(dish, reservation);
+                    returnedlist.Add(x);
+                }
             }
             return returnedlist;
         }
