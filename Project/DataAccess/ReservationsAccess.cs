@@ -194,4 +194,19 @@ public bool CancelReservation(ReservationModel reservation)
         }
     }
 
+    public ReservationModel? GetLatestByUserId(int userId)
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var query = @"
+                SELECT * 
+                FROM Reservations 
+                WHERE UserId = @UserId 
+                ORDER BY CreatedAt DESC 
+                LIMIT 1";
+
+            return connection.QueryFirstOrDefault<ReservationModel>(query, new { UserId = userId });
+        }
+
 }

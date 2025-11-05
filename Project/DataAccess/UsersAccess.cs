@@ -61,6 +61,13 @@ public class UsersAccess
         using var connection = new SqliteConnection(_connectionString);
         connection.Execute(sql, new { Id = id });
     }
+
+    public void DeleteByEmail(string email)
+    {
+        string sql = $"DELETE FROM {Table} WHERE EmailAddress = @Email";
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Execute(sql, new { Email = email });
+    }
     public int GetIdByEmail(string email)
     {
         string sql = $"SELECT ID FROM {Table} WHERE EmailAddress = @Email";
