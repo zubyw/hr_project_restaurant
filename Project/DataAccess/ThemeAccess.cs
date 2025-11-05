@@ -73,4 +73,11 @@ public class ThemeAccess
         return themeId;
     }
 
+    public List<ThemeModel> GetAllThemes()
+    {
+        string sql = $"SELECT * FROM {Table}";
+        using var connection = new SqliteConnection(_connectionString);
+        return connection.Query<ThemeModel>(sql).ToList();
+    }
+
 }
