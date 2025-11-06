@@ -125,6 +125,21 @@ namespace Project.DataAccess
             connection.Close();
             return newId;
         }
-        
+
+            public void LinkDishToTheme(int dishId, int themeId)
+        {
+            string sql = "INSERT INTO Dishes_Themes (DishId, ThemeId) VALUES (@DishId, @ThemeId);";
+            Microsoft.Data.Sqlite.SqliteConnection connection = new Microsoft.Data.Sqlite.SqliteConnection(_connectionString);
+            connection.Execute(sql, new { DishId = dishId, ThemeId = themeId }); // Dapper
+            connection.Close();
+        }
+
+        public void UnlinkDishFromTheme(int dishId, int themeId)
+        {
+            string sql = "DELETE FROM Dishes_Themes WHERE DishId = @DishId AND ThemeId = @ThemeId;";
+            Microsoft.Data.Sqlite.SqliteConnection connection = new Microsoft.Data.Sqlite.SqliteConnection(_connectionString);
+            connection.Execute(sql, new { DishId = dishId, ThemeId = themeId }); // Dapper
+            connection.Close();
+        }   
     }
 }
