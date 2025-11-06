@@ -103,8 +103,36 @@ public static class ThemeManagement
         Console.ReadKey();
     }
 
-    // placeholders for next commit
-    private static void Activate() { }
-    private static void Deactivate() { }
-    private static void Delete() { }
+    private static void Activate()
+    {
+        Console.Clear();
+        Console.WriteLine("=== Activate Theme ===");
+        Console.Write("Theme ID: ");
+        int id = int.Parse(Console.ReadLine());
+        logic.Activate(id);
+        Console.WriteLine("✓ Theme activated.");
+        Console.ReadKey();
+    }
+
+    private static void Deactivate()
+    {
+        Console.Clear();
+        Console.WriteLine("=== Deactivate Theme ===");
+        Console.Write("Theme ID: ");
+        int id = int.Parse(Console.ReadLine());
+        logic.Deactivate(id);
+        Console.WriteLine("✓ Theme deactivated.");
+        Console.ReadKey();
+    }
+
+    private static void Delete()
+    {
+        Console.Clear();
+        Console.WriteLine("=== Delete Theme ===");
+        Console.Write("Theme ID to delete: ");
+        int id = int.Parse(Console.ReadLine());
+        logic.DeleteThemeCompletely(id);
+        Console.WriteLine("✓ Theme deleted.");
+        Console.ReadKey();
+    }
 }
