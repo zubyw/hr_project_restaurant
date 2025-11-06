@@ -69,8 +69,41 @@ public static class ThemeManagement
         Console.ReadKey();
     }
 
-    private static void Create() { }
-    private static void Update() { }
+    private static void Create()
+    {
+        Console.Clear();
+        Console.WriteLine("=== Create Theme ===");
+        Console.Write("Theme name: ");
+        string name = Console.ReadLine();
+        Console.Write("Course (Starter/Main/Dessert): ");
+        string course = Console.ReadLine();
+        Console.Write("Month date (yyyy-MM-dd): ");
+        DateTime time = DateTime.Parse(Console.ReadLine());
+
+        logic.CreateTheme(name, course, time);
+        Console.WriteLine("✓ Theme created successfully.");
+        Console.ReadKey();
+    }
+
+    private static void Update()
+    {
+        Console.Clear();
+        Console.WriteLine("=== Update Theme ===");
+        Console.Write("Theme ID: ");
+        int id = int.Parse(Console.ReadLine());
+        Console.Write("New name: ");
+        string name = Console.ReadLine();
+        Console.Write("New course (Starter/Main/Dessert): ");
+        string course = Console.ReadLine();
+        Console.Write("Active (1 or 0): ");
+        int active = int.Parse(Console.ReadLine());
+
+        logic.UpdateTheme(id, name, course, active);
+        Console.WriteLine("✓ Theme updated successfully.");
+        Console.ReadKey();
+    }
+
+    // placeholders for next commit
     private static void Activate() { }
     private static void Deactivate() { }
     private static void Delete() { }
