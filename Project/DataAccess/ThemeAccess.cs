@@ -80,4 +80,59 @@ public class ThemeAccess
         return connection.Query<ThemeModel>(sql).ToList();
     }
 
+    public void DeleteThemeCompletely(int themeId)
+    {
+        SqliteConnection connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        SqliteTransaction transaction = connection.BeginTransaction();
+
+        try
+        {
+            string deleteCalendar = "DELETE FROM Themes_Calendar WHERE ThemeId = @Id;";
+            connection.Execute(deleteCalendar, new { Id = themeId }, transaction);
+
+            string deleteDishes = "DELETE FROM Dishes WHERE ThemeId = @Id;";
+            connection.Execute(deleteDishes, new { Id = themeId }, transaction);
+
+            string deleteTheme = "DELETE FROM Themes WHERE ID = @Id;";
+            connection.Execute(deleteTheme, new { Id = themeId }, transaction);
+
+            transaction.Commit();
+            Console.WriteLine("Theme and related data deleted.");
+        }
+        catch (Exception)
+        {
+            transaction.Rollback();
+            Console.WriteLine("Delete failed.");
+        }
+        finally
+        {
+            connection.Close();
+        }
+    }
+
+    public void ActivateTheme(int themeId)
+    {
+        SqliteConnection connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        string sql = "UPDATE Themes SET IsActive = 1 WHERE ID = @Id;";
+        connection.Execute(sql, new { Id = themeId });
+
+        connection.Close();
+        Console.WriteLine("Theme activated.");
+    }
+
+    public void DeactivateTheme(int themeId)
+    {
+        SqliteConnection connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        string sql = "UPDATE Themes SET IsActive = 0 WHERE ID = @Id;";
+        connection.Execute(sql, new { Id = themeId });
+
+        connection.Close();
+        Console.WriteLine("Theme deactivated.");
+    }
 }
