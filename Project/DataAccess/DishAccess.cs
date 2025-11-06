@@ -115,31 +115,62 @@ namespace Project.DataAccess
             }
         }
 
+        
+
         public int AddDishReturnId(DishModel dish)
         {
             string sql = "INSERT INTO Dishes (Name, Price, Description, Type) " +
                          "VALUES (@Name, @Price, @Description, @Type); SELECT last_insert_rowid();";
-            Microsoft.Data.Sqlite.SqliteConnection connection = new Microsoft.Data.Sqlite.SqliteConnection(_connectionString);
-            connection.Open();
+            SqliteConnection connection = new SqliteConnection(_connectionString);
             int newId = connection.ExecuteScalar<int>(sql, dish);
             connection.Close();
             return newId;
         }
 
-            public void LinkDishToTheme(int dishId, int themeId)
+        public void LinkDishToTheme(int dishId, int themeId)
         {
             string sql = "INSERT INTO Dishes_Themes (DishId, ThemeId) VALUES (@DishId, @ThemeId);";
-            Microsoft.Data.Sqlite.SqliteConnection connection = new Microsoft.Data.Sqlite.SqliteConnection(_connectionString);
-            connection.Execute(sql, new { DishId = dishId, ThemeId = themeId }); // Dapper
+            SqliteConnection connection = new SqliteConnection(_connectionString);
+            connection.Execute(sql, new { DishId = dishId, ThemeId = themeId });
             connection.Close();
         }
 
         public void UnlinkDishFromTheme(int dishId, int themeId)
         {
             string sql = "DELETE FROM Dishes_Themes WHERE DishId = @DishId AND ThemeId = @ThemeId;";
-            Microsoft.Data.Sqlite.SqliteConnection connection = new Microsoft.Data.Sqlite.SqliteConnection(_connectionString);
-            connection.Execute(sql, new { DishId = dishId, ThemeId = themeId }); // Dapper
+            SqliteConnection connection = new SqliteConnection(_connectionString);
+            connection.Execute(sql, new { DishId = dishId, ThemeId = themeId });
             connection.Close();
-        }   
+        }
+
+        public bool ExistsByNameTypeInTheme(int themeId, string name, string type)
+        {
+            string sql = @"
+                SELECT COUNT(1)
+                FROM Dishes d
+                JOIN Dishes_Themes dt ON dt.DishId = d.ID
+                WHERE dt.ThemeId = @ThemeId
+                AND LOWER(d.Name) = LOWER(@Name)
+                AND LOWER(d.Type) = LOWER(@Type);";
+            SqliteConnection connection = new SqliteConnection(_connectionString);
+            int count = connection.ExecuteScalar<int>(sql, new { ThemeId = themeId, Name = name, Type = type });
+            connection.Close();
+            return count > 0;
+        }
+
+        public List<DishModel> GetByTheme(int themeId)
+        {
+            string sql = @"
+                SELECT d.ID, d.Name, d.Price, d.Description, d.Type
+                FROM Dishes d
+                JOIN Dishes_Themes dt ON dt.DishId = d.ID
+                WHERE dt.ThemeId = @ThemeId
+                ORDER BY d.Type, d.Name;";
+
+            SqliteConnection connection = new SqliteConnection(_connectionString);
+            List<DishModel> list = connection.Query<DishModel>(sql, new { ThemeId = themeId }).ToList();
+            connection.Close();
+            return list;
+        }
     }
 }
