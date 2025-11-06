@@ -13,6 +13,7 @@ static class ReservationManagement
             "View All Reservations",
             "View Reservations by Date",
             "Manage Themes",
+            "Manage Dishes",            
             "Back to Main Menu"
         };
 
@@ -38,7 +39,7 @@ static class ReservationManagement
 
         key = Console.ReadKey(true).Key;
 
-            // Handle arrow keys
+   
         switch (key)
             {
                 case ConsoleKey.UpArrow:
@@ -57,11 +58,14 @@ static class ReservationManagement
                             break;
                         case 1:
                             ViewReservationsByDate();
-                        break;
+                            break;
                         case 2:
-                            ThemeManagement.Start(); // ✅ hier break toegevoegd
+                            ThemeManagement.Start(); 
                             break;
                         case 3:
+                            AdminDishesManagement.Start();
+                            break;    
+                        case 4:
                             Menu.ShowMainMenu();
                             break;
                     }
