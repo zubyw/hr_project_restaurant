@@ -44,9 +44,12 @@ public class ThemesLogic
             throw new Exception("Theme exists");
         }
 
-        ThemeModel theme = new ThemeModel();
-        theme.Name = name;
-        theme.Course = course;
+        ThemeModel theme = new ThemeModel
+        {
+            Name = name,
+            Course = course
+        };
+
         access.AddTheme(theme, timeSlot);
     }
 
@@ -67,15 +70,20 @@ public class ThemesLogic
             throw new Exception("Invalid course");
         }
 
-        ThemeModel theme = access.GetById(id);
-        if (theme == null)
+        ThemeModel existing = access.GetById(id);
+        if (existing == null)
         {
             throw new Exception("Not found");
         }
 
-        theme.Name = name;
-        theme.Course = course;
-        theme.IsActive = active;
+        ThemeModel theme = new ThemeModel
+        {
+            ID = id,
+            Name = name,
+            Course = course,
+            IsActive = active
+        };
+
         access.Update(theme);
     }
 

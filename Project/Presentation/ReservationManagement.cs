@@ -7,14 +7,15 @@ static class ReservationManagement
     private static ReservationsLogic _reservationsLogic = new ReservationsLogic();
 
     public static void Start()
-    {
-       string[] options = new string[]
-        {
+    {   
+        string[] options = new string[]
+        {   
             "View All Reservations",
             "View Reservations by Date",
-            "Manage Themes",          
+            "Manage Themes",
             "Back to Main Menu"
         };
+
         int selectedIndex = 0;
         ConsoleKey key;
 
@@ -22,7 +23,7 @@ static class ReservationManagement
         {
             Console.Clear();
             Console.WriteLine("\n=== Reservation Management (Admin) ===");
-            
+
             // Display options
             for (int i = 0; i < options.Length; i++)
             {
@@ -35,17 +36,19 @@ static class ReservationManagement
                 Console.ResetColor();
             }
 
-            key = Console.ReadKey(true).Key;
+        key = Console.ReadKey(true).Key;
 
             // Handle arrow keys
-            switch (key)
+        switch (key)
             {
                 case ConsoleKey.UpArrow:
                     selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
                     break;
+
                 case ConsoleKey.DownArrow:
                     selectedIndex = (selectedIndex + 1) % options.Length;
                     break;
+
                 case ConsoleKey.Enter:
                     switch (selectedIndex)
                     {
@@ -54,9 +57,10 @@ static class ReservationManagement
                             break;
                         case 1:
                             ViewReservationsByDate();
-                            break;
+                        break;
                         case 2:
-                            ThemeManagement.Start();
+                            ThemeManagement.Start(); // ✅ hier break toegevoegd
+                            break;
                         case 3:
                             Menu.ShowMainMenu();
                             break;
