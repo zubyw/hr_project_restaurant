@@ -8,7 +8,13 @@ static class ReservationManagement
 
     public static void Start()
     {
-        string[] options = new string[] { "View All Reservations", "View Reservations by Date", "Back to Main Menu", "Back to Main Menu" };
+       string[] options = new string[]
+        {
+            "View All Reservations",
+            "View Reservations by Date",
+            "Manage Themes",          
+            "Back to Main Menu"
+        };
         int selectedIndex = 0;
         ConsoleKey key;
 
@@ -50,8 +56,7 @@ static class ReservationManagement
                             ViewReservationsByDate();
                             break;
                         case 2:
-                            _adminThemesAndDishes.Start(); // ⬅ hier wordt jouw nieuwe admin-panel gestart
-                            break;
+                            ThemeManagement.Start();
                         case 3:
                             Menu.ShowMainMenu();
                             break;
