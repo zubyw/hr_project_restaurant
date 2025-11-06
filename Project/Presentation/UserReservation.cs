@@ -1,6 +1,7 @@
 using System;
 using Project.DataModels;
 using Project.Logic;
+using Project.Presentation;
 
 static class UserReservation
 {
@@ -59,19 +60,24 @@ static class UserReservation
         string ArrivalTime = _reservationsLogic.SelectArrivalTime();
         Console.WriteLine($"You selected: {ArrivalTime}");
 
-        int DiningTableSize = UserMakeReservationLogic.GetTableSize(AmountPeople);
-        TableModel? AvailableTable = UserMakeReservationLogic.GetAvailableTable(ReservationDate, DiningTableSize);
+        int.TryParse(AmountPeople, out int intAmountPeople);
+
+        // Get all tables and reserved tables for floor plan
+        TableAcces tableAccess = new TableAcces();
+        List<TableModel> allTables = tableAccess.GetAllTables();
+        List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(ReservationDate, intAmountPeople);
+
+        // Show floor plan and let user select a table
+        TableModel? AvailableTable = FloorPlanView.SelectTableFromFloorPlan(allTables, reservedTableIds, intAmountPeople);
         
         if (AvailableTable == null)
         {
-            Console.WriteLine("Sorry, no tables are available for the selected date and time.");
-            Console.WriteLine("Press any key to try again...");
+            Console.WriteLine("Table selection cancelled.");
+            Console.WriteLine("Press any key to return...");
             Console.ReadKey();
             Start();
             return;
         }
-        
-        int.TryParse(AmountPeople, out int intAmountPeople);
         string CompleteStartDate = $"{ReservationDate} {ArrivalTime}:00";
 
             if (Menu.CurrentUser == null)
@@ -165,7 +171,7 @@ static class UserReservation
                 int userid = _usersLogic.GetIdByEmail(Menu.CurrentUser.EmailAddress);
                 if (_reservationsLogic.CreateReservation(userid, AvailableTable.ID, intAmountPeople, CompleteStartDate))
                 {
-                    Console.WriteLine("✅ Your reservation has been saved!");
+                    Console.WriteLine("Your reservation has been saved!");
                     Thread.Sleep(3000);
                     Menu.ShowMainMenu();
                     return;
