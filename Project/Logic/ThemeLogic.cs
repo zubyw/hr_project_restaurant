@@ -3,31 +3,75 @@ using System.Collections.Generic;
 
 public class ThemesLogic
 {
-    private readonly ThemeAccess _access = new ThemeAccess();
+    private readonly ThemeAccess access = new ThemeAccess();
+    private static readonly string[] AllowedCourses = { "Starter", "Main", "Dessert" };
 
     public List<ThemeModel> GetAll()
     {
-        return _access.GetAllThemes();
+        return access.GetAllThemes();
     }
 
     public ThemeModel GetById(int id)
     {
         if (id <= 0)
         {
-            throw new Exception("Invalid ID.");
+            throw new Exception("Invalid id");
         }
 
-        ThemeModel theme = _access.GetById(id);
+        ThemeModel theme = access.GetById(id);
         if (theme == null)
         {
-            throw new Exception("Theme not found.");
+            throw new Exception("Not found");
         }
 
         return theme;
     }
 
-    public int? GetActiveThemeId()
+    public void CreateTheme(string name, string course, DateTime timeSlot)
     {
-        return _access.GetActiveThemeID();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new Exception("Name empty");
+        }
+
+        if (!IsValidCourse(course))
+        {
+            throw new Exception("Invalid course");
+        }
+
+        if (Exists(name))
+        {
+            throw new Exception("Theme exists");
+        }
+
+        ThemeModel theme = new ThemeModel();
+        theme.Name = name;
+        theme.Course = course;
+        access.AddTheme(theme, timeSlot);
+    }
+
+    private bool Exists(string name)
+    {
+        List<ThemeModel> list = access.GetAllThemes();
+        foreach (ThemeModel t in list)
+        {
+            if (t.Name != null && t.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private bool IsValidCourse(string course)
+    {
+        foreach (string c in AllowedCourses)
+        {
+            if (c.Equals(course, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
