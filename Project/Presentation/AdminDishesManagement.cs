@@ -52,6 +52,7 @@ public static class AdminDishesManagement
         }
     }
 
+    // === Commit 2: ShowByTheme ===
     private static void ShowByTheme()
     {
         Console.Clear();
@@ -85,9 +86,67 @@ public static class AdminDishesManagement
         Console.ReadKey();
     }
 
-    private static void Add() { }
-    private static void Update() { }
-    private static void Delete() { }
+    private static void Add()
+    {
+        Console.Clear();
+        Console.WriteLine("=== Add Dish to Theme ===");
+        int themeId = AskInt("Theme ID: ");
+        Console.Write("Name: ");
+        string name = Console.ReadLine();
+        Console.Write("Price (e.g. 12.50): ");
+        decimal price = AskDecimal();
+        Console.Write("Description: ");
+        string description = Console.ReadLine();
+        Console.Write("Type (Starter/Main/Dessert): ");
+        string type = Console.ReadLine();
+
+        int newId = _logic.AdminAddDishToTheme(themeId, name, price, description, type);
+
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("Dish created. ID: " + newId);
+        Console.ResetColor();
+        Console.ReadKey();
+    }
+
+    private static void Update()
+    {
+        Console.Clear();
+        Console.WriteLine("=== Update Dish in Theme ===");
+        int dishId = AskInt("Dish ID: ");
+        int themeId = AskInt("Theme ID: ");
+        Console.Write("New name: ");
+        string name = Console.ReadLine();
+        Console.Write("New price: ");
+        decimal price = AskDecimal();
+        Console.Write("New description: ");
+        string description = Console.ReadLine();
+        Console.Write("New type (Starter/Main/Dessert): ");
+        string type = Console.ReadLine();
+
+        _logic.AdminUpdateDishInTheme(dishId, themeId, name, price, description, type);
+
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("Dish updated.");
+        Console.ResetColor();
+        Console.ReadKey();
+    }
+
+    private static void Delete()
+    {
+        Console.Clear();
+        Console.WriteLine("=== Delete Dish from Theme ===");
+        int dishId = AskInt("Dish ID: ");
+        int themeId = AskInt("Theme ID: ");
+
+        _logic.AdminDeleteDishFromTheme(dishId, themeId);
+
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("Dish deleted.");
+        Console.ResetColor();
+        Console.ReadKey();
+    }
+
+    // placeholders voor volgende commit (helpers)
     private static int AskInt(string label) { return 0; }
     private static decimal AskDecimal() { return 0; }
 }
