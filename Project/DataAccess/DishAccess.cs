@@ -115,6 +115,23 @@ namespace Project.DataAccess
             }
         }
 
+        public int AddDishReturnId(DishModel dish)
+        {
+            string sql = "INSERT INTO Dishes (Name, Price, Description, Type) " +
+                         "VALUES (@Name, @Price, @Description, @Type); SELECT last_insert_rowid();";
+            Microsoft.Data.Sqlite.SqliteConnection connection = new Microsoft.Data.Sqlite.SqliteConnection(_connectionString);
+            connection.Open();
+            int newId = connection.ExecuteScalar<int>(sql, dish);
+            connection.Close();
+            return newId;
+     }
+
+
+
+
+
+
+
 
 
         
