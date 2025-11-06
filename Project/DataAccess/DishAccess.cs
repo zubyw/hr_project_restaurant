@@ -124,16 +124,7 @@ namespace Project.DataAccess
             int newId = connection.ExecuteScalar<int>(sql, dish);
             connection.Close();
             return newId;
-     }
-
-
-
-
-
-
-
-
-
+        }
         
     }
 }
