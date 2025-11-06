@@ -38,4 +38,40 @@ public static class ThemeManagement
             }
         }
     }
+
+    private static void ShowAll()
+    {
+        Console.Clear();
+        List<ThemeModel> list = logic.GetAll();
+
+        if (list.Count == 0)
+        {
+            Console.WriteLine("No themes found.");
+        }
+        else
+        {
+            Console.WriteLine();
+            Console.WriteLine("┌──────┬─────────────────────┬──────────────┬──────────┐");
+            Console.WriteLine("│  ID  │        Name         │    Course    │  Active  │");
+            Console.WriteLine("├──────┼─────────────────────┼──────────────┼──────────┤");
+
+            foreach (ThemeModel t in list)
+            {
+                string active = t.IsActive == 1 ? "Yes" : "No";
+                Console.WriteLine($"│ {t.ID,4} │ {t.Name,-19} │ {t.Course,-12} │ {active,-8} │");
+            }
+
+            Console.WriteLine("└──────┴─────────────────────┴──────────────┴──────────┘");
+            Console.WriteLine();
+        }
+
+        Console.WriteLine("Press any key to return...");
+        Console.ReadKey();
+    }
+
+    private static void Create() { }
+    private static void Update() { }
+    private static void Activate() { }
+    private static void Deactivate() { }
+    private static void Delete() { }
 }
