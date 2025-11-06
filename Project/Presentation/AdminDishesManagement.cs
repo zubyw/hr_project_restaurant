@@ -52,7 +52,6 @@ public static class AdminDishesManagement
         }
     }
 
-    // === Commit 2: ShowByTheme ===
     private static void ShowByTheme()
     {
         Console.Clear();
@@ -146,7 +145,26 @@ public static class AdminDishesManagement
         Console.ReadKey();
     }
 
-    // placeholders voor volgende commit (helpers)
-    private static int AskInt(string label) { return 0; }
-    private static decimal AskDecimal() { return 0; }
+    private static int AskInt(string label)
+    {
+        Console.Write(label);
+        string s = Console.ReadLine();
+        int n;
+        if (!int.TryParse(s, out n))
+        {
+            throw new Exception("Invalid number.");
+        }
+        return n;
+    }
+
+    private static decimal AskDecimal()
+    {
+        string s = Console.ReadLine();
+        decimal v;
+        if (!decimal.TryParse(s, out v))
+        {
+            throw new Exception("Invalid decimal.");
+        }
+        return v;
+    }
 }
