@@ -50,6 +50,55 @@ public class ThemesLogic
         access.AddTheme(theme, timeSlot);
     }
 
+    public void UpdateTheme(int id, string name, string course, int active)
+    {
+        if (id <= 0)
+        {
+            throw new Exception("Invalid id");
+        }
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new Exception("Name empty");
+        }
+
+        if (!IsValidCourse(course))
+        {
+            throw new Exception("Invalid course");
+        }
+
+        ThemeModel theme = access.GetById(id);
+        if (theme == null)
+        {
+            throw new Exception("Not found");
+        }
+
+        theme.Name = name;
+        theme.Course = course;
+        theme.IsActive = active;
+        access.Update(theme);
+    }
+
+    public void Activate(int id)
+    {
+        if (id <= 0)
+        {
+            throw new Exception("Invalid id");
+        }
+
+        access.ActivateTheme(id);
+    }
+
+    public void Deactivate(int id)
+    {
+        if (id <= 0)
+        {
+            throw new Exception("Invalid id");
+        }
+
+        access.DeactivateTheme(id);
+    }
+
     private bool Exists(string name)
     {
         List<ThemeModel> list = access.GetAllThemes();
