@@ -99,6 +99,16 @@ public class ThemesLogic
         access.DeactivateTheme(id);
     }
 
+    public void DeleteThemeCompletely(int id)
+    {
+        if (id <= 0)
+        {
+            throw new Exception("Invalid id");
+        }
+
+        access.DeleteThemeCompletely(id);
+    }
+
     private bool Exists(string name)
     {
         List<ThemeModel> list = access.GetAllThemes();
