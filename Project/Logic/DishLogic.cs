@@ -47,5 +47,26 @@ namespace Project.Logic
             var themeAccess = new ThemeAccess();
             return themeAccess.GetActiveThemeID();
         }
+
+
+        private static readonly string[] _allowedTypes = new string[] 
+        { 
+         "Starter", 
+         "Main", 
+         "Dessert" 
+        };
+
+        private void EnsureThemeExists(int themeId)
+        {
+            ThemeAccess themeAccess = new ThemeAccess();
+
+            ThemeModel theme = themeAccess.GetById(themeId);
+
+            if (theme == null)
+            {
+                throw new System.Exception("Theme not found.");
+            }
+        }
+ 
     }
 }
