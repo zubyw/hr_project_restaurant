@@ -218,7 +218,7 @@ public static class DishSelection
     {
         Console.Clear();
         Console.WriteLine();
-        Console.WriteLine("✅ Your reservation with menu selection has been saved!");
+        Console.WriteLine("Your reservation with menu selection has been saved!");
         Console.WriteLine();
         Thread.Sleep(3000);
         return true;
