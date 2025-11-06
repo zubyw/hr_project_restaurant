@@ -20,11 +20,11 @@ namespace UnitTests
         {
             // ARRANGe
             DishModel dish = new DishModel { Name = "dish1", Price = (decimal)10, Description = "Description", Type = "type" };
-            _dishAccess.AddDish(dish);
+            _dishAccess.Write(dish);
             DishModel dish1 = new DishModel { Name = "dish2", Price = (decimal)10, Description = "Description", Type = "type" };
-            _dishAccess.AddDish(dish1);
+            _dishAccess.Write(dish1);
             DishModel dish2 = new DishModel { Name = "dish3", Price = (decimal)10, Description = "Description", Type = "type" };
-            _dishAccess.AddDish(dish2);
+            _dishAccess.Write(dish2);
             List<DishModel> insertedDishes = _dishAccess.GetDishByType("type");
             List<DishModel> recentDishes = insertedDishes.OrderByDescending(d => d.ID).Take(3).ToList();
 
@@ -46,7 +46,7 @@ namespace UnitTests
             };
             _reservationaccess.Write(reservering);
 
-            ReservationModel insertedReservation = _reservationaccess.GetLatestByUserId(newestUser.ID);
+            ReservationModel insertedReservation = _reservationaccess.GetLatestReservationByUserId(newestUser.ID);
 
 
             // act
@@ -79,9 +79,9 @@ namespace UnitTests
         {
             // ARRANGe
             DishModel dish = new DishModel { Name = "dish1", Price = (decimal)10, Description = "Description", Type = "type" };
-            _dishAccess.AddDish(dish);
+            _dishAccess.Write(dish);
             DishModel dish1 = new DishModel { Name = "dish2", Price = (decimal)10, Description = "Description", Type = "type" };
-            _dishAccess.AddDish(dish1);
+            _dishAccess.Write(dish1);
             DishModel? dish2 = null;
             List<DishModel> insertedDishes = _dishAccess.GetDishByType("type");
             List<DishModel> recentDishes = insertedDishes.OrderByDescending(d => d.ID).Take(2).ToList();
@@ -105,7 +105,7 @@ namespace UnitTests
             };
             _reservationaccess.Write(reservering);
 
-            ReservationModel insertedReservation = _reservationaccess.GetLatestByUserId(newestUser.ID);
+            ReservationModel insertedReservation = _reservationaccess.GetLatestReservationByUserId(newestUser.ID);
 
 
             // act
