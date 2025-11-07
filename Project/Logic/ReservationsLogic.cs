@@ -1,3 +1,4 @@
+using Project.DataAccess;
 using Project.DataModels;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ public class ReservationsLogic
     public static int? CurrentUserId { get; set; }
 
     private ReservationsAccess _reservationsAccess = new ReservationsAccess();
+    private DishAccess _dishAccess = new DishAccess();
 
     // --- Helpers ---
 
@@ -82,7 +84,7 @@ public class ReservationsLogic
         return true;
     }
 
-    // Update the status of a reservation (admin/staff use)
+    // Update the status of a reservation (admin/staff or when reservation is updated use)
     public bool UpdateReservationStatus(int reservationId, string newStatus)
     {
         ReservationModel? reservation = _reservationsAccess.GetById(reservationId);
@@ -290,5 +292,31 @@ public class ReservationsLogic
         }
 
         return timeSlots[selectedIndex];
+    }
+
+    public bool ReservationContainsDishes(ReservationModel reservation)
+    {
+        return _reservationsAccess.DoesReservationHaveDishes(reservation);
+    }
+
+    public void UpdateGuestCountForReservation(int newguestcount, ReservationModel reservation)
+    {
+        if (ReservationContainsDishes(reservation))
+        {
+
+        }
+    }
+    
+    public void UpdateDishSelectionForReservation(List<DishModel> dishes, ReservationModel reservation, int newGuestCount)
+    {
+        if (ReservationContainsDishes(reservation))
+            {
+            _dishAccess.DeleteReservationDishesOnReservationId(reservation);
+            }
+        if (dishes.Count == 0)
+        {
+            return;
+        }
+        if
     }
 }

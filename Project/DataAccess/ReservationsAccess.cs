@@ -195,18 +195,71 @@ public bool CancelReservation(ReservationModel reservation)
     }
 
     public ReservationModel? GetLatestByUserId(int userId)
-        {
-            using var connection = new SqliteConnection(_connectionString);
-            connection.Open();
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
 
-            var query = @"
+        var query = @"
                 SELECT * 
                 FROM Reservations 
                 WHERE UserId = @UserId 
                 ORDER BY CreatedAt DESC 
                 LIMIT 1";
 
-            return connection.QueryFirstOrDefault<ReservationModel>(query, new { UserId = userId });
+        return connection.QueryFirstOrDefault<ReservationModel>(query, new { UserId = userId });
+    }
+
+    public bool DoesReservationHaveDishes(ReservationModel reservation)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        var query = "SELECT COUNT(1) FROM Reservations_Dishes WHERE ReservationId = @ReservationId";
+
+        int count = connection.ExecuteScalar<int>(query, new { ReservationId = reservation.ID });
+
+        return count > 0;
+    }
+
+    public void UpdateReservationGuestCount(ReservationModel reservation, int guestCount)
+    {
+        using (SqliteConnection connection = new SqliteConnection(_connectionString))
+        {
+            string query = "UPDATE Reservations SET GuestCount = @GuestCount, UpdatedAt = datetime('now') WHERE Id = @Id";
+            connection.Execute(query, new
+            {
+                GuestCount = guestCount,
+                Id = reservation.ID
+            });
         }
+    }
+
+    // public void UpdateReservation(ReservationModel reservation, int guestCount)
+    // {
+    //     using (SqliteConnection connection = new SqliteConnection(_connectionString))
+    //     {
+    //         string query = "UPDATE Reservations SET GuestCount = @GuestCount, UpdatedAt = datetime('now') WHERE Id = @Id";
+    //         connection.Execute(query, new
+    //         {
+    //             GuestCount = guestCount,
+    //             Id = reservation.ID
+    //         });
+    //     }
+    // }
+
+    public void UpdateReservationStatus(ReservationModel reservation, string status)
+    {
+        using (SqliteConnection connection = new SqliteConnection(_connectionString))
+        {
+            string query = "UPDATE Reservations SET Status = @Status WHERE Id = @Id";
+            connection.Execute(query, new
+            {
+                Status = status,
+                Id = reservation.ID
+            });
+        }
+    }
 
 }
+
+
