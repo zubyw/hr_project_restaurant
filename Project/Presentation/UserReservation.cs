@@ -37,7 +37,7 @@ static class UserReservation
         Console.Clear();
         Console.WriteLine("\n===Reservations===");
         Console.WriteLine();
-        Console.WriteLine("Date: (YYYY-MM-DD)");
+        Console.WriteLine("Date: (DD-MM-YYYY)");
         string? ReservationDate = Console.ReadLine();
         if (string.IsNullOrEmpty(ReservationDate))
         {

@@ -128,7 +128,7 @@ static class ReservationManagement
         {
             var reservation = reservations[i];
             var guestName = $"{reservation.GuestFirstName} {reservation.GuestLastName}";
-            var dateTime = DateTime.Parse(reservation.StartAt).ToString("MM/dd/yyyy HH:mm");
+            var dateTime = DateTime.Parse(reservation.StartAt).ToString("dd-MM-yyyy HH:mm");
             var status = reservation.Status;
             
             if (guestName.Length > 28)
@@ -454,7 +454,7 @@ static class ReservationManagement
         foreach (var reservation in reservations)
         {
             var guestName = $"{reservation.GuestFirstName} {reservation.GuestLastName}";
-            var dateTime = DateTime.Parse(reservation.StartAt).ToString("MM/dd/yyyy HH:mm");
+            var dateTime = DateTime.Parse(reservation.StartAt).ToString("dd-MM-yyyy HH:mm");
             var status = reservation.Status;
             
             // Truncate guest name if too long
