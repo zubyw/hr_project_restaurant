@@ -61,7 +61,9 @@ static class ReservationManagement
 
     private static void ViewAllReservationsWithOptions()
     {
-        var reservations = _reservationsLogic.GetAllReservations();
+        var reservations = _reservationsLogic.GetAllReservations()
+            .OrderBy(r => DateTime.Parse(r.StartAt))
+            .ToList();
         
         if (reservations.Count == 0)
         {
@@ -81,7 +83,6 @@ static class ReservationManagement
         {
             Console.Clear();
             Console.WriteLine("\n=== All Reservations ===");
-            Console.WriteLine("\nUse ↑↓ arrows to navigate, ENTER to modify, ESC to go back\n");
 
             DisplayReservationsTableWithSelection(reservations, selectedReservationIndex);
 
@@ -96,8 +97,10 @@ static class ReservationManagement
                     selectedReservationIndex = (selectedReservationIndex + 1) % reservations.Count;
                     break;
                 case ConsoleKey.Enter:
-                    ModifyReservation(reservations[selectedReservationIndex]);
-                    reservations = _reservationsLogic.GetAllReservations();
+                    EditReservationFields(reservations[selectedReservationIndex]);
+                    reservations = _reservationsLogic.GetAllReservations()
+                        .OrderBy(r => DateTime.Parse(r.StartAt))
+                        .ToList();
                     if (reservations.Count == 0)
                     {
                         Start();
@@ -126,10 +129,16 @@ static class ReservationManagement
             var reservation = reservations[i];
             var guestName = $"{reservation.GuestFirstName} {reservation.GuestLastName}";
             var dateTime = DateTime.Parse(reservation.StartAt).ToString("MM/dd/yyyy HH:mm");
+            var status = reservation.Status;
             
             if (guestName.Length > 28)
             {
                 guestName = guestName.Substring(0, 25) + "...";
+            }
+
+            if (status.Length > 9)
+            {
+                status = status.Substring(0, 9);
             }
 
             if (i == selectedIndex)
@@ -138,39 +147,50 @@ static class ReservationManagement
                 Console.ForegroundColor = ConsoleColor.White;
             }
 
-            Console.WriteLine($"│ {reservation.ID,4} │ {reservation.TableNumber,2} ({reservation.TableCapacity})  │ {guestName,-28} │  {reservation.GuestCount,2}   │ {dateTime,-19} │ {reservation.Status,-9} │");
+            Console.WriteLine($"│ {reservation.ID,4} │ {reservation.TableNumber,2} ({reservation.TableCapacity})  │ {guestName,-28} │  {reservation.GuestCount,2}   │ {dateTime,-19} │ {status,-9} │");
             Console.ResetColor();
         }
 
         Console.WriteLine("└──────┴─────────┴──────────────────────────────┴───────┴─────────────────────┴───────────┘");
     }
 
-    private static void ModifyReservation(ReservationModel reservation)
+    private static void EditReservationFields(ReservationModel reservation)
     {
-        string[] options = new string[] { "Change reservation time", "Change number of guests", "Cancel reservation", "Back" };
-        int selectedIndex = 0;
+        string[] fields = new string[] { "Date/Time", "Guest Count", "Cancel Reservation", "Back" };
+        int selectedField = 0;
         ConsoleKey key;
 
         do
         {
             Console.Clear();
-            Console.WriteLine("\n=== Modify Reservation ===\n");
+            Console.WriteLine("\n=== Edit Reservation ===\n");
             Console.WriteLine($"Guest: {reservation.GuestFirstName} {reservation.GuestLastName}");
             Console.WriteLine($"Email: {reservation.GuestEmail}");
-            Console.WriteLine($"Table: {reservation.TableNumber} ({reservation.TableCapacity} seats)");
-            Console.WriteLine($"Guest Count: {reservation.GuestCount}");
-            Console.WriteLine($"Date/Time: {DateTime.Parse(reservation.StartAt):yyyy-MM-dd HH:mm}");
-            Console.WriteLine($"Status: {reservation.Status}");
-            Console.WriteLine("\nWhat would you like to do?\n");
+            Console.WriteLine($"Table: {reservation.TableNumber} ({reservation.TableCapacity} seats)\n");
 
-            for (int i = 0; i < options.Length; i++)
+            for (int i = 0; i < fields.Length; i++)
             {
-                if (i == selectedIndex)
+                if (i == selectedField)
                 {
                     Console.BackgroundColor = ConsoleColor.DarkCyan;
                     Console.ForegroundColor = ConsoleColor.White;
                 }
-                Console.WriteLine($"  {options[i]}");
+
+                switch (i)
+                {
+                    case 0:
+                        Console.WriteLine($"  Date/Time: {DateTime.Parse(reservation.StartAt):yyyy-MM-dd HH:mm}");
+                        break;
+                    case 1:
+                        Console.WriteLine($"  Guest Count: {reservation.GuestCount}");
+                        break;
+                    case 2:
+                        Console.WriteLine($"  Cancel Reservation");
+                        break;
+                    case 3:
+                        Console.WriteLine($"  Back");
+                        break;
+                }
                 Console.ResetColor();
             }
 
@@ -179,20 +199,25 @@ static class ReservationManagement
             switch (key)
             {
                 case ConsoleKey.UpArrow:
-                    selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
+                    selectedField = (selectedField - 1 + fields.Length) % fields.Length;
                     break;
                 case ConsoleKey.DownArrow:
-                    selectedIndex = (selectedIndex + 1) % options.Length;
+                    selectedField = (selectedField + 1) % fields.Length;
                     break;
                 case ConsoleKey.Enter:
-                    switch (selectedIndex)
+                    switch (selectedField)
                     {
                         case 0:
                             ChangeReservationTimeForSingle(reservation);
-                            return;
+                            // Refresh reservation data
+                            var updated = _reservationsLogic.GetReservationById(reservation.ID);
+                            if (updated != null) reservation = updated;
+                            break;
                         case 1:
                             ChangeGuestCountForSingle(reservation);
-                            return;
+                            updated = _reservationsLogic.GetReservationById(reservation.ID);
+                            if (updated != null) reservation = updated;
+                            break;
                         case 2:
                             CancelSingleReservation(reservation);
                             return;
@@ -232,70 +257,186 @@ static class ReservationManagement
             dateToSearch = input;
         }
 
-        string[] options = new string[] { "View Floor Plan", "View Another Date", "Back to Main Menu" };
+        var reservations = _reservationsLogic.GetReservationsByDate(dateToSearch);
+
+        if (reservations.Count == 0)
+        {
+            string[] emptyOptions = new string[] { "View Another Date", "Back to Main Menu" };
+            int selectedIndex = 0;
+
+            // Get floor plan data
+            TableAcces tableAccess = new TableAcces();
+            List<TableModel> allTables = tableAccess.GetAllTables();
+            List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(dateToSearch, 0);
+
+            do
+            {
+                Console.Clear();
+                Console.WriteLine($"\n=== Reservations for {dateToSearch} ===");
+                Console.WriteLine("\nNo reservations found for this date.");
+                Console.WriteLine("\nUse ↑↓ to select, ENTER to confirm, ESC to go back\n");
+
+                for (int i = 0; i < emptyOptions.Length; i++)
+                {
+                    if (i == selectedIndex)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkCyan;
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+                    Console.WriteLine($"  {emptyOptions[i]}");
+                    Console.ResetColor();
+                }
+
+                // Display floor plan
+                DisplayFloorPlanLegend();
+                Console.WriteLine();
+                DisplayAdminFloorPlan(allTables, reservedTableIds);
+
+                ConsoleKey key = Console.ReadKey(true).Key;
+
+                switch (key)
+                {
+                    case ConsoleKey.UpArrow:
+                        selectedIndex = (selectedIndex - 1 + emptyOptions.Length) % emptyOptions.Length;
+                        break;
+                    case ConsoleKey.DownArrow:
+                        selectedIndex = (selectedIndex + 1) % emptyOptions.Length;
+                        break;
+                    case ConsoleKey.Enter:
+                        switch (selectedIndex)
+                        {
+                            case 0:
+                                ViewReservationsByDate();
+                                return;
+                            case 1:
+                                Start();
+                                return;
+                        }
+                        break;
+                    case ConsoleKey.Escape:
+                        Start();
+                        return;
+                }
+            } while (true);
+        }
+
+        // Show reservations with options
+        ShowReservationsForDate(dateToSearch, reservations);
+    }
+
+    private static void ShowReservationsForDate(string dateToSearch, List<ReservationModel> reservations)
+    {
+        string[] options = new string[] { "Edit Reservation", "View Another Date", "Back to Main Menu" };
         int selectedIndex = 0;
+        int selectedReservationIndex = 0;
+        bool inReservationList = true;
+
+        // Get floor plan data
+        TableAcces tableAccess = new TableAcces();
+        List<TableModel> allTables = tableAccess.GetAllTables();
+        List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(dateToSearch, 0);
 
         do
         {
             Console.Clear();
             Console.WriteLine($"\n=== Reservations for {dateToSearch} ===");
-            var reservations = _reservationsLogic.GetReservationsByDate(dateToSearch);
             
-            if (reservations.Count == 0)
+            if (inReservationList)
             {
-                Console.WriteLine("No reservations found for this date.");
+                DisplayReservationsTableWithSelection(reservations, selectedReservationIndex);
             }
             else
             {
+                Console.WriteLine();
                 DisplayReservationsTable(reservations);
+                Console.WriteLine("\nUse ↑↓ to select option, ENTER to confirm, TAB for reservations, ESC to go back\n");
                 
-                var totalGuests = reservations.Sum(r => r.GuestCount);
-                var confirmedReservations = reservations.Count(r => r.Status.Equals("Confirmed", StringComparison.OrdinalIgnoreCase));
-                var pendingReservations = reservations.Count(r => r.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase));
-                
-                Console.WriteLine($"\n--- Summary for {dateToSearch} ---");
-                Console.WriteLine($"Total Reservations: {reservations.Count}");
-                Console.WriteLine($"Confirmed: {confirmedReservations}");
-                Console.WriteLine($"Pending: {pendingReservations}");
-                Console.WriteLine($"Total Guests: {totalGuests}");
-            }
-
-            Console.WriteLine("\nOptions:");
-            for (int i = 0; i < options.Length; i++)
-            {
-                if (i == selectedIndex)
+                for (int i = 0; i < options.Length; i++)
                 {
-                    Console.BackgroundColor = ConsoleColor.DarkCyan;
-                    Console.ForegroundColor = ConsoleColor.White;
+                    if (i == selectedIndex)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkCyan;
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+                    Console.WriteLine($"  {options[i]}");
+                    Console.ResetColor();
                 }
-                Console.WriteLine($"  {options[i]}");
-                Console.ResetColor();
             }
+            
+            // Display floor plan
+            DisplayFloorPlanLegend();
+            Console.WriteLine();
+            DisplayAdminFloorPlan(allTables, reservedTableIds);
 
             ConsoleKey key = Console.ReadKey(true).Key;
 
-            switch (key)
+            if (inReservationList)
             {
-                case ConsoleKey.UpArrow:
-                    selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
-                    break;
-                case ConsoleKey.DownArrow:
-                    selectedIndex = (selectedIndex + 1) % options.Length;
-                    break;
-                case ConsoleKey.Enter:
-                    switch (selectedIndex)
-                    {
-                        case 0:
-                            ViewFloorPlanForDate(dateToSearch);
-                            break;
-                        case 1:
+                switch (key)
+                {
+                    case ConsoleKey.UpArrow:
+                        selectedReservationIndex = (selectedReservationIndex - 1 + reservations.Count) % reservations.Count;
+                        break;
+                    case ConsoleKey.DownArrow:
+                        selectedReservationIndex = (selectedReservationIndex + 1) % reservations.Count;
+                        break;
+                    case ConsoleKey.Enter:
+                        EditReservationFields(reservations[selectedReservationIndex]);
+                        reservations = _reservationsLogic.GetReservationsByDate(dateToSearch)
+                            .OrderBy(r => DateTime.Parse(r.StartAt))
+                            .ToList();
+                        if (reservations.Count == 0)
+                        {
                             ViewReservationsByDate();
                             return;
-                        case 2:
-                            Start();
-                            return;
-                    }
-                    break;
+                        }
+                        if (selectedReservationIndex >= reservations.Count)
+                        {
+                            selectedReservationIndex = reservations.Count - 1;
+                        }
+                        break;
+                    case ConsoleKey.Tab:
+                        inReservationList = false;
+                        selectedIndex = 0;
+                        break;
+                    case ConsoleKey.Escape:
+                        Start();
+                        return;
+                }
+            }
+            else
+            {
+                switch (key)
+                {
+                    case ConsoleKey.UpArrow:
+                        selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
+                        break;
+                    case ConsoleKey.DownArrow:
+                        selectedIndex = (selectedIndex + 1) % options.Length;
+                        break;
+                    case ConsoleKey.Enter:
+                        switch (selectedIndex)
+                        {
+                            case 0:
+                                inReservationList = true;
+                                selectedReservationIndex = 0;
+                                break;
+                            case 1:
+                                ViewReservationsByDate();
+                                return;
+                            case 2:
+                                Start();
+                                return;
+                        }
+                        break;
+                    case ConsoleKey.Tab:
+                        inReservationList = true;
+                        selectedReservationIndex = 0;
+                        break;
+                    case ConsoleKey.Escape:
+                        Start();
+                        return;
+                }
             }
         } while (true);
     }
@@ -314,14 +455,21 @@ static class ReservationManagement
         {
             var guestName = $"{reservation.GuestFirstName} {reservation.GuestLastName}";
             var dateTime = DateTime.Parse(reservation.StartAt).ToString("MM/dd/yyyy HH:mm");
+            var status = reservation.Status;
             
             // Truncate guest name if too long
             if (guestName.Length > 28)
             {
                 guestName = guestName.Substring(0, 25) + "...";
             }
+
+            // Truncate status if too long
+            if (status.Length > 9)
+            {
+                status = status.Substring(0, 9);
+            }
             
-            Console.WriteLine($"│ {reservation.ID,4} │ {reservation.TableNumber,2} ({reservation.TableCapacity})  │ {guestName,-28} │  {reservation.GuestCount,2}   │ {dateTime,-19} │ {reservation.Status,-9} │");
+            Console.WriteLine($"│ {reservation.ID,4} │ {reservation.TableNumber,2} ({reservation.TableCapacity})  │ {guestName,-28} │  {reservation.GuestCount,2}   │ {dateTime,-19} │ {status,-9} │");
         }
 
         if (showHeader)
@@ -377,7 +525,7 @@ static class ReservationManagement
         bool success = _reservationsLogic.ChangeReservationTime(reservationId, newTime);
         if (success)
         {
-            Console.WriteLine("✓ Reservation time updated successfully!");
+            Console.WriteLine("Reservation time updated successfully!");
         }
         else
         {
@@ -408,7 +556,7 @@ static class ReservationManagement
 
         Console.WriteLine($"\nCurrent reservation: {reservation.GuestFirstName} {reservation.GuestLastName}");
         Console.WriteLine($"Current guest count: {reservation.GuestCount}");
-        Console.Write("Enter new number of guests (2, 4, or 6): ");
+        Console.Write("Enter new number of guests (1-6): ");
         
         if (!int.TryParse(Console.ReadLine(), out int newCount))
         {
@@ -417,17 +565,20 @@ static class ReservationManagement
             return;
         }
 
-        if (newCount != 2 && newCount != 4 && newCount != 6)
+        if (newCount < 1 || newCount > 6)
         {
-            Console.WriteLine("Guest count must be 2, 4, or 6. Press any key to continue...");
+            Console.WriteLine("Guest count must be between 1 and 6. Press any key to continue...");
             Console.ReadKey();
             return;
         }
 
-        bool success = _reservationsLogic.ChangeReservationPersons(reservationId, newCount);
+        // Round up to nearest table size: 1-2 -> 2, 3-4 -> 4, 5-6 -> 6
+        int tableSize = newCount <= 2 ? 2 : newCount <= 4 ? 4 : 6;
+
+        bool success = _reservationsLogic.ChangeReservationPersons(reservationId, tableSize);
         if (success)
         {
-            Console.WriteLine("✓ Guest count updated successfully!");
+            Console.WriteLine($"Guest count updated successfully! (Table for {tableSize} assigned)");
         }
         else
         {
@@ -484,7 +635,7 @@ static class ReservationManagement
             bool success = _reservationsLogic.CancelReservation(reservationId);
             if (success)
             {
-                Console.WriteLine("✓ Reservation cancelled successfully!");
+                Console.WriteLine("Reservation cancelled successfully!");
                 // Refresh the reservations list
                 reservations = _reservationsLogic.GetAllReservations();
             }
@@ -646,5 +797,122 @@ static class ReservationManagement
             }
             Console.WriteLine();
         }
+    }
+
+    private static void ChangeReservationTimeForSingle(ReservationModel reservation)
+    {
+        Console.Clear();
+        Console.WriteLine("\n=== Change Reservation Time ===\n");
+        Console.WriteLine($"Guest: {reservation.GuestFirstName} {reservation.GuestLastName}");
+        Console.WriteLine($"Current date/time: {DateTime.Parse(reservation.StartAt):yyyy-MM-dd HH:mm}");
+        Console.Write("\nEnter new date/time (YYYY-MM-DD HH:mm): ");
+        
+        string? input = Console.ReadLine();
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            Console.WriteLine("No input provided. Press any key to continue...");
+            Console.ReadKey();
+            return;
+        }
+
+        if (!DateTime.TryParseExact(input, "yyyy-MM-dd HH:mm", null, System.Globalization.DateTimeStyles.None, out DateTime newTime))
+        {
+            Console.WriteLine("Invalid date format. Please use YYYY-MM-DD HH:mm format. Press any key to continue...");
+            Console.ReadKey();
+            return;
+        }
+
+        if (newTime <= DateTime.Now)
+        {
+            Console.WriteLine("Cannot set reservation time in the past. Press any key to continue...");
+            Console.ReadKey();
+            return;
+        }
+
+        bool success = _reservationsLogic.ChangeReservationTime(reservation.ID, newTime);
+        if (success)
+        {
+            Console.WriteLine("Reservation time updated successfully!");
+        }
+        else
+        {
+            Console.WriteLine("✗ Failed to update reservation time.");
+        }
+        
+        Console.WriteLine("Press any key to continue...");
+        Console.ReadKey();
+    }
+
+    private static void ChangeGuestCountForSingle(ReservationModel reservation)
+    {
+        Console.Clear();
+        Console.WriteLine("\n=== Change Guest Count ===\n");
+        Console.WriteLine($"Guest: {reservation.GuestFirstName} {reservation.GuestLastName}");
+        Console.WriteLine($"Current guest count: {reservation.GuestCount}");
+        Console.WriteLine($"Table capacity: {reservation.TableCapacity}");
+        Console.Write("\nEnter new number of guests (1-6): ");
+        
+        if (!int.TryParse(Console.ReadLine(), out int newCount))
+        {
+            Console.WriteLine("Invalid number. Press any key to continue...");
+            Console.ReadKey();
+            return;
+        }
+
+        if (newCount < 1 || newCount > 6)
+        {
+            Console.WriteLine("Guest count must be between 1 and 6. Press any key to continue...");
+            Console.ReadKey();
+            return;
+        }
+
+        // Round up to nearest table size: 1-2 -> 2, 3-4 -> 4, 5-6 -> 6
+        int tableSize = newCount <= 2 ? 2 : newCount <= 4 ? 4 : 6;
+
+        bool success = _reservationsLogic.ChangeReservationPersons(reservation.ID, tableSize);
+        if (success)
+        {
+            Console.WriteLine($"Guest count updated successfully! (Table for {tableSize} assigned)");
+        }
+        else
+        {
+            Console.WriteLine("✗ Failed to update guest count.");
+        }
+        
+        Console.WriteLine("Press any key to continue...");
+        Console.ReadKey();
+    }
+
+    private static void CancelSingleReservation(ReservationModel reservation)
+    {
+        Console.Clear();
+        Console.WriteLine("\n=== Cancel Reservation ===\n");
+        Console.WriteLine($"Guest: {reservation.GuestFirstName} {reservation.GuestLastName}");
+        Console.WriteLine($"Email: {reservation.GuestEmail}");
+        Console.WriteLine($"Date/time: {DateTime.Parse(reservation.StartAt):yyyy-MM-dd HH:mm}");
+        Console.WriteLine($"Table: {reservation.TableNumber} ({reservation.TableCapacity} seats)");
+        Console.WriteLine($"Guest count: {reservation.GuestCount}");
+        Console.Write("\nAre you sure you want to cancel this reservation? (y/n): ");
+        
+        if (Console.ReadLine()?.ToLower() != "y")
+        {
+            Console.WriteLine("Cancellation aborted.");
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
+            return;
+        }
+
+        bool success = _reservationsLogic.CancelReservation(reservation.ID);
+        if (success)
+        {
+            Console.WriteLine("Reservation cancelled successfully!");
+        }
+        else
+        {
+            Console.WriteLine("✗ Failed to cancel reservation.");
+        }
+        
+        Console.WriteLine("Press any key to continue...");
+        Console.ReadKey();
     }
 }
