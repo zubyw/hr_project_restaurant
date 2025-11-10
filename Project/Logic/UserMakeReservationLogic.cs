@@ -2,7 +2,7 @@ public static class UserMakeReservationLogic
 {
     public static int MinPeople { get; } = 1;
     public static int MaxPeople { get; } = 6;
-    public static string DateFormat { get; } = "yyyy-MM-dd";
+    public static string DateFormat { get; } = "dd-MM-yyyy"; // Europees formaat
 
     public static TableAcces _TableAcces = new TableAcces();
 
@@ -21,8 +21,8 @@ public static class UserMakeReservationLogic
             return false;
         }
 
-        // Check if there are numbers given inbetween the '-'
-        if (!int.TryParse(parts[0], out int year))
+        // Parse in volgorde DD-MM-YYYY (Europees)
+        if (!int.TryParse(parts[2], out int year))  // Jaar is nu 3e deel
         {
             return false;
         }
@@ -30,12 +30,12 @@ public static class UserMakeReservationLogic
         {
             return false;
         }
-        if (!int.TryParse(parts[2], out int day))
+        if (!int.TryParse(parts[0], out int day))   // Dag is nu 1e deel
         {
             return false;
         }
 
-        // check if it all given numbers is an valid date
+        // check if it all given numbers is a valid date
         DateTime validDate;
         try
         {
@@ -71,7 +71,6 @@ public static class UserMakeReservationLogic
     {
         List<string> validTimes = new List<string> { "17:00", "17:30", "18:00", "18:30", "19:00", "19:30" };
 
-
         foreach (string validTime in validTimes)
         {
             if (validTime == daytime)
@@ -103,11 +102,8 @@ public static class UserMakeReservationLogic
 
     public static TableModel? GetAvailableTable(string reservationDate, int tablesize)
     {
-
         List<TableModel> allTables = _TableAcces.GetAllTables();
-
         List<int> reservedTableIds = _TableAcces.GetNonAvailableOnDate(reservationDate, tablesize);
-
         List<TableModel> availableTables = allTables.Where(t => !reservedTableIds.Contains(t.ID)).ToList();
 
         // Handle the case where no tables are available
