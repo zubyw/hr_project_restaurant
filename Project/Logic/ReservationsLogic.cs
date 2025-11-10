@@ -1,6 +1,7 @@
 using Project.DataModels;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 public class ReservationsLogic
 {
@@ -75,8 +76,8 @@ public class ReservationsLogic
         reservation.GuestCount = guestCount;
         reservation.StartAt = startAt;
         reservation.Status = status;
-        reservation.CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-        reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        reservation.CreatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
+        reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
         _reservationsAccess.Write(reservation);
         return true;
@@ -89,7 +90,7 @@ public class ReservationsLogic
         if (reservation == null) return false;
 
         reservation.Status = newStatus;
-        reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
         _reservationsAccess.Update(reservation);
         return true;
     }
@@ -101,26 +102,26 @@ public class ReservationsLogic
         return true;
     }
 
-    // Format helper: only date (yyyy-MM-dd)
+    // Format helper: only date (dd-MM-yyyy)
     public static string FormatDateForDatabase(DateTime date)
     {
-        return date.ToString("yyyy-MM-dd");
+        return date.ToString("dd-MM-yyyy");
     }
 
-    // Format helper: date and time (yyyy-MM-dd HH:mm:ss)
+    // Format helper: date and time (dd-MM-yyyy HH:mm:ss)
     public static string FormatDateTimeForDatabase(DateTime dateTime)
     {
-        return dateTime.ToString("yyyy-MM-dd HH:mm:ss");
+        return dateTime.ToString("dd-MM-yyyy HH:mm:ss");
     }
 
-    // Check if date format is valid
+    // Check if date format is valid (dd-MM-yyyy)
     public static bool IsValidDateFormat(string dateString)
     {
         return DateTime.TryParseExact(
             dateString,
-            "yyyy-MM-dd",
-            null,
-            System.Globalization.DateTimeStyles.None,
+            "dd-MM-yyyy",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
             out _);
     }
 
@@ -136,8 +137,8 @@ public class ReservationsLogic
         if (reservation == null)
             return false;
 
-        reservation.StartAt = newTime.ToString("yyyy-MM-dd HH:mm:ss");
-        reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        reservation.StartAt = newTime.ToString("dd-MM-yyyy HH:mm:ss");
+        reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
         _reservationsAccess.Update(reservation);
         return true;
@@ -157,7 +158,7 @@ public class ReservationsLogic
         if (reservation.TableCapacity >= newGuestCount)
         {
             reservation.GuestCount = newGuestCount;
-            reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
             _reservationsAccess.UpdateGuestCount(reservation);
             return true;
         }
@@ -170,7 +171,7 @@ public class ReservationsLogic
         TableModel newTable = availableTables[0];
         reservation.TableId = newTable.ID;
         reservation.GuestCount = newGuestCount;
-        reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
         _reservationsAccess.UpdateReservationTable(reservation);
         return true;
@@ -184,7 +185,7 @@ public class ReservationsLogic
             return false;
 
         reservation.Status = "Geannuleerd";
-        reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
         _reservationsAccess.CancelReservation(reservation);
         return true;

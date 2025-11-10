@@ -1,41 +1,50 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Globalization;
+
 public static class UserMakeReservationLogic
 {
     public static int MinPeople { get; } = 1;
     public static int MaxPeople { get; } = 6;
-    public static string DateFormat { get; } = "yyyy-MM-dd";
+    public static string DateFormat { get; } = "dd-MM-yyyy"; // Europees formaat
 
     public static TableAcces _TableAcces = new TableAcces();
 
     public static bool CheckValidDate(string date)
     {
-        // Check if date has 10 chars
+        // Check if date has 10 chars: dd-MM-yyyy
         if (date.Length != 10)
         {
             return false;
         }
 
-        // Check if this format is used ...-...-...
+        // Split op '-' -> dd-MM-yyyy
         List<string> parts = date.Split('-').ToList();
         if (parts.Count != 3)
         {
             return false;
         }
 
-        // Check if there are numbers given inbetween the '-'
-        if (!int.TryParse(parts[0], out int year))
-        {
-            return false;
-        }
-        if (!int.TryParse(parts[1], out int month))
-        {
-            return false;
-        }
-        if (!int.TryParse(parts[2], out int day))
+        // Dag
+        if (!int.TryParse(parts[0], out int day))
         {
             return false;
         }
 
-        // check if it all given numbers is an valid date
+        // Maand
+        if (!int.TryParse(parts[1], out int month))
+        {
+            return false;
+        }
+
+        // Jaar
+        if (!int.TryParse(parts[2], out int year))
+        {
+            return false;
+        }
+
+        // Controleer of het een geldige datum is
         DateTime validDate;
         try
         {
@@ -46,11 +55,12 @@ public static class UserMakeReservationLogic
             return false;
         }
 
-        // Check if reservation is not in the past 
+        // Controleer of de datum niet in het verleden ligt
         if (validDate < DateTime.Today)
         {
             return false;
         }
+
         return true;
     }
 
@@ -70,7 +80,6 @@ public static class UserMakeReservationLogic
     public static bool CheckValidDayTime(string daytime)
     {
         List<string> validTimes = new List<string> { "17:00", "17:30", "18:00", "18:30", "19:00", "19:30" };
-
 
         foreach (string validTime in validTimes)
         {
@@ -103,7 +112,6 @@ public static class UserMakeReservationLogic
 
     public static TableModel? GetAvailableTable(string reservationDate, int tablesize)
     {
-
         List<TableModel> allTables = _TableAcces.GetAllTables();
 
         List<int> reservedTableIds = _TableAcces.GetNonAvailableOnDate(reservationDate, tablesize);
@@ -121,3 +129,4 @@ public static class UserMakeReservationLogic
         return availableTables.FirstOrDefault(t => t.TableCapacity >= tablesize);
     }
 }
+

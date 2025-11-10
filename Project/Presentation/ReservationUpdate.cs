@@ -72,11 +72,11 @@ static class ReservationUpdateMenu
             return;
         }
 
-        Console.Write("Enter date (YYYY-MM-DD): ");
+        Console.Write("Enter date (DD-MM-YYYY): ");
         string? dateIn = Console.ReadLine();
         DateTime dateOnly;
         if (string.IsNullOrEmpty(dateIn) ||
-            !DateTime.TryParseExact(dateIn, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out dateOnly))
+            !DateTime.TryParseExact(dateIn, "dd-MM-yyyy", null, System.Globalization.DateTimeStyles.None, out dateOnly))
         {
             Console.WriteLine("Invalid date. Press any key to return...");
             Console.ReadKey();
@@ -86,9 +86,9 @@ static class ReservationUpdateMenu
         Console.WriteLine("Select Arrival Time:");
         string selectedTime = SelectArrivalTimeMenu(); // "HH:mm"
 
-        string combined = $"{dateOnly:yyyy-MM-dd} {selectedTime}";
+        string combined = $"{dateOnly:dd-MM-yyyy} {selectedTime}";
         DateTime newTime;
-        if (!DateTime.TryParseExact(combined, "yyyy-MM-dd HH:mm", null, System.Globalization.DateTimeStyles.None, out newTime))
+        if (!DateTime.TryParseExact(combined, "dd-MM-yyyy HH:mm", null, System.Globalization.DateTimeStyles.None, out newTime))
         {
             Console.WriteLine("Invalid date/time. Press any key to return...");
             Console.ReadKey();
@@ -221,3 +221,5 @@ static class ReservationUpdateMenu
         return timeSlots[selectedIndex];
     }
 }
+
+
