@@ -25,7 +25,7 @@ namespace UnitTests
             _tableRepo.Add(new TableModel { ID = 2, TableNumber = 2, TableCapacity = 4 });
             _tableRepo.Add(new TableModel { ID = 3, TableNumber = 3, TableCapacity = 6 });
 
-            // Reservations: T1@19:00(2); T2@18:00(2) & 20:00(4)
+                        // Reservations: T1@19:00(2); T2@18:00(2) & 20:00(4)
             _reservationRepo.Add(new ReservationModel
             {
                 ID = 1,
@@ -34,7 +34,7 @@ namespace UnitTests
                 TableCapacity = 2,
                 GuestCount = 2,
                 StartAt = $"{TestDate} 19:00",
-                Status = "Pending",
+                Status = "Open",
                 GuestFirstName = "John",
                 GuestLastName = "Doe",
                 GuestEmail = "john@test.com"
@@ -48,7 +48,26 @@ namespace UnitTests
                 TableCapacity = 4,
                 GuestCount = 2,
                 StartAt = $"{TestDate} 18:00",
-                Status = "Pending",
+                Status = "Open",
+                GuestFirstName = "Jane",
+                GuestLastName = "Smith",
+                GuestEmail = "jane@test.com"
+            });"{TestDate} 19:00",
+                Status = "Open",
+                GuestFirstName = "John",
+                GuestLastName = "Doe",
+                GuestEmail = "john@test.com"
+            });
+
+            _reservationRepo.Add(new ReservationModel
+            {
+                ID = 2,
+                TableId = 2,
+                TableNumber = 2,
+                TableCapacity = 4,
+                GuestCount = 2,
+                StartAt = $"{TestDate} 18:00",
+                Status = "Open",
                 GuestFirstName = "Jane",
                 GuestLastName = "Smith",
                 GuestEmail = "jane@test.com"
@@ -237,7 +256,7 @@ namespace UnitTests
                 TableCapacity = 2,
                 GuestCount = 0, // Ongeldig
                 StartAt = $"{TestDate} 18:00",
-                Status = "Pending",
+                Status = "Open",
                 GuestFirstName = "Test",
                 GuestLastName = "User",
                 GuestEmail = "test@test.com"
@@ -251,7 +270,7 @@ namespace UnitTests
                 TableCapacity = 2,
                 GuestCount = -1, // Ongeldig
                 StartAt = $"{TestDate} 19:00",
-                Status = "Pending",
+                Status = "Open",
                 GuestFirstName = "Test2",
                 GuestLastName = "User2",
                 GuestEmail = "test2@test.com"
