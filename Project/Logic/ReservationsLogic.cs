@@ -64,7 +64,7 @@ public class ReservationsLogic
     // --- Create/Update/Delete ---
 
     // Create a new reservation (only if between 1 and 6 guests)
-    public bool CreateReservation(int userId, int tableId, int guestCount, string startAt, string status = "Pending")
+    public bool CreateReservation(int userId, int tableId, int guestCount, string startAt, string status = "Open")
     {
         if (guestCount < 1 || guestCount > 6)
             return false;

@@ -385,6 +385,8 @@ static class ReservationManagement
                         reservations = _reservationsLogic.GetReservationsByDate(dateToSearch)
                             .OrderBy(r => DateTime.Parse(r.StartAt))
                             .ToList();
+                        // Refresh floor plan data after editing
+                        reservedTableIds = tableAccess.GetNonAvailableOnDate(dateToSearch, 0);
                         if (reservations.Count == 0)
                         {
                             ViewReservationsByDate();
