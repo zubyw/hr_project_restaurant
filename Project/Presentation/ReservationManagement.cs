@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Linq;
-using Project.DataModels;  
+using Project.DataModels;
+using Project.Presentation;
 
 static class ReservationManagement
 {
@@ -60,84 +61,149 @@ static class ReservationManagement
 
     private static void ViewAllReservationsWithOptions()
     {
-        while (true)
+        var reservations = _reservationsLogic.GetAllReservations();
+        
+        if (reservations.Count == 0)
         {
             Console.Clear();
             Console.WriteLine("\n=== All Reservations ===");
-
-            var reservations = _reservationsLogic.GetAllReservations();
-            
-            if (reservations.Count == 0)
-            {
-                Console.WriteLine("No reservations found.");
-                Console.WriteLine("Press any key to return...");
-                Console.ReadKey();
-                Start();
-                return;
-            }
-
-            DisplayReservationsTable(reservations);
-
-            Console.WriteLine("\nOptions:");
-            
-            string[] options = new string[] { "Change reservation time", "Change number of guests", "Cancel reservation", "Back to main menu" };
-            int selectedIndex = 0;
-
-            ConsoleKey key;
-            bool choosingOption = true;
-            while (choosingOption)
-            {
-                // Display options
-                for (int i = 0; i < options.Length; i++)
-                {
-                    if (i == selectedIndex)
-                    {
-                        Console.BackgroundColor = ConsoleColor.DarkCyan;
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-                    Console.WriteLine($"  {options[i]}");
-                    Console.ResetColor();
-                }
-
-                key = Console.ReadKey(true).Key;
-
-                switch (key)
-                {
-                    case ConsoleKey.UpArrow:
-                        selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
-                        Console.Clear();
-                        Console.WriteLine("\n=== All Reservations ===");
-                        DisplayReservationsTable(reservations);
-                        Console.WriteLine("\nOptions:");
-                        break;
-                    case ConsoleKey.DownArrow:
-                        selectedIndex = (selectedIndex + 1) % options.Length;
-                        Console.Clear();
-                        Console.WriteLine("\n=== All Reservations ===");
-                        DisplayReservationsTable(reservations);
-                        Console.WriteLine("\nOptions:");
-                        break;
-                    case ConsoleKey.Enter:
-                        choosingOption = false;
-                        switch (selectedIndex)
-                        {
-                            case 0:
-                                ChangeReservationTime(reservations);
-                                break;
-                            case 1:
-                                ChangeGuestCount(reservations);
-                                break;
-                            case 2:
-                                CancelReservation(reservations);
-                                break;
-                            case 3:
-                                Start();
-                                return;
-                        }
-                        break;
-                }
-            }
+            Console.WriteLine("No reservations found.");
+            Console.WriteLine("\nPress any key to return...");
+            Console.ReadKey();
+            Start();
+            return;
         }
+
+        int selectedReservationIndex = 0;
+        ConsoleKey key;
+
+        do
+        {
+            Console.Clear();
+            Console.WriteLine("\n=== All Reservations ===");
+            Console.WriteLine("\nUse ↑↓ arrows to navigate, ENTER to modify, ESC to go back\n");
+
+            DisplayReservationsTableWithSelection(reservations, selectedReservationIndex);
+
+            key = Console.ReadKey(true).Key;
+
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    selectedReservationIndex = (selectedReservationIndex - 1 + reservations.Count) % reservations.Count;
+                    break;
+                case ConsoleKey.DownArrow:
+                    selectedReservationIndex = (selectedReservationIndex + 1) % reservations.Count;
+                    break;
+                case ConsoleKey.Enter:
+                    ModifyReservation(reservations[selectedReservationIndex]);
+                    reservations = _reservationsLogic.GetAllReservations();
+                    if (reservations.Count == 0)
+                    {
+                        Start();
+                        return;
+                    }
+                    if (selectedReservationIndex >= reservations.Count)
+                    {
+                        selectedReservationIndex = reservations.Count - 1;
+                    }
+                    break;
+                case ConsoleKey.Escape:
+                    Start();
+                    return;
+            }
+        } while (true);
+    }
+
+    private static void DisplayReservationsTableWithSelection(List<ReservationModel> reservations, int selectedIndex)
+    {
+        Console.WriteLine("┌──────┬─────────┬──────────────────────────────┬───────┬─────────────────────┬───────────┐");
+        Console.WriteLine("│  ID  │  Table  │          Guest Name          │ Count │      Date/Time      │  Status   │");
+        Console.WriteLine("├──────┼─────────┼──────────────────────────────┼───────┼─────────────────────┼───────────┤");
+
+        for (int i = 0; i < reservations.Count; i++)
+        {
+            var reservation = reservations[i];
+            var guestName = $"{reservation.GuestFirstName} {reservation.GuestLastName}";
+            var dateTime = DateTime.Parse(reservation.StartAt).ToString("MM/dd/yyyy HH:mm");
+            
+            if (guestName.Length > 28)
+            {
+                guestName = guestName.Substring(0, 25) + "...";
+            }
+
+            if (i == selectedIndex)
+            {
+                Console.BackgroundColor = ConsoleColor.DarkCyan;
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+
+            Console.WriteLine($"│ {reservation.ID,4} │ {reservation.TableNumber,2} ({reservation.TableCapacity})  │ {guestName,-28} │  {reservation.GuestCount,2}   │ {dateTime,-19} │ {reservation.Status,-9} │");
+            Console.ResetColor();
+        }
+
+        Console.WriteLine("└──────┴─────────┴──────────────────────────────┴───────┴─────────────────────┴───────────┘");
+    }
+
+    private static void ModifyReservation(ReservationModel reservation)
+    {
+        string[] options = new string[] { "Change reservation time", "Change number of guests", "Cancel reservation", "Back" };
+        int selectedIndex = 0;
+        ConsoleKey key;
+
+        do
+        {
+            Console.Clear();
+            Console.WriteLine("\n=== Modify Reservation ===\n");
+            Console.WriteLine($"Guest: {reservation.GuestFirstName} {reservation.GuestLastName}");
+            Console.WriteLine($"Email: {reservation.GuestEmail}");
+            Console.WriteLine($"Table: {reservation.TableNumber} ({reservation.TableCapacity} seats)");
+            Console.WriteLine($"Guest Count: {reservation.GuestCount}");
+            Console.WriteLine($"Date/Time: {DateTime.Parse(reservation.StartAt):yyyy-MM-dd HH:mm}");
+            Console.WriteLine($"Status: {reservation.Status}");
+            Console.WriteLine("\nWhat would you like to do?\n");
+
+            for (int i = 0; i < options.Length; i++)
+            {
+                if (i == selectedIndex)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                Console.WriteLine($"  {options[i]}");
+                Console.ResetColor();
+            }
+
+            key = Console.ReadKey(true).Key;
+
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
+                    break;
+                case ConsoleKey.DownArrow:
+                    selectedIndex = (selectedIndex + 1) % options.Length;
+                    break;
+                case ConsoleKey.Enter:
+                    switch (selectedIndex)
+                    {
+                        case 0:
+                            ChangeReservationTimeForSingle(reservation);
+                            return;
+                        case 1:
+                            ChangeGuestCountForSingle(reservation);
+                            return;
+                        case 2:
+                            CancelSingleReservation(reservation);
+                            return;
+                        case 3:
+                            return;
+                    }
+                    break;
+                case ConsoleKey.Escape:
+                    return;
+            }
+        } while (true);
     }
 
     private static void ViewReservationsByDate()
@@ -166,7 +232,7 @@ static class ReservationManagement
             dateToSearch = input;
         }
 
-        string[] options = new string[] { "View Another Date", "Back to Main Menu" };
+        string[] options = new string[] { "View Floor Plan", "View Another Date", "Back to Main Menu" };
         int selectedIndex = 0;
 
         do
@@ -183,7 +249,6 @@ static class ReservationManagement
             {
                 DisplayReservationsTable(reservations);
                 
-                // Display summary
                 var totalGuests = reservations.Sum(r => r.GuestCount);
                 var confirmedReservations = reservations.Count(r => r.Status.Equals("Confirmed", StringComparison.OrdinalIgnoreCase));
                 var pendingReservations = reservations.Count(r => r.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase));
@@ -196,7 +261,6 @@ static class ReservationManagement
             }
 
             Console.WriteLine("\nOptions:");
-            // Display options
             for (int i = 0; i < options.Length; i++)
             {
                 if (i == selectedIndex)
@@ -208,7 +272,7 @@ static class ReservationManagement
                 Console.ResetColor();
             }
 
-            var key = Console.ReadKey(true).Key;
+            ConsoleKey key = Console.ReadKey(true).Key;
 
             switch (key)
             {
@@ -222,9 +286,12 @@ static class ReservationManagement
                     switch (selectedIndex)
                     {
                         case 0:
+                            ViewFloorPlanForDate(dateToSearch);
+                            break;
+                        case 1:
                             ViewReservationsByDate();
                             return;
-                        case 1:
+                        case 2:
                             Start();
                             return;
                     }
@@ -429,6 +496,155 @@ static class ReservationManagement
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
             return;
+        }
+    }
+
+    private static void ViewFloorPlanForDate(string date)
+    {
+        TableAcces tableAccess = new TableAcces();
+        List<TableModel> allTables = tableAccess.GetAllTables();
+        List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(date, 0);
+
+        ConsoleKey key;
+        do
+        {
+            Console.Clear();
+            Console.WriteLine();
+            ColorConsole.WriteTitle("╔═══════════════════════════════════════════════╗");
+            ColorConsole.WriteTitle($"║       FLOOR PLAN - {date}              ║");
+            ColorConsole.WriteTitle("╚═══════════════════════════════════════════════╝");
+            Console.WriteLine();
+
+            DisplayFloorPlanLegend();
+            Console.WriteLine();
+
+            DisplayAdminFloorPlan(allTables, reservedTableIds);
+
+            Console.WriteLine();
+            ColorConsole.WriteInfo("  Press ESC to return");
+
+            key = Console.ReadKey(true).Key;
+
+        } while (key != ConsoleKey.Escape);
+    }
+
+    private static void DisplayFloorPlanLegend()
+    {
+        Console.Write("  ");
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.Write("█ Available  ");
+        Console.ResetColor();
+        
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.Write("█ Reserved");
+        Console.ResetColor();
+        Console.WriteLine();
+    }
+
+    private static void DisplayAdminFloorPlan(List<TableModel> allTables, List<int> reservedTableIds)
+    {
+        const int floorWidth = 60;
+        const int floorHeight = 25;
+
+        var tablePositions = new Dictionary<int, (int Row, int Col)>
+        {
+            { 1, (2, 3) },
+            { 2, (2, 10) },
+            { 3, (2, 17) },
+            { 4, (2, 24) },
+            { 5, (7, 3) },
+            { 6, (7, 12) },
+            { 7, (7, 21) },
+            { 8, (7, 30) },
+            { 9, (7, 39) },
+            { 10, (7, 48) },
+            { 11, (12, 3) },
+            { 12, (12, 14) },
+            { 13, (12, 25) },
+            { 14, (12, 36) }
+        };
+
+        string[,] grid = new string[floorHeight, floorWidth];
+        ConsoleColor[,] colorGrid = new ConsoleColor[floorHeight, floorWidth];
+
+        for (int i = 0; i < floorHeight; i++)
+        {
+            for (int j = 0; j < floorWidth; j++)
+            {
+                grid[i, j] = " ";
+                colorGrid[i, j] = ConsoleColor.Black;
+            }
+        }
+
+        foreach (var table in allTables)
+        {
+            if (tablePositions.ContainsKey(table.TableNumber))
+            {
+                var (row, col) = tablePositions[table.TableNumber];
+                
+                int boxWidth = table.TableCapacity + 2;
+                int boxHeight = 3;
+                
+                if (row >= 0 && row < floorHeight - boxHeight && col >= 0 && col < floorWidth - boxWidth)
+                {
+                    bool isReserved = reservedTableIds.Contains(table.ID);
+                    ConsoleColor tableColor = isReserved ? ConsoleColor.Red : ConsoleColor.White;
+                    string capacity = $"{table.TableCapacity}p";
+
+                    grid[row, col] = "┌";
+                    for (int i = 1; i < boxWidth - 1; i++)
+                    {
+                        grid[row, col + i] = "─";
+                    }
+                    grid[row, col + boxWidth - 1] = "┐";
+
+                    grid[row + 1, col] = "│";
+                    int paddingLeft = (boxWidth - 2 - capacity.Length) / 2;
+                    for (int i = 1; i < boxWidth - 1; i++)
+                    {
+                        if (i == paddingLeft + 1 && capacity.Length >= 2)
+                        {
+                            grid[row + 1, col + i] = capacity[0].ToString();
+                        }
+                        else if (i == paddingLeft + 2 && capacity.Length >= 2)
+                        {
+                            grid[row + 1, col + i] = capacity[1].ToString();
+                        }
+                        else
+                        {
+                            grid[row + 1, col + i] = " ";
+                        }
+                    }
+                    grid[row + 1, col + boxWidth - 1] = "│";
+
+                    grid[row + 2, col] = "└";
+                    for (int i = 1; i < boxWidth - 1; i++)
+                    {
+                        grid[row + 2, col + i] = "─";
+                    }
+                    grid[row + 2, col + boxWidth - 1] = "┘";
+
+                    for (int i = 0; i < boxHeight; i++)
+                    {
+                        for (int j = 0; j < boxWidth; j++)
+                        {
+                            colorGrid[row + i, col + j] = tableColor;
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < floorHeight; i++)
+        {
+            Console.Write("  ");
+            for (int j = 0; j < floorWidth; j++)
+            {
+                Console.ForegroundColor = colorGrid[i, j];
+                Console.Write(grid[i, j]);
+                Console.ResetColor();
+            }
+            Console.WriteLine();
         }
     }
 }
