@@ -27,7 +27,11 @@ namespace Project.Presentation
 
         public static TableModel? SelectTableFromFloorPlan(List<TableModel> allTables, List<int> reservedTableIds, int guestCount)
         {
-            int selectedTableNumber = 0;
+            // Start with the first selectable table
+            var firstSelectable = allTables
+                .OrderBy(t => t.TableNumber)
+                .FirstOrDefault(t => IsTableSelectable(t, reservedTableIds, guestCount));
+            int selectedTableNumber = firstSelectable?.TableNumber ?? 0;
             ConsoleKey key;
 
             do
