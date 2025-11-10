@@ -40,7 +40,7 @@ namespace Project.Presentation
 
             foreach (ReservationModel r in reservations)
             {
-                string dateTime = DateTime.Parse(r.StartAt).ToString("MM-dd-yyyy HH:mm");
+                string dateTime = DateTime.Parse(r.StartAt).ToString("dd-MM-yyyy HH:mm");
                 Console.WriteLine($"│ {r.ID,4} │ {r.TableId,6} │ {r.GuestCount,6} │ {dateTime,-19} │ {r.Status,-9} │");
             }
 
@@ -116,19 +116,19 @@ namespace Project.Presentation
                 return;
             }
 
-            // 2) Date (YYYY-MM-DD)
+            // 2) Date (DD-MM-YYYY)
             Console.Clear();
             Console.WriteLine("=== Update Reservation ===");
             Console.WriteLine();
-            Console.WriteLine("Date: (YYYY-MM-DD)");
+            Console.WriteLine("Date: (DD-MM-YYYY)");
             string? dateIn = Console.ReadLine();
 
             DateTime dateOnly;
             if (string.IsNullOrEmpty(dateIn) ||
-                !DateTime.TryParseExact(dateIn, "yyyy-MM-dd", CultureInfo.InvariantCulture,
+                !DateTime.TryParseExact(dateIn, "dd-MM-yyyy", CultureInfo.InvariantCulture,
                     DateTimeStyles.None, out dateOnly))
             {
-                Console.WriteLine("Given date format incorrect (YYYY-MM-DD)");
+                Console.WriteLine("Given date format incorrect (DD-MM-YYYY)");
                 Console.WriteLine("Press any key to try again...");
                 Console.ReadKey();
                 Start(userId);
@@ -172,8 +172,8 @@ namespace Project.Presentation
                 return;
             }
 
-            // Combine to "yyyy-MM-dd HH:mm" (no seconds) en run je bestaande business rules (≥ 17:00, etc.)
-            string combined = startAt.ToString("yyyy-MM-dd HH:mm");
+            // Combine to "dd-MM-yyyy HH:mm" (no seconds) en run je bestaande business rules (≥ 17:00, etc.)
+            string combined = startAt.ToString("dd-MM-yyyy HH:mm");
             if (!logic.IsValidReservationDateTime(combined))
             {
                 Console.WriteLine("Invalid date or time (must be >= 17:00).");
@@ -186,7 +186,7 @@ namespace Project.Presentation
             // Apply update (logic enforces ownership + 1–6 again)
             logic.UpdateReservationForGuest(id, guests, combined);
 
-            Console.WriteLine("✅ Reservation updated!");
+            Console.WriteLine("Reservation updated!");
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
             Start(userId);

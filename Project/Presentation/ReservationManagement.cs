@@ -179,7 +179,7 @@ static class ReservationManagement
                 switch (i)
                 {
                     case 0:
-                        Console.WriteLine($"  Date/Time: {DateTime.Parse(reservation.StartAt):yyyy-MM-dd HH:mm}");
+                        Console.WriteLine($"  Date/Time: {DateTime.Parse(reservation.StartAt):dd-MM-yyyy HH:mm}");
                         break;
                     case 1:
                         Console.WriteLine($"  Guest Count: {reservation.GuestCount}");
@@ -235,20 +235,20 @@ static class ReservationManagement
     {
         Console.Clear();
         Console.WriteLine("\n=== Reservations by Date ===");
-        Console.Write("Enter date (YYYY-MM-DD) or press Enter for today: ");
+        Console.Write("Enter date (DD-MM-YYYY) or press Enter for today: ");
         
         string? input = Console.ReadLine();
         string dateToSearch;
 
         if (string.IsNullOrWhiteSpace(input))
         {
-            dateToSearch = DateTime.Today.ToString("yyyy-MM-dd");
+            dateToSearch = DateTime.Today.ToString("dd-MM-yyyy");
         }
         else
         {
             if (!ReservationsLogic.IsValidDateFormat(input))
             {
-                Console.WriteLine("Invalid date format. Please use YYYY-MM-DD format.");
+                Console.WriteLine("Invalid date format. Please use DD-MM-YYYY format.");
                 Console.WriteLine("Press any key to continue...");
                 Console.ReadKey();
                 ViewReservationsByDate();
@@ -499,9 +499,9 @@ static class ReservationManagement
         }
 
         Console.WriteLine($"\nCurrent reservation: {reservation.GuestFirstName} {reservation.GuestLastName}");
-        Console.WriteLine($"Current date/time: {DateTime.Parse(reservation.StartAt):yyyy-MM-dd HH:mm}");
-        Console.Write("Enter new date/time (YYYY-MM-DD HH:mm): ");
-        
+        Console.WriteLine($"Current date/time: {DateTime.Parse(reservation.StartAt):dd-MM-yyyy HH:mm}");
+        Console.Write("Enter new date/time (DD-MM-YYYY HH:mm): ");
+
         string? input = Console.ReadLine();
         if (string.IsNullOrWhiteSpace(input))
         {
@@ -510,9 +510,16 @@ static class ReservationManagement
             return;
         }
 
-        if (!DateTime.TryParseExact(input, "yyyy-MM-dd HH:mm", null, System.Globalization.DateTimeStyles.None, out DateTime newTime))
+        if (!DateTime.TryParseExact(input, "dd-MM-yyyy", null, DateTimeStyles.None, out _))
         {
             Console.WriteLine("Invalid date format. Please use YYYY-MM-DD HH:mm format. Press any key to continue...");
+            Console.ReadKey();
+            return;
+        }
+
+        if (!DateTime.TryParseExact(input, "dd-MM-yyyy HH:mm", null, DateTimeStyles.None, out DateTime newTime))
+        {
+            Console.WriteLine("Invalid date format. Please use DD-MM-YYYY HH:mm format. Press any key to continue...");
             Console.ReadKey();
             return;
         }
@@ -533,10 +540,11 @@ static class ReservationManagement
         {
             Console.WriteLine("✗ Failed to update reservation time.");
         }
-        
+
         Console.WriteLine("Press any key to continue...");
         Console.ReadKey();
     }
+
 
     private static void ChangeGuestCount(List<ReservationModel> reservations)
     {
@@ -806,8 +814,8 @@ static class ReservationManagement
         Console.Clear();
         Console.WriteLine("\n=== Change Reservation Time ===\n");
         Console.WriteLine($"Guest: {reservation.GuestFirstName} {reservation.GuestLastName}");
-        Console.WriteLine($"Current date/time: {DateTime.Parse(reservation.StartAt):yyyy-MM-dd HH:mm}");
-        Console.Write("\nEnter new date/time (YYYY-MM-DD HH:mm): ");
+        Console.WriteLine($"Current date/time: {DateTime.Parse(reservation.StartAt):dd-MM-yyyy HH:mm}");
+        Console.Write("\nEnter new date/time (dd-MM-YYYY HH:mm): ");
         
         string? input = Console.ReadLine();
         if (string.IsNullOrWhiteSpace(input))
@@ -817,9 +825,9 @@ static class ReservationManagement
             return;
         }
 
-        if (!DateTime.TryParseExact(input, "yyyy-MM-dd HH:mm", null, System.Globalization.DateTimeStyles.None, out DateTime newTime))
+        if (!DateTime.TryParseExact(input, "dd-MM-yyyy HH:mm", null, System.Globalization.DateTimeStyles.None, out DateTime newTime))
         {
-            Console.WriteLine("Invalid date format. Please use YYYY-MM-DD HH:mm format. Press any key to continue...");
+            Console.WriteLine("Invalid date format. Please use DD-MM-YYYY HH:mm format. Press any key to continue...");
             Console.ReadKey();
             return;
         }
