@@ -6,7 +6,7 @@ public class ThemeAccess
     private readonly string _connectionString = "Data Source=DataSources/project.db";
     private readonly string Table = "Themes";
 
-    public void AddTheme(ThemeModel theme, DateTime TimeSlot)
+    public void Write(ThemeModel theme, DateTime TimeSlot)
     {
         string sql = $"INSERT INTO {Table} (Name, Course, IsActive) VALUES (@Name, @Course, @IsActive)";
         using var connection = new SqliteConnection(_connectionString);

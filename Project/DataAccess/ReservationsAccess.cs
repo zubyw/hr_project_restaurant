@@ -194,7 +194,7 @@ public bool CancelReservation(ReservationModel reservation)
         }
     }
 
-    public ReservationModel? GetLatestByUserId(int userId)
+    public ReservationModel? GetLatestReservationByUserId(int userId)
         {
             using var connection = new SqliteConnection(_connectionString);
             connection.Open();

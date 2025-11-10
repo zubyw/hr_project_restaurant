@@ -9,7 +9,7 @@ namespace Project.DataAccess
         private readonly string _connectionString = "Data Source=DataSources/project.db";
         private readonly string Table = "Dishes";
 
-        public void AddDish(DishModel dish)
+        public void Write(DishModel dish)
         {
             string sql = $"INSERT INTO {Table} (Name, Price, Description, Type) VALUES (@Name, @Price, @Description, @Type)";
             using var connection = new SqliteConnection(_connectionString);
