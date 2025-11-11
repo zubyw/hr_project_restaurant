@@ -1,11 +1,11 @@
 using System.Globalization;
 using System.Linq;
+using Project.Logic;
 using Project.DataModels;  
 
 static class ReservationManagement
 {
     private static ReservationsLogic _reservationsLogic = new ReservationsLogic();
-
     public static void Start()
     {
         string[] options = new string[] { "View All Reservations", "View Reservations by Date", "Back to Main Menu" };

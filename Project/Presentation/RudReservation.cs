@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Globalization; // <-- toegevoegd
 using Project.DataModels;
+using Project.Logic;
 
 namespace Project.Presentation
 {
     public class RudReservation
     {
         // Logic layer instance
-        ReservationsLogic logic = new ReservationsLogic();
-
+        private static ReservationsLogic _reservationsLogic = new ReservationsLogic();
+        private static DishLogic _dishLogic = new DishLogic();
         // Starts the reservation menu
         public void Start(int userId)
         {
@@ -21,7 +22,7 @@ namespace Project.Presentation
             Console.WriteLine();
 
             // Load all reservations for the logged-in user
-            List<ReservationModel> reservations = logic.GetReservationsByUserIdForGuest(userId);
+            List<ReservationModel> reservations = _reservationsLogic.GetReservationsByUserIdForGuest(userId);
 
             // If none, go back to where the function was caled 
             if (reservations.Count == 0)
@@ -136,7 +137,7 @@ namespace Project.Presentation
                         switch (manageIndex)
                         {
                             case 0: // Update
-                                Update(selectedReservation, userId);
+                                Update(selectedReservation);
                                 break;
 
                             case 1: // Cancel
@@ -158,14 +159,14 @@ namespace Project.Presentation
         }
 
         // Update a reservation (same step flow as create: guests -> date -> arrow-time)
-        private void Update(ReservationModel reservation, int userId)
+        private void Update(ReservationModel reservation)
         {
             Console.Clear();
             Console.WriteLine("=== Update Reservation ===");
             // ===== Edit Reservation Menu =====
             string[] editOptions = {
-            "Guest Count",
             "Table Selection",
+            "Guest Count",
             "Date & Time",
             "Dish Selection",
             "Back"
@@ -194,10 +195,10 @@ namespace Project.Presentation
                     // Current value formatting
                     string currentValue = i switch
                     {
-                        0 => $"{reservation.GuestCount}",
-                        1 => $"{reservation.TableId}",
+                        0 => $"{reservation.TableId}",
+                        1 => $"{reservation.GuestCount}",
                         2 => $"{DateTime.Parse(reservation.StartAt):dd-MM-yyyy HH:mm}",
-                        3 => $"{(logic.ReservationContainsDishes(reservation) ? "Not made yet" : "Made")}",
+                        3 => $"{(_reservationsLogic.ReservationContainsDishes(reservation) ? "Not made yet" : "Made")}",
                         _ => ""
                     };
 
@@ -228,10 +229,10 @@ namespace Project.Presentation
                         switch (editIndex)
                         {
                             case 0:
-                                // EditGuestCount(selectedReservation);
+                                // EditTable(selectedReservation);
                                 break;
                             case 1:
-                                // EditTable(selectedReservation);
+                                EditGuestCount(reservation);
                                 break;
                             case 2:
                                 // EditDateTime(selectedReservation);
@@ -288,7 +289,78 @@ namespace Project.Presentation
                     return;
                 }
             }
-            logic.UpdateGuestCountForReservation(intAmountPeople, reservation);
+                GuestCountDishSelection(reservation.GuestCount, intAmountPeople, reservation);
+        }
+
+        private void GuestCountDishSelection(int oldguestcount, int newguestcount, ReservationModel reservation)
+        {
+            Console.WriteLine("Make a dish selection? (Y/N)");
+            string? MakesDishSelection = Console.ReadLine()?.Trim().ToUpper();
+            if (string.IsNullOrEmpty(MakesDishSelection))
+            {
+                Console.WriteLine("All fields are required!");
+                Console.WriteLine("Press any key to try again...");
+                Console.ReadKey();
+                GuestCountDishSelection(oldguestcount, newguestcount, reservation);
+                return;
+            }
+            if (MakesDishSelection == "Y")
+            {
+                // ===== DISH SELECTION STEP =====
+                // Get current theme
+                var dishLogic = new DishLogic();
+                int? currentThemeId = dishLogic.GetCurrentThemeId();
+                int askForDishesAmount = 0;
+                if (_reservationsLogic.ReservationContainsDishes(reservation))
+                {
+                    askForDishesAmount = newguestcount > oldguestcount ? newguestcount - oldguestcount : newguestcount;
+                }
+                else
+                {
+                    askForDishesAmount = newguestcount;
+                }
+                if (currentThemeId.HasValue)
+                {
+                    // Show dish selection menu
+                    List<DishModel> selectedDishes = DishSelection.SelectDishesForReservation(askForDishesAmount, currentThemeId.Value);
+
+                    if (selectedDishes.Count == 0)
+                    {
+                        // User cancelled or something went wrong or didnt select any dishes.
+                        ColorConsole.WriteWarning("Dish selection cancelled. Returning to main menu...");
+                        Thread.Sleep(1500);
+                        GuestCountDishSelection(oldguestcount, newguestcount, reservation);
+                        return;
+                    }
+
+                    _reservationsLogic.UpdateGuestCountForReservation(newguestcount, reservation);
+                    dishLogic.ReserveDishes(selectedDishes, reservation, newguestcount < oldguestcount);
+                    ReservationModel updatedreservation = reservation;
+                    updatedreservation.GuestCount = newguestcount;
+                    Update(updatedreservation);
+                }
+                else
+                {
+                    ColorConsole.WriteWarning("No theme available for the current month. Proceeding without dish selection...");
+                    Thread.Sleep(2000);
+                }
+            }
+            else if (MakesDishSelection == "N")
+            {
+                DishLogic dishLogic = new DishLogic();
+                _reservationsLogic.UpdateGuestCountForReservation(newguestcount, reservation);
+                if (oldguestcount > newguestcount)
+                {
+                    _dishLogic.DeleteDishesFromReservation(reservation);
+                }
+                ReservationModel updatedreservation = reservation;
+                updatedreservation.GuestCount = newguestcount;
+                Update(updatedreservation);
+            }
+            else
+            {
+                GuestCountDishSelection(oldguestcount, newguestcount, reservation);
+            }
         }
     }
 }

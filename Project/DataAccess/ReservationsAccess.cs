@@ -234,18 +234,6 @@ public bool CancelReservation(ReservationModel reservation)
         }
     }
 
-    // public void UpdateReservation(ReservationModel reservation, int guestCount)
-    // {
-    //     using (SqliteConnection connection = new SqliteConnection(_connectionString))
-    //     {
-    //         string query = "UPDATE Reservations SET GuestCount = @GuestCount, UpdatedAt = datetime('now') WHERE Id = @Id";
-    //         connection.Execute(query, new
-    //         {
-    //             GuestCount = guestCount,
-    //             Id = reservation.ID
-    //         });
-    //     }
-    // }
 
     public void UpdateReservationStatus(ReservationModel reservation, string status)
     {
