@@ -162,5 +162,17 @@ namespace Project.Logic
             _dishaccess.Update(dish);
         }
 
+        public void AdminDeleteDishFromTheme(int dishId, int themeId)
+        {
+            EnsureThemeExists(themeId);
+
+            _dishaccess.UnlinkDishFromTheme(dishId, themeId);
+
+            DishModel dish = new DishModel();
+            dish.ID = dishId;
+
+            _dishaccess.Delete(dish);
+        }
+
     }
 }
