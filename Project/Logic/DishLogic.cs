@@ -8,6 +8,7 @@ namespace Project.Logic
     public class DishLogic
     {
         private DishAccess _dishaccess;
+        
         public DishLogic(DishAccess? dishAccess = null)
         {
             _dishaccess = dishAccess ?? new DishAccess();
@@ -105,7 +106,7 @@ namespace Project.Logic
 
         private void EnsureNotDuplicate(int themeId, string name, string type)
         {
-            AdminDishAccess admin = new AdminDishAccess();
+            DishAccess admin = new DishAccess();
             bool exists = admin.ExistsByNameTypeInTheme(themeId, name, type);
 
             if (exists)
@@ -118,10 +119,31 @@ namespace Project.Logic
         {
             EnsureThemeExists(themeId);
 
-            AdminDishAccess admin = new AdminDishAccess();
+            DishAccess admin = new DishAccess();
             List<DishModel> list = admin.GetByTheme(themeId);
 
             return list;
         }
+
+        public int AdminAddDishToTheme(int themeId, string name, decimal price, string description, string type)
+        {
+            EnsureThemeExists(themeId);
+            EnsureValidName(name);
+            EnsureValidPrice(price);
+            EnsureValidType(type);
+            EnsureNotDuplicate(themeId, name, type);
+
+            DishModel dish = new DishModel();
+            dish.Name = name;
+            dish.Price = price;
+            dish.Description = description;
+            dish.Type = type;
+
+            int newId = _dishaccess.AddDishReturnId(dish);
+            _dishaccess.LinkDishToTheme(newId, themeId);
+
+            return newId;
+        }
+
     }
 }
