@@ -145,5 +145,22 @@ namespace Project.Logic
             return newId;
         }
 
+        public void AdminUpdateDishInTheme(int dishId, int themeId, string name, decimal price, string description, string type)
+        {
+            EnsureThemeExists(themeId);
+            EnsureValidName(name);
+            EnsureValidPrice(price);
+            EnsureValidType(type);
+
+            DishModel dish = new DishModel();
+            dish.ID = dishId;
+            dish.Name = name;
+            dish.Price = price;
+            dish.Description = description;
+            dish.Type = type;
+
+            _dishaccess.Update(dish);
+        }
+
     }
 }
