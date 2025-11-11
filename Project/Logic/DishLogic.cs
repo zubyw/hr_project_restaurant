@@ -124,7 +124,7 @@ namespace Project.Logic
 
             return list;
         }
-
+        
         public int AdminAddDishToTheme(int themeId, string name, decimal price, string description, string type)
         {
             EnsureThemeExists(themeId);
@@ -133,17 +133,21 @@ namespace Project.Logic
             EnsureValidType(type);
             EnsureNotDuplicate(themeId, name, type);
 
-            DishModel dish = new DishModel();
-            dish.Name = name;
-            dish.Price = price;
-            dish.Description = description;
-            dish.Type = type;
+            DishModel dish = new DishModel
+            {
+                ThemeId = themeId,
+                Name = name,
+                Price = price,
+                Description = description,
+                Type = type
+            };
 
             int newId = _dishaccess.AddDishReturnId(dish);
             _dishaccess.LinkDishToTheme(newId, themeId);
 
             return newId;
         }
+
 
         public void AdminUpdateDishInTheme(int dishId, int themeId, string name, decimal price, string description, string type)
         {
@@ -152,15 +156,19 @@ namespace Project.Logic
             EnsureValidPrice(price);
             EnsureValidType(type);
 
-            DishModel dish = new DishModel();
-            dish.ID = dishId;
-            dish.Name = name;
-            dish.Price = price;
-            dish.Description = description;
-            dish.Type = type;
+            DishModel dish = new DishModel
+            {
+                ID = dishId,
+                ThemeId = themeId,
+                Name = name,
+                Price = price,
+                Description = description,
+                Type = type
+            };
 
             _dishaccess.Update(dish);
         }
+
 
         public void AdminDeleteDishFromTheme(int dishId, int themeId)
         {
@@ -168,11 +176,13 @@ namespace Project.Logic
 
             _dishaccess.UnlinkDishFromTheme(dishId, themeId);
 
-            DishModel dish = new DishModel();
-            dish.ID = dishId;
+            DishModel? dish = _dishaccess.GetById(dishId);
+            if (dish == null)
+            {
+                throw new Exception("Dish not found");
+            }
 
             _dishaccess.Delete(dish);
         }
-
     }
 }
