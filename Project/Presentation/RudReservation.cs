@@ -198,7 +198,7 @@ namespace Project.Presentation
                         0 => $"{reservation.TableId}",
                         1 => $"{reservation.GuestCount}",
                         2 => $"{DateTime.Parse(reservation.StartAt):dd-MM-yyyy HH:mm}",
-                        3 => $"{(_reservationsLogic.ReservationContainsDishes(reservation) ? "Not made yet" : "Made")}",
+                        3 => $"{(_reservationsLogic.ReservationContainsDishes(reservation) ? "Made" : "Not made yet")}",
                         _ => ""
                     };
 
@@ -238,7 +238,7 @@ namespace Project.Presentation
                                 // EditDateTime(selectedReservation);
                                 break;
                             case 3:
-                                // EditDish(selectedReservation);
+                                EditDish(reservation);
                                 break;
                             case 4:
                                 editing = false; // Back
@@ -256,7 +256,7 @@ namespace Project.Presentation
         private void EditGuestCount(ReservationModel reservation)
         {
             Console.Clear();
-            Console.WriteLine("\n===Reservations===");
+            Console.WriteLine("\n=== Update Guestcount ===");
             Console.WriteLine();
             Console.WriteLine($"Amount of people: {reservation.GuestCount}");
             Console.WriteLine();
@@ -289,12 +289,15 @@ namespace Project.Presentation
                     return;
                 }
             }
-                GuestCountDishSelection(reservation.GuestCount, intAmountPeople, reservation);
+            GuestCountDishSelection(reservation.GuestCount, intAmountPeople, reservation);
+            ReservationModel updatedreservation = reservation;
+            updatedreservation.GuestCount = intAmountPeople;
+            Update(updatedreservation);
         }
 
-        private void GuestCountDishSelection(int oldguestcount, int newguestcount, ReservationModel reservation)
+        private void GuestCountDishSelection(int oldguestcount, int newguestcount, ReservationModel reservation, string inputstring = "Make a dish selection? (Y/N)")
         {
-            Console.WriteLine("Make a dish selection? (Y/N)");
+            Console.WriteLine($"{inputstring}");
             string? MakesDishSelection = Console.ReadLine()?.Trim().ToUpper();
             if (string.IsNullOrEmpty(MakesDishSelection))
             {
@@ -335,9 +338,7 @@ namespace Project.Presentation
 
                     _reservationsLogic.UpdateGuestCountForReservation(newguestcount, reservation);
                     dishLogic.ReserveDishes(selectedDishes, reservation, newguestcount < oldguestcount);
-                    ReservationModel updatedreservation = reservation;
-                    updatedreservation.GuestCount = newguestcount;
-                    Update(updatedreservation);
+                    
                 }
                 else
                 {
@@ -361,6 +362,27 @@ namespace Project.Presentation
             {
                 GuestCountDishSelection(oldguestcount, newguestcount, reservation);
             }
+        }
+        private void EditDish(ReservationModel reservation)
+        {
+            if (_reservationsLogic.ReservationContainsDishes(reservation))
+            {
+                Console.Clear();
+                Console.WriteLine("\n=== Update Dish Selection ===");
+                Console.WriteLine();
+                Console.WriteLine("Dish selection already made");
+                Console.WriteLine();
+                GuestCountDishSelection(0, reservation.GuestCount, reservation, "Edit your dish selection? (Y/N)");
+                Update(reservation);
+            }
+            
+            Console.Clear();
+            Console.WriteLine("\n=== Update Dish Selection ===");
+            Console.WriteLine();
+            Console.WriteLine("Dish selection not made yet");
+            Console.WriteLine();
+            GuestCountDishSelection(0, reservation.GuestCount, reservation, "Edit your dish selection? (Y/N)");
+            Update(reservation);
         }
     }
 }
