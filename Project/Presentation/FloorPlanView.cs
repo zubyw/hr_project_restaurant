@@ -27,7 +27,11 @@ namespace Project.Presentation
 
         public static TableModel? SelectTableFromFloorPlan(List<TableModel> allTables, List<int> reservedTableIds, int guestCount)
         {
-            int selectedTableNumber = 0;
+            // Start with the first selectable table
+            var firstSelectable = allTables
+                .OrderBy(t => t.TableNumber)
+                .FirstOrDefault(t => IsTableSelectable(t, reservedTableIds, guestCount));
+            int selectedTableNumber = firstSelectable?.TableNumber ?? 0;
             ConsoleKey key;
 
             do
@@ -83,7 +87,7 @@ namespace Project.Presentation
             Console.ResetColor();
             
             Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write("█ Too Small  ");
+            Console.Write("█ Wrong Size  ");
             Console.ResetColor();
             
             Console.ForegroundColor = ConsoleColor.Red;
@@ -186,7 +190,9 @@ namespace Project.Presentation
         private static ConsoleColor GetTableColor(TableModel table, List<int> reservedTableIds, int guestCount, int selectedTableNumber)
         {
             bool isReserved = reservedTableIds.Contains(table.ID);
-            bool isRightSize = table.TableCapacity >= guestCount;
+            // Round up guest count to table size: 1-2 -> 2, 3-4 -> 4, 5-6 -> 6
+            int requiredTableSize = guestCount <= 2 ? 2 : guestCount <= 4 ? 4 : 6;
+            bool isRightSize = table.TableCapacity == requiredTableSize;
             bool isSelected = table.TableNumber == selectedTableNumber;
 
             if (isSelected && isRightSize && !isReserved)
@@ -210,7 +216,9 @@ namespace Project.Presentation
         private static bool IsTableSelectable(TableModel table, List<int> reservedTableIds, int guestCount)
         {
             bool isReserved = reservedTableIds.Contains(table.ID);
-            bool isRightSize = table.TableCapacity >= guestCount;
+            // Round up guest count to table size: 1-2 -> 2, 3-4 -> 4, 5-6 -> 6
+            int requiredTableSize = guestCount <= 2 ? 2 : guestCount <= 4 ? 4 : 6;
+            bool isRightSize = table.TableCapacity == requiredTableSize;
             
             return !isReserved && isRightSize;
         }
@@ -248,7 +256,19 @@ namespace Project.Presentation
                     break;
             }
 
+            // Get selectable tables only
+            var selectableTables = allTables
+                .Where(t => IsTableSelectable(t, reservedTableIds, guestCount))
+                .Select(t => t.TableNumber)
+                .ToList();
+
+            if (!selectableTables.Any())
+            {
+                return currentTableNumber;
+            }
+
             var closestTable = TablePositions
+                .Where(kvp => selectableTables.Contains(kvp.Key)) // Only consider selectable tables
                 .OrderBy(kvp => Math.Abs(kvp.Value.Item1 - targetRow) + Math.Abs(kvp.Value.Item2 - targetCol))
                 .Where(kvp => key switch
                 {

@@ -73,13 +73,13 @@ static class ReservationUpdateMenu
             return;
         }
 
-        Console.Write("Enter date (YYYY-MM-DD): ");
+        Console.Write("Enter date (DD-MM-YYYY): ");
         string? dateIn = Console.ReadLine();
         DateTime dateOnly;
         if (string.IsNullOrEmpty(dateIn) ||
-            !DateTime.TryParseExact(dateIn, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out dateOnly))
+            !DateTime.TryParseExact(dateIn, "dd-MM-yyyy", null, System.Globalization.DateTimeStyles.None, out dateOnly))
         {
-            Console.WriteLine("Invalid date. Press any key to return...");
+            Console.WriteLine("Invalid date. Please use DD-MM-YYYY format. Press any key to return...");
             Console.ReadKey();
             return;
         }
@@ -87,9 +87,9 @@ static class ReservationUpdateMenu
         Console.WriteLine("Select Arrival Time:");
         string selectedTime = SelectArrivalTimeMenu(); // "HH:mm"
 
-        string combined = $"{dateOnly:yyyy-MM-dd} {selectedTime}";
+        string combined = $"{dateOnly:dd-MM-yyyy} {selectedTime}";
         DateTime newTime;
-        if (!DateTime.TryParseExact(combined, "yyyy-MM-dd HH:mm", null, System.Globalization.DateTimeStyles.None, out newTime))
+        if (!DateTime.TryParseExact(combined, "dd-MM-yyyy HH:mm", null, System.Globalization.DateTimeStyles.None, out newTime))
         {
             Console.WriteLine("Invalid date/time. Press any key to return...");
             Console.ReadKey();
@@ -162,6 +162,12 @@ static class ReservationUpdateMenu
             Console.WriteLine("Reservation not found for this user.");
             Console.ReadKey();
             return;
+        }
+
+        ReservationModel? reservation = _reservationsLogic.GetReservationById(reservationId);
+        if (reservation != null)
+        {
+            Console.WriteLine($"Date/time: {DateTime.Parse(reservation.StartAt):dd-MM-yyyy HH:mm}");
         }
 
         bool success = _reservationsLogic.CancelReservation(reservationId);

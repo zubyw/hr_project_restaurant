@@ -69,7 +69,7 @@ namespace Project.Logic
         // --- Create/Update/Delete ---
 
         // Create a new reservation (only if between 1 and 6 guests)
-        public bool CreateReservation(int userId, int tableId, int guestCount, string startAt, string status = "Pending")
+        public bool CreateReservation(int userId, int tableId, int guestCount, string startAt, string status = "Open")
         {
             if (guestCount < 1 || guestCount > 6)
                 return false;
@@ -80,8 +80,8 @@ namespace Project.Logic
             reservation.GuestCount = guestCount;
             reservation.StartAt = startAt;
             reservation.Status = status;
-            reservation.CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            reservation.CreatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
+            reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
             _reservationsAccess.Write(reservation);
             return true;
@@ -94,7 +94,7 @@ namespace Project.Logic
             if (reservation == null) return false;
 
             reservation.Status = newStatus;
-            reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
             _reservationsAccess.Update(reservation);
             return true;
         }
@@ -106,16 +106,16 @@ namespace Project.Logic
             return true;
         }
 
-        // Format helper: only date (yyyy-MM-dd)
+        // Format helper: only date (dd-MM-yyyy)
         public static string FormatDateForDatabase(DateTime date)
         {
-            return date.ToString("yyyy-MM-dd");
+            return date.ToString("dd-MM-yyyy");
         }
 
-        // Format helper: date and time (yyyy-MM-dd HH:mm:ss)
+        // Format helper: date and time (dd-MM-yyyy HH:mm:ss)
         public static string FormatDateTimeForDatabase(DateTime dateTime)
         {
-            return dateTime.ToString("yyyy-MM-dd HH:mm:ss");
+            return dateTime.ToString("dd-MM-yyyy HH:mm:ss");
         }
 
         // Check if date format is valid
@@ -123,7 +123,7 @@ namespace Project.Logic
         {
             return DateTime.TryParseExact(
                 dateString,
-                "yyyy-MM-dd",
+                "dd-MM-yyyy",
                 null,
                 System.Globalization.DateTimeStyles.None,
                 out _);
@@ -141,8 +141,8 @@ namespace Project.Logic
             if (reservation == null)
                 return false;
 
-            reservation.StartAt = newTime.ToString("yyyy-MM-dd HH:mm:ss");
-            reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            reservation.StartAt = newTime.ToString("dd-MM-yyyy HH:mm:ss");
+            reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
             _reservationsAccess.Update(reservation);
             return true;
@@ -162,7 +162,7 @@ namespace Project.Logic
             if (reservation.TableCapacity >= newGuestCount)
             {
                 reservation.GuestCount = newGuestCount;
-                reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
                 _reservationsAccess.UpdateGuestCount(reservation);
                 return true;
             }
@@ -175,7 +175,7 @@ namespace Project.Logic
             TableModel newTable = availableTables[0];
             reservation.TableId = newTable.ID;
             reservation.GuestCount = newGuestCount;
-            reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
             _reservationsAccess.UpdateReservationTable(reservation);
             return true;
@@ -189,7 +189,7 @@ namespace Project.Logic
                 return false;
 
             reservation.Status = "Geannuleerd";
-            reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
             _reservationsAccess.CancelReservation(reservation);
             return true;
