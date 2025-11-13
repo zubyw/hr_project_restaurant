@@ -356,8 +356,11 @@ namespace Project.Presentation
             }
             if (MakesDishSelection == "Y")
             {
-                DishSelectionStep(oldguestcount, newguestcount, reservation);
+                DishSelectionStep(newguestcount, oldguestcount, reservation);
                 _reservationsLogic.UpdateGuestCountForReservation(newguestcount, reservation);
+                ReservationModel updatedreservation = reservation;
+                updatedreservation.GuestCount = newguestcount;
+                Update(updatedreservation);
             }
             else if (MakesDishSelection == "N")
             {
@@ -378,6 +381,7 @@ namespace Project.Presentation
         }
         private void EditDishSelection(ReservationModel reservation)
         {
+            bool ableToDelete = false;
             if (_reservationsLogic.ReservationContainsDishes(reservation))
             {
                 Console.Clear();
@@ -385,8 +389,7 @@ namespace Project.Presentation
                 Console.WriteLine();
                 Console.WriteLine("Dish selection already made");
                 Console.WriteLine();
-                
-                Update(reservation);
+                ableToDelete = true;
             }
             else
             {
@@ -395,8 +398,82 @@ namespace Project.Presentation
                 Console.WriteLine();
                 Console.WriteLine("Dish selection not made yet");
                 Console.WriteLine();
-                GuestCountDishSelection(0, reservation.GuestCount, reservation, "Make an dish selection? (Y/N)");
-                Update(reservation);
+            }
+            bool managing = true;
+            int manageIndex = 0;
+
+            string[] manageOptions = {
+            "Change dish selection",
+            "Remove dish selection",
+            "Back"
+            };
+
+            while (managing)
+            {
+                Console.Clear();
+                Console.WriteLine("\n=== Edit Dish Selection ===");
+                Console.WriteLine($"\nReservation for {reservation.GuestCount} guests\n");
+
+                // Display menu options
+                for (int i = 0; i < manageOptions.Length; i++)
+                {
+                    bool isSelected = i == manageIndex;
+                    if (isSelected)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkCyan;
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    Console.WriteLine($"  {manageOptions[i]}");
+
+                    if (isSelected)
+                        Console.ResetColor();
+                }
+
+                // Handle key input
+                var key = Console.ReadKey(true);
+
+                switch (key.Key)
+                {
+                    case ConsoleKey.UpArrow:
+                        manageIndex = (manageIndex - 1 + manageOptions.Length) % manageOptions.Length;
+                        break;
+
+                    case ConsoleKey.DownArrow:
+                        manageIndex = (manageIndex + 1) % manageOptions.Length;
+                        break;
+
+                    case ConsoleKey.Enter:
+                        switch (manageIndex)
+                        {
+                            case 0: // User makes the choice to change dish selection
+                                DishSelectionStep(reservation.GuestCount, 0, reservation);
+                                break;
+
+                            case 1: // User makes the choice to remove his dishselections
+                                if (ableToDelete)
+                                {
+                                    _dishLogic.DeleteDishesFromReservation(reservation);
+                                    Console.WriteLine();
+                                    Console.WriteLine("Deleted dish selection");
+                                    Thread.Sleep(1500);
+                                    Update(reservation);
+                                }
+                                else
+                                {
+                                    Console.WriteLine();
+                                    Console.WriteLine("Unable to delete a dish selection that doesn't exsist");
+                                    Thread.Sleep(1500);
+                                }
+                                break;
+
+                            case 2: // Back
+                                Update(reservation);
+                                managing = false;
+                                break;
+                        }
+                        break;
+                }
             }
         }
 
