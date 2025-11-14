@@ -138,6 +138,7 @@ namespace Project.Presentation
                         {
                             case 0: // Update
                                 Update(selectedReservation);
+                                selectedReservation = _reservationsLogic.ReloadReservation(selectedReservation);
                                 break;
 
                             case 1: // Cancel
@@ -159,8 +160,11 @@ namespace Project.Presentation
         }
 
         // Update a reservation (same step flow as create: guests -> date -> arrow-time)
-        private void Update(ReservationModel reservation)
+        private void Update(ReservationModel updatedReservation)
         {
+            updatedReservation = _reservationsLogic.ReloadReservation(updatedReservation);
+
+
             Console.Clear();
             Console.WriteLine("=== Update Reservation ===");
             // ===== Edit Reservation Menu =====
@@ -195,10 +199,10 @@ namespace Project.Presentation
                     // Current value formatting
                     string currentValue = i switch
                     {
-                        0 => $"{reservation.TableId}",
-                        1 => $"{reservation.GuestCount}",
-                        2 => $"{DateTime.Parse(reservation.StartAt):dd-MM-yyyy HH:mm}",
-                        3 => $"{(_reservationsLogic.ReservationContainsDishes(reservation) ? "Made" : "Not made yet")}",
+                        0 => $"{updatedReservation.TableId}",
+                        1 => $"{updatedReservation.GuestCount}",
+                        2 => $"{DateTime.Parse(updatedReservation.StartAt):dd-MM-yyyy HH:mm}",
+                        3 => $"{(_reservationsLogic.ReservationContainsDishes(updatedReservation) ? "Made" : "Not made yet")}",
                         _ => ""
                     };
 
@@ -229,16 +233,16 @@ namespace Project.Presentation
                         switch (editIndex)
                         {
                             case 0:
-                                // EditTable(selectedReservation);
+                                EditTableSelection(updatedReservation);
                                 break;
                             case 1:
-                                EditGuestCount(reservation);
+                                EditGuestCount(updatedReservation);
                                 break;
                             case 2:
                                 // EditDateTime(selectedReservation);
                                 break;
                             case 3:
-                                EditDishSelection(reservation);
+                                EditDishSelection(updatedReservation);
                                 break;
                             case 4:
                                 editing = false; // Back
@@ -320,17 +324,13 @@ namespace Project.Presentation
                                 // Perform dish selection and update logic
                                 GuestCountDishSelection(reservation.GuestCount, availableGuestCount, reservation);
 
-                                ReservationModel updatedReservation = reservation;
-                                updatedReservation.GuestCount = availableGuestCount;
-
-                                Update(updatedReservation);
 
                                 Console.Clear();
                                 Console.WriteLine($"\nGuest count successfully updated to {availableGuestCount}!");
                                 Console.WriteLine("Press any key to return...");
                                 Console.ReadKey();
                                 managing = false;
-                                break;
+                                return;
 
                             case 1: // Back
                                 managing = false;
@@ -358,9 +358,8 @@ namespace Project.Presentation
             {
                 DishSelectionStep(newguestcount, oldguestcount, reservation);
                 _reservationsLogic.UpdateGuestCountForReservation(newguestcount, reservation);
-                ReservationModel updatedreservation = reservation;
-                updatedreservation.GuestCount = newguestcount;
-                Update(updatedreservation);
+                ReservationModel updated = _reservationsLogic.ReloadReservation(reservation);
+                Update(updated);
             }
             else if (MakesDishSelection == "N")
             {
@@ -370,9 +369,8 @@ namespace Project.Presentation
                 {
                     _dishLogic.DeleteDishesFromReservation(reservation);
                 }
-                ReservationModel updatedreservation = reservation;
-                updatedreservation.GuestCount = newguestcount;
-                Update(updatedreservation);
+                ReservationModel updated = _reservationsLogic.ReloadReservation(reservation);
+                Update(updated);
             }
             else
             {
@@ -448,6 +446,8 @@ namespace Project.Presentation
                         {
                             case 0: // User makes the choice to change dish selection
                                 DishSelectionStep(reservation.GuestCount, 0, reservation);
+                                ReservationModel updated = _reservationsLogic.ReloadReservation(reservation);
+                                Update(updated);
                                 break;
 
                             case 1: // User makes the choice to remove his dishselections
@@ -457,7 +457,8 @@ namespace Project.Presentation
                                     Console.WriteLine();
                                     Console.WriteLine("Deleted dish selection");
                                     Thread.Sleep(1500);
-                                    Update(reservation);
+                                    ReservationModel updated2 = _reservationsLogic.ReloadReservation(reservation);
+                                    Update(updated2);
                                 }
                                 else
                                 {
@@ -494,6 +495,7 @@ namespace Project.Presentation
                 Update(reservation);
                 return;
             }
+            
         }
 
         private void DishSelectionStep(int newguestcount, int oldguestcount, ReservationModel reservation)
@@ -519,7 +521,8 @@ namespace Project.Presentation
                     // User cancelled or something went wrong or didnt select any dishes.
                     ColorConsole.WriteWarning("Dish selection cancelled. Returning to Update Reservation...");
                     Thread.Sleep(1500);
-                    Update(reservation);
+                    ReservationModel updated = _reservationsLogic.ReloadReservation(reservation);
+                    Update(updated);
                     return;
                 }
                 dishLogic.ReserveDishes(selectedDishes, reservation, newguestcount < oldguestcount);

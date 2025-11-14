@@ -336,6 +336,11 @@ namespace Project.Logic
             }
             return 0;
         }
+        public ReservationModel ReloadReservation(ReservationModel reservation)
+    {
+        return GetReservationById(reservation.ID);
+    }
+
 
     }
 }
