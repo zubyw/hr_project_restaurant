@@ -147,7 +147,7 @@ public bool UpdateReservationTime(ReservationModel reservation)
 
 public bool UpdateReservationTable(ReservationModel reservation)
 {
-    string sql = "UPDATE Reservations SET TableId=@TableId, GuestCount=@GuestCount, UpdatedAt=CURRENT_TIMESTAMP WHERE ID=@ID";
+    string sql = "UPDATE Reservations SET TableId=@TableId, GuestCount=@GuestCount WHERE ID=@ID";
     using var connection = new SqliteConnection(_connectionString);
     return connection.Execute(sql, new { reservation.TableId, reservation.GuestCount, reservation.ID }) > 0;
 }
@@ -247,7 +247,6 @@ public bool CancelReservation(ReservationModel reservation)
             });
         }
     }
-
 }
 
 

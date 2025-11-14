@@ -337,9 +337,14 @@ namespace Project.Logic
             return 0;
         }
         public ReservationModel ReloadReservation(ReservationModel reservation)
-    {
-        return GetReservationById(reservation.ID);
-    }
+        {
+            return GetReservationById(reservation.ID);
+        }
+
+        public void UpdateTableForReservation(ReservationModel reservation)
+        {
+            _reservationsAccess.UpdateReservationTable(reservation);
+        }
 
 
     }

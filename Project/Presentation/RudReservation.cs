@@ -495,7 +495,22 @@ namespace Project.Presentation
                 Update(reservation);
                 return;
             }
-            
+            if (AvailableTable.ID == reservation.TableId)
+            {
+                Console.Clear();
+                Console.WriteLine();
+                Console.WriteLine($"Unable to change seating to table thats already selected.");
+                Thread.Sleep(1500);
+                Update(reservation);
+            }
+            reservation.TableId = AvailableTable.ID;
+            _reservationsLogic.UpdateTableForReservation(reservation);
+            Console.Clear();
+            Console.WriteLine();
+            Console.WriteLine($"Changed seating to table {AvailableTable.ID}");
+            Thread.Sleep(1500);
+            Update(reservation);
+
         }
 
         private void DishSelectionStep(int newguestcount, int oldguestcount, ReservationModel reservation)
