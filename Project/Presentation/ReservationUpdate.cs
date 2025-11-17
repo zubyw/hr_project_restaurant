@@ -20,37 +20,68 @@ static class ReservationUpdateMenu
     }
 
     // Main update menu
-    public static void Start()
+     public static void Start()
+{
+    string[] options = new string[]
+    {
+        "Change reservation time",
+        "Change number of guests",
+        "Cancel reservation",
+        "Back"
+    };
+
+    int selectedIndex = 0;
+    ConsoleKey key;
+
+    do
     {
         Console.Clear();
         Console.WriteLine("\n=== Change Reservations ===");
-        Console.WriteLine("1. Change reservation time");
-        Console.WriteLine("2. Change number of guests");
-        Console.WriteLine("3. Cancel reservation");
-        Console.WriteLine("4. Back");
-        Console.Write("Select an option: ");
-        string? input = Console.ReadLine();
 
-        switch (input)
+        // Display options
+        for (int i = 0; i < options.Length; i++)
         {
-            case "1":
-                ChangeReservationTime();
+            if (i == selectedIndex)
+            {
+                Console.BackgroundColor = ConsoleColor.DarkCyan;
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            Console.WriteLine($"  {options[i]}");
+            Console.ResetColor();
+        }
+
+        key = Console.ReadKey(true).Key;
+
+        // Handle arrow keys
+        switch (key)
+        {
+            case ConsoleKey.UpArrow:
+                selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
                 break;
-            case "2":
-                ChangeGuestCount();
+            case ConsoleKey.DownArrow:
+                selectedIndex = (selectedIndex + 1) % options.Length;
                 break;
-            case "3":
-                CancelReservation();
-                break;
-            case "4":
-                return;
-            default:
-                Console.WriteLine("Invalid choice. Press any key to continue...");
-                Console.ReadKey();
-                Start();
+            case ConsoleKey.Enter:
+                switch (selectedIndex)
+                {
+                    case 0:
+                        ChangeReservationTime();
+                        break;
+                    case 1:
+                        ChangeGuestCount();
+                        break;
+                    case 2:
+                        CancelReservation();
+                        break;
+                    case 3:
+                        return; // Back
+                }
                 break;
         }
-    }
+
+    } while (key != ConsoleKey.Enter || selectedIndex != 3); // Blijf menu tonen tot gebruiker op "Back" Enter drukt
+}
+
 
     // Change time → date then arrow-time (no typing HH:mm)
     private static void ChangeReservationTime()
