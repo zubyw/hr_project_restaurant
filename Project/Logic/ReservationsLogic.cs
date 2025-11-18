@@ -304,7 +304,6 @@ namespace Project.Logic
 
         public void UpdateGuestCountForReservation(int newguestcount, ReservationModel reservation)
         {
-            DeleteDishesFromReservation(reservation);
             _reservationsAccess.UpdateReservationGuestCount(reservation, newguestcount);
         }
 

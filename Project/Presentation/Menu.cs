@@ -175,7 +175,7 @@ static class Menu
                             if (CurrentUser != null)
                             {
                                 RudReservation rud = new RudReservation();
-                                rud.Start(CurrentUser.ID);
+                                rud.Start();
                                 ShowMainMenu();
                             }
                             break;

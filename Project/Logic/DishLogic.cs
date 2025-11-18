@@ -20,7 +20,7 @@ namespace Project.Logic
         {
             if (emptyPreviousItems)
             {
-            _dishaccess.DeleteDishesOnReservation(reservation);
+                _dishaccess.DeleteDishesOnReservation(reservation);
             }
             List<int> returnedlist = [];
             foreach (DishModel dish in reservedDishes)
@@ -29,7 +29,7 @@ namespace Project.Logic
                 {
                     int x = _dishaccess.ReservedDishes(dish, reservation);
                     returnedlist.Add(x);
-                }
+                    }
             }
             return returnedlist;
         }

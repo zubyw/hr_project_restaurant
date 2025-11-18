@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization; // <-- toegevoegd
+using System.Globalization;
 using Project.DataModels;
 using Project.Logic;
 
@@ -12,17 +12,17 @@ namespace Project.Presentation
         private static ReservationsLogic _reservationsLogic = new ReservationsLogic();
         private static DishLogic _dishLogic = new DishLogic();
         // Starts the reservation menu
-        public void Start(int userId)
+        public void Start()
         {
             // needed for ownership checks in logic
-            ReservationsLogic.CurrentUserId = userId;
+            ReservationsLogic.CurrentUserId = UserLogin.activeUser.ID;
 
             Console.Clear();
             Console.WriteLine("=== My Reservations ===");
             Console.WriteLine();
 
             // Load all reservations for the logged-in user
-            List<ReservationModel> reservations = _reservationsLogic.GetReservationsByUserIdForGuest(userId);
+            List<ReservationModel> reservations = _reservationsLogic.GetReservationsByUserIdForGuest(UserLogin.activeUser.ID);
 
             // If none, go back to where the function was caled 
             if (reservations.Count == 0)
@@ -46,7 +46,7 @@ namespace Project.Presentation
                 for (int i = 0; i < reservations.Count; i++)
                 {
                     var r = reservations[i];
-                    string dateTime = DateTime.Parse(r.StartAt).ToString("dd-MM-yyyy HH:mm");
+                    string dateTime = DateTime.ParseExact(r.StartAt, "dd-MM-yyyy HH:mm", null).ToString();
                     bool isSelected = (i == selectedIndex);
 
                     if (isSelected)
@@ -83,7 +83,8 @@ namespace Project.Presentation
                         break;
 
                     case ConsoleKey.Escape:
-                        return; // go back or exit
+                        Menu.ShowCustomerMenu();
+                        return;
                 }
             }
 
@@ -142,12 +143,12 @@ namespace Project.Presentation
                                 break;
 
                             case 1: // Cancel
-                                Delete(selectedReservation, userId);
+                                // Delete(selectedReservation);
                                 break;
 
                             case 2: // Back
                                 managing = false;
-                                Start(userId);
+                                Start();
                                 break;
                         }
                         break;
@@ -239,13 +240,13 @@ namespace Project.Presentation
                                 EditGuestCount(updatedReservation);
                                 break;
                             case 2:
-                                // EditDateTime(selectedReservation);
+                                // EditDateTime(updatedReservation);
                                 break;
                             case 3:
                                 EditDishSelection(updatedReservation);
                                 break;
-                            case 4:
-                                editing = false; // Back
+                            case 4: // User gets send back to selecting a reservation.
+                                Start();
                                 break;
                         }
                         break;
@@ -541,12 +542,58 @@ namespace Project.Presentation
                     return;
                 }
                 dishLogic.ReserveDishes(selectedDishes, reservation, newguestcount < oldguestcount);
+                Console.WriteLine(reservation.ID);
+                Thread.Sleep(2000);
             }
             else
-                {
-                    ColorConsole.WriteWarning("No theme available for the current month. Proceeding without dish selection...");
-                    Thread.Sleep(2000);
-                }
+            {
+                ColorConsole.WriteWarning("No theme available for the current month. Proceeding without dish selection...");
+                Thread.Sleep(2000);
+            }
+        }
+        
+        private void EditDateTime(ReservationModel reservation)
+        {
+            Console.Clear();
+            Console.WriteLine("\n=== Update Date & Time ===");
+            Console.WriteLine($"\nCurrent Date & Time: {DateTime.Parse(reservation.StartAt):dd-MM-yyyy HH:mm}");
+
+            Console.WriteLine();
+            Console.WriteLine("Date: (DD-MM-YYYY)");
+            string? ReservationDate = Console.ReadLine();
+            if (string.IsNullOrEmpty(ReservationDate))
+            {
+                Console.WriteLine("All fields are required!");
+                Console.WriteLine("Press any key to try again...");
+                Console.ReadKey();
+                EditDateTime(reservation);
+                return;
+            }
+
+            DateTime reservationDateTime;
+            if (!DateTime.TryParseExact(ReservationDate, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out reservationDateTime))
+            {
+                Console.WriteLine("Given date format incorrect (DD-MM-YYYY)");
+                Console.WriteLine("Press any key to try again...");
+                Console.ReadKey();
+                EditDateTime(reservation);
+                return;
+            }
+
+            if (!UserMakeReservationLogic.CheckValidDate(ReservationDate))
+            {
+                Console.WriteLine("Given date invalid.");
+                Console.WriteLine("Press any key to try again...");
+                Console.ReadKey();
+                EditDateTime(reservation);
+                return;
+            }
+
+            Console.WriteLine("Select Arrival Time:");
+            string ArrivalTime = _reservationsLogic.SelectArrivalTime();
+            Console.WriteLine($"You selected: {ArrivalTime}");
+
+
         }
     }
 }
