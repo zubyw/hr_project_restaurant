@@ -115,8 +115,11 @@ namespace Project.DataAccess
             }
         }
 
-
-
-        
-    }
+        public void DeleteDishesOnReservation(ReservationModel reservation)
+        {
+            string sql = $"DELETE FROM Reservations_Dishes WHERE ReservationId = @Id";
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Execute(sql, new { Id = reservation.ID });
+        }
+    }   
 }
