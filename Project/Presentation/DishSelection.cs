@@ -152,14 +152,14 @@ public static class DishSelection
                     if (selectedIndex < dishes.Count)
                     {
                         var selected = dishes[selectedIndex];
-                        Console.WriteLine($"✓ Selected: {selected.Name}");
+                        Console.WriteLine($"Selected: {selected.Name}");
                         Thread.Sleep(1200);
                         return selected;
                     }
                     // Confirm selection of not choosing a dish
                     else
                     {
-                        Console.WriteLine("✓ No Dish Selected.");
+                        Console.WriteLine("No Dish Selected.");
                         Thread.Sleep(1200);
                         return null;
                     }
@@ -218,7 +218,7 @@ public static class DishSelection
     {
         Console.Clear();
         Console.WriteLine();
-        Console.WriteLine("✅ Your reservation with menu selection has been saved!");
+        Console.WriteLine("Your reservation with menu selection has been saved!");
         Console.WriteLine();
         Thread.Sleep(3000);
         return true;

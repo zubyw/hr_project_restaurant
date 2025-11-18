@@ -326,11 +326,11 @@ static class ReservationManagement
         bool success = _reservationsLogic.ChangeReservationTime(reservationId, newTime);
         if (success)
         {
-            Console.WriteLine("✓ Reservation time updated successfully!");
+            Console.WriteLine(" Reservation time updated successfully!");
         }
         else
         {
-            Console.WriteLine("✗ Failed to update reservation time.");
+            Console.WriteLine(" Failed to update reservation time.");
         }
         
         Console.WriteLine("Press any key to continue...");
@@ -376,7 +376,7 @@ static class ReservationManagement
         bool success = _reservationsLogic.ChangeReservationPersons(reservationId, newCount);
         if (success)
         {
-            Console.WriteLine("✓ Guest count updated successfully!");
+            Console.WriteLine("Guest count updated successfully!");
         }
         else
         {
@@ -433,7 +433,7 @@ static class ReservationManagement
             bool success = _reservationsLogic.CancelReservation(reservationId);
             if (success)
             {
-                Console.WriteLine("✓ Reservation cancelled successfully!");
+                Console.WriteLine("Reservation cancelled successfully!");
                 // Refresh the reservations list
                 reservations = _reservationsLogic.GetAllReservations();
             }

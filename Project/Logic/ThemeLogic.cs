@@ -4,7 +4,6 @@ using System.Collections.Generic;
 public class ThemesLogic
 {
     private readonly ThemeAccess access = new ThemeAccess();
-    private static readonly string[] AllowedCourses = { "Starter", "Main", "Dessert" };
 
     public List<ThemeModel> GetAll()
     {
@@ -34,10 +33,7 @@ public class ThemesLogic
             throw new Exception("Name empty");
         }
 
-        if (!IsValidCourse(course))
-        {
-            throw new Exception("Invalid course");
-        }
+        EnsureValidThemeMonth(timeSlot);
 
         if (Exists(name))
         {
@@ -63,11 +59,6 @@ public class ThemesLogic
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new Exception("Name empty");
-        }
-
-        if (!IsValidCourse(course))
-        {
-            throw new Exception("Invalid course");
         }
 
         ThemeModel existing = access.GetById(id);
@@ -130,15 +121,20 @@ public class ThemesLogic
         return false;
     }
 
-    private bool IsValidCourse(string course)
+    private void EnsureValidThemeMonth(DateTime monthDate)
     {
-        foreach (string c in AllowedCourses)
+        if (monthDate.Year < 2025)
         {
-            if (c.Equals(course, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
+            throw new Exception("Theme year must be 2025 or later.");
         }
-        return false;
+
+        DateTime firstDayOfMonth = new DateTime(monthDate.Year, monthDate.Month, 1);
+        DateTime now = DateTime.Today;
+        DateTime firstDayOfCurrentMonth = new DateTime(now.Year, now.Month, 1);
+
+        if (firstDayOfMonth < firstDayOfCurrentMonth)
+        {
+            throw new Exception("Theme month cannot be in the past.");
+        }
     }
 }

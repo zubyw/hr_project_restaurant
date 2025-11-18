@@ -9,45 +9,74 @@ public static class AdminDishesManagement
 
     public static void Start()
     {
+        string[] options =
+        {
+            "Show dishes by theme",
+            "Add dish to theme",
+            "Update dish in theme",
+            "Delete dish from theme",
+            "Back"
+        };
+
+        int index = 0;
+
         while (true)
         {
             Console.Clear();
             Console.WriteLine("=== Admin: Dishes Management ===");
-            Console.WriteLine("1) Show dishes by theme");
-            Console.WriteLine("2) Add dish to theme");
-            Console.WriteLine("3) Update dish in theme");
-            Console.WriteLine("4) Delete dish from theme");
-            Console.WriteLine("0) Back");
-            Console.Write("Choose: ");
-            string choice = Console.ReadLine();
 
-            try
+            for (int i = 0; i < options.Length; i++)
             {
-                if (choice == "1")
+                if (i == index)
                 {
-                    ShowByTheme();
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
                 }
-                else if (choice == "2")
-                {
-                    Add();
-                }
-                else if (choice == "3")
-                {
-                    Update();
-                }
-                else if (choice == "4")
-                {
-                    Delete();
-                }
-                else if (choice == "0")
-                {
-                    ReservationManagement.Start();
-                }
+
+                Console.WriteLine(options[i]);
+                Console.ResetColor();
             }
-            catch (Exception ex)
+
+            ConsoleKey key = Console.ReadKey(true).Key;
+
+            if (key == ConsoleKey.UpArrow)
             {
-                Console.WriteLine("Error: " + ex.Message);
-                Console.ReadKey();
+                index--;
+                if (index < 0) index = options.Length - 1;
+            }
+            else if (key == ConsoleKey.DownArrow)
+            {
+                index++;
+                if (index >= options.Length) index = 0;
+            }
+            else if (key == ConsoleKey.Enter)
+            {
+                try
+                {
+                    switch (index)
+                    {
+                        case 0:
+                            ShowByTheme();
+                            break;
+                        case 1:
+                            Add();
+                            break;
+                        case 2:
+                            Update();
+                            break;
+                        case 3:
+                            Delete();
+                            break;
+                        case 4:
+                            ReservationManagement.Start();
+                            return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error: " + ex.Message);
+                    Console.ReadKey();
+                }
             }
         }
     }
@@ -67,23 +96,26 @@ public static class AdminDishesManagement
         }
 
         Console.WriteLine();
-        Console.WriteLine("┌──────┬────────┬──────────────────────┬──────────┬────────────────────────────┐");
-        Console.WriteLine("│  ID  │ Theme  │        Name          │  Type    │           Price/Desc       │");
-        Console.WriteLine("├──────┼────────┼──────────────────────┼──────────┼────────────────────────────┤");
+        Console.WriteLine("┌────────┬──────────┬──────────────────────┬────────────┬──────────┐");
+        Console.WriteLine("│   ID   │  Theme   │         Name         │    Type    │  Price   │");
+        Console.WriteLine("├────────┼──────────┼──────────────────────┼────────────┼──────────┤");
+
         foreach (DishModel d in list)
         {
-            string price = d.Price.ToString("0.00");
-            string nm = d.Name.Length > 22 ? d.Name.Substring(0, 22) + "..." : d.Name;
-            string desc = d.Description.Length > 24 ? d.Description.Substring(0, 24) + "..." : d.Description;
-            Console.WriteLine(string.Format(
-                "│ {0,4} │ {1,6} │ {2,-22} │ {3,-8} │ {4,-8} {5,-15} │",
-                d.ID, themeId, nm, d.Type, price, desc));
+            string name = d.Name.Length > 22 ? d.Name.Substring(0, 22) : d.Name;
+            string type = d.Type.Length > 10 ? d.Type.Substring(0, 10) : d.Type;
+            string price = d.Price.ToString("0.00").Replace('.', ',');
+
+            Console.WriteLine(
+                $"│ {d.ID,6} │ {themeId,8} │ {name,-21} │ {type,-9} │ {price,7} │");
         }
-        Console.WriteLine("└──────┴────────┴──────────────────────┴──────────┴────────────────────────────┘");
+
+        Console.WriteLine("└────────┴──────────┴──────────────────────┴────────────┴──────────┘");
         Console.WriteLine();
         Console.WriteLine("Press any key to return...");
         Console.ReadKey();
     }
+
 
     private static void Add()
     {
