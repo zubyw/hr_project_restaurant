@@ -49,12 +49,12 @@ namespace Project.Logic
             return themeAccess.GetActiveThemeID();
         }
 
-
+        // Admin methods theme / dishes management
         private static readonly string[] _allowedTypes = new string[] 
         { 
-         "Starter", 
-         "Main", 
-         "Dessert" 
+            "Starter", 
+            "Main", 
+            "Dessert" 
         };
 
         private void EnsureThemeExists(int themeId)
@@ -99,10 +99,9 @@ namespace Project.Logic
         {
             if (price <= 0)
             {
-            throw new Exception("Price must be greater than 0");
+                throw new Exception("Price must be greater than 0");
             }
         }
-
 
         private void EnsureNotDuplicate(int themeId, string name, string type)
         {
@@ -115,6 +114,7 @@ namespace Project.Logic
             }
         }
 
+        // Admin methods (called from AdminDishesManagement)
         public List<DishModel> AdminGetDishesByTheme(int themeId)
         {
             EnsureThemeExists(themeId);
@@ -124,7 +124,7 @@ namespace Project.Logic
 
             return list;
         }
-        
+
         public int AdminAddDishToTheme(int themeId, string name, decimal price, string description, string type)
         {
             EnsureThemeExists(themeId);
@@ -148,7 +148,6 @@ namespace Project.Logic
             return newId;
         }
 
-
         public void AdminUpdateDishInTheme(int dishId, int themeId, string name, decimal price, string description, string type)
         {
             EnsureThemeExists(themeId);
@@ -169,9 +168,8 @@ namespace Project.Logic
             _dishaccess.Update(dish);
         }
 
-
         public void AdminDeleteDishFromTheme(int dishId, int themeId)
-        {
+        {   
             EnsureThemeExists(themeId);
 
             _dishaccess.UnlinkDishFromTheme(dishId, themeId);

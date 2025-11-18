@@ -29,7 +29,7 @@ public static class ThemeManagement
                 else if (choice == "4") Activate();
                 else if (choice == "5") Deactivate();
                 else if (choice == "6") Delete();
-                else if (choice == "0") break;
+                else if (choice == "0") ReservationManagement.Start();
             }
             catch (Exception ex)
             {

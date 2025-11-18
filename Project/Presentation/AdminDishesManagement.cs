@@ -41,7 +41,7 @@ public static class AdminDishesManagement
                 }
                 else if (choice == "0")
                 {
-                    break;
+                    ReservationManagement.Start();
                 }
             }
             catch (Exception ex)
