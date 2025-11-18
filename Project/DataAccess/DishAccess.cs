@@ -118,12 +118,14 @@ namespace Project.DataAccess
         
 
         public int AddDishReturnId(DishModel dish)
-        {
-            string sql = "INSERT INTO Dishes (Name, Price, Description, Type) " +
-                         "VALUES (@Name, @Price, @Description, @Type); SELECT last_insert_rowid();";
-            SqliteConnection connection = new SqliteConnection(_connectionString);
-            int newId = connection.ExecuteScalar<int>(sql, dish);
-            connection.Close();
+        {          
+            const string sql = @"
+                INSERT INTO Dishes (Name, Price, Description, Type)
+                VALUES (@Name, @Price, @Description, @Type);
+                SELECT last_insert_rowid();";
+
+            using var connection = new SqliteConnection(_connectionString);
+            int newId = connection.QuerySingle<int>(sql, dish);
             return newId;
         }
 

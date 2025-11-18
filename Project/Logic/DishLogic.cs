@@ -114,7 +114,6 @@ namespace Project.Logic
             }
         }
 
-        // Admin methods (called from AdminDishesManagement)
         public List<DishModel> AdminGetDishesByTheme(int themeId)
         {
             EnsureThemeExists(themeId);
