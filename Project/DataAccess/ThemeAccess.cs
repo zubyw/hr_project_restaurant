@@ -92,23 +92,23 @@ public class ThemeAccess
             string deleteCalendar = "DELETE FROM Themes_Calendar WHERE ThemeId = @Id;";
             connection.Execute(deleteCalendar, new { Id = themeId }, transaction);
 
-            string deleteDishes = "DELETE FROM Dishes WHERE ThemeId = @Id;";
-            connection.Execute(deleteDishes, new { Id = themeId }, transaction);
+            string deleteDishLinks = "DELETE FROM Dishes_Themes WHERE ThemeId = @Id;";
+            connection.Execute(deleteDishLinks, new { Id = themeId }, transaction);
 
             string deleteTheme = "DELETE FROM Themes WHERE ID = @Id;";
-            connection.Execute(deleteTheme, new { Id = themeId }, transaction);
+            int rows = connection.Execute(deleteTheme, new { Id = themeId }, transaction);
+            
+            if (rows == 0)
+            {
+                throw new Exception("Theme not found.");
+            }
 
             transaction.Commit();
-            Console.WriteLine("Theme and related data deleted.");
         }
-        catch (Exception)
+        catch
         {
             transaction.Rollback();
-            Console.WriteLine("Delete failed.");
-        }
-        finally
-        {
-            connection.Close();
+            throw;
         }
     }
 

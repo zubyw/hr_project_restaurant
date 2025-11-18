@@ -135,7 +135,7 @@ public static class ThemeManagement
         Console.WriteLine("=== Create Theme ===");
         Console.Write("Theme name: ");
         string name = Console.ReadLine();
-        Console.Write("Course (Starter/Main/Dessert): ");
+        Console.Write("Course: ");
         string course = Console.ReadLine();
 
         DateTime time;
@@ -166,7 +166,7 @@ public static class ThemeManagement
         int id = int.Parse(Console.ReadLine());
         Console.Write("New name: ");
         string name = Console.ReadLine();
-        Console.Write("New course (Starter/Main/Dessert): ");
+        Console.Write("New course: ");
         string course = Console.ReadLine();
         Console.Write("Active (1 or 0): ");
         int active = int.Parse(Console.ReadLine());
@@ -219,8 +219,19 @@ public static class ThemeManagement
         Console.WriteLine("=== Delete Theme ===");
         Console.Write("Theme ID to delete: ");
         int id = int.Parse(Console.ReadLine());
-        logic.DeleteThemeCompletely(id);
-        Console.WriteLine("Theme deleted.");
+        
+        try
+        {
+            logic.DeleteThemeCompletely(id);
+            Console.WriteLine("Theme deleted.");
+        }
+
+        catch (Exception ex)
+        {
+            Console.WriteLine("Delete failed: " + ex.Message);
+        }
+
+        Console.WriteLine("Press any key to return...");
         Console.ReadKey();
     }
 }
