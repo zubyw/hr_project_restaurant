@@ -147,6 +147,7 @@ namespace Project.Logic
             return newId;
         }
 
+
         public void AdminUpdateDishInTheme(int dishId, int themeId, string name, decimal price, string description, string type)
         {
             EnsureThemeExists(themeId);

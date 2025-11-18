@@ -170,6 +170,7 @@ public static class DishSelection
         }
         return null;
     }
+
     
     private static bool ShowReservationSummary(List<List<DishModel?>> allSelectedDishesPerGuest, int guestCount)
 {

@@ -128,6 +128,7 @@ namespace Project.DataAccess
             int newId = connection.QuerySingle<int>(sql, dish);
             return newId;
         }
+        
 
         public void LinkDishToTheme(int dishId, int themeId)
         {
