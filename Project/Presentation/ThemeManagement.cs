@@ -138,19 +138,33 @@ public static class ThemeManagement
         Console.Write("Course: ");
         string course = Console.ReadLine();
 
-        DateTime time;
+        int year;
         while (true)
         {
-            Console.Write("Month date (yyyy-MM-dd): ");
-            string input = Console.ReadLine();
-            if (DateTime.TryParse(input, out time))
+            Console.Write("Year (yyyy, >= 2025): ");
+            if (int.TryParse(Console.ReadLine(), out year))
             {
                 break;
             }
-            Console.WriteLine("Invalid date format, try again.");
+            Console.WriteLine("Invalid year, try again.");
         }
 
-        logic.CreateTheme(name, course, time);
+        int month;
+        while (true)
+        {
+            Console.Write("Month (1-12): ");
+            if (int.TryParse(Console.ReadLine(), out month) &&
+                month >= 1 && month <= 12)
+            {
+                break;
+            }   
+            Console.WriteLine("Invalid month, try again.");
+        }
+
+    
+        DateTime timeSlot = new DateTime(year, month, 1);
+
+        logic.CreateTheme(name, course, timeSlot);
 
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Theme created successfully.");
@@ -171,19 +185,32 @@ public static class ThemeManagement
         Console.Write("Active (1 or 0): ");
         int active = int.Parse(Console.ReadLine());
 
-        DateTime monthDate;
+        int year;
         while (true)
         {
-            Console.Write("New month date (yyyy-MM-dd): ");
-            string input = Console.ReadLine();
-            if (DateTime.TryParse(input, out monthDate))
+            Console.Write("New year (yyyy, >= 2025): ");
+            if (int.TryParse(Console.ReadLine(), out year))
             {
                 break;
             }
-            Console.WriteLine("Invalid date format, try again.");
+            Console.WriteLine("Invalid year, try again.");
         }
 
-        logic.UpdateTheme(id, name, course, active);
+        int month;
+        while (true)
+        {
+            Console.Write("New month (1-12): ");
+            if (int.TryParse(Console.ReadLine(), out month) &&
+                month >= 1 && month <= 12)
+            {
+            break;
+            }
+            Console.WriteLine("Invalid month, try again.");
+        }
+
+        DateTime monthDate = new DateTime(year, month, 1);
+
+        logic.UpdateTheme(id, name, course, active, monthDate);
 
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Theme updated successfully.");
@@ -219,7 +246,7 @@ public static class ThemeManagement
         Console.WriteLine("=== Delete Theme ===");
         Console.Write("Theme ID to delete: ");
         int id = int.Parse(Console.ReadLine());
-        
+
         try
         {
             logic.DeleteThemeCompletely(id);

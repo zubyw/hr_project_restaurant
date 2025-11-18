@@ -28,8 +28,30 @@ public class ThemeAccess
     };
 
     connection.Execute(insertCalendarSql, calendarParams);
-
     }
+
+
+    public void UpdateThemeCalendar(int themeId, string type, string description, DateTime timeSlot)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+
+        string sql = @"
+            UPDATE Themes_Calendar
+            SET Type = @Type,
+                Description = @Description,
+                TimeSlot = @TimeSlot
+            WHERE ThemeId = @ThemeId;
+        ";
+
+        connection.Execute(sql, new
+        {
+            ThemeId = themeId,
+            Type = type,
+            Description = description,
+            TimeSlot = timeSlot
+        });
+    }
+
 
 
     public ThemeModel? GetById(int id)

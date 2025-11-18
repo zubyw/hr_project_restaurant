@@ -43,13 +43,14 @@ public class ThemesLogic
         ThemeModel theme = new ThemeModel
         {
             Name = name,
-            Course = course
+            Course = course,
+            IsActive = 1
         };
 
         access.AddTheme(theme, timeSlot);
     }
 
-    public void UpdateTheme(int id, string name, string course, int active)
+    public void UpdateTheme(int id, string name, string course, int active, DateTime timeSlot)
     {
         if (id <= 0)
         {
@@ -61,22 +62,24 @@ public class ThemesLogic
             throw new Exception("Name empty");
         }
 
+
+        EnsureValidThemeMonth(timeSlot);
+
+
         ThemeModel existing = access.GetById(id);
         if (existing == null)
         {
             throw new Exception("Not found");
         }
 
-        ThemeModel theme = new ThemeModel
-        {
-            ID = id,
-            Name = name,
-            Course = course,
-            IsActive = active
-        };
+        existing.Name = name;
+        existing.Course = course;
+        existing.IsActive = active;
 
-        access.Update(theme);
+        access.Update(existing);
+        access.UpdateThemeCalendar(id, existing.Name, existing.Course, timeSlot);
     }
+
 
     public void Activate(int id)
     {
