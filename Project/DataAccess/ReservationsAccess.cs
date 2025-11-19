@@ -221,14 +221,14 @@ public bool CancelReservation(ReservationModel reservation)
         return count > 0;
     }
 
-    public void UpdateReservationGuestCount(ReservationModel reservation, int guestCount)
+    public void UpdateReservationGuestCount(ReservationModel reservation)
     {
         using (SqliteConnection connection = new SqliteConnection(_connectionString))
         {
             string query = "UPDATE Reservations SET GuestCount = @GuestCount, UpdatedAt = datetime('now') WHERE Id = @Id";
             connection.Execute(query, new
             {
-                GuestCount = guestCount,
+                GuestCount = reservation.GuestCount,
                 Id = reservation.ID
             });
         }
@@ -265,8 +265,16 @@ public bool CancelReservation(ReservationModel reservation)
     {
         string sql = @"SELECT Status FROM Reservations WHERE ID = @Id";
 
-    using var connection = new SqliteConnection(_connectionString);
+        using var connection = new SqliteConnection(_connectionString);
 
-    return connection.QueryFirstOrDefault<string>(sql, new { Id = reservation.ID });
+        return connection.QueryFirstOrDefault<string>(sql, new { Id = reservation.ID });
     }
+
+    public ReservationModel? GetReservationByIdSimple(int id)
+{
+    string sql = @"SELECT * FROM Reservations WHERE ID = @Id";
+    using var connection = new SqliteConnection(_connectionString);
+    return connection.QueryFirstOrDefault<ReservationModel>(sql, new { Id = id });
+}
+
 }
