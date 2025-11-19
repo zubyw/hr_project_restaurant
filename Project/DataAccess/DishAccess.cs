@@ -25,7 +25,7 @@ namespace Project.DataAccess
 
         public void Update(DishModel dish)
         {
-            string sql = $"UPDATE {Table} SET Name = @Name, Price = @Price, Description = @Description, Type = @Type WHERE ID = @Id";
+            string sql = $"UPDATE {Table} SET Name = @Name, Price = @Price, Description = @Description, Type = @Type WHERE ID = @ID";
             using var connection = new SqliteConnection(_connectionString);
             connection.Execute(sql, dish);
         }
