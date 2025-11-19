@@ -172,7 +172,9 @@ namespace Project.Presentation
         // Update a reservation (same step flow as create: guests -> date -> arrow-time)
         private void Update(ReservationModel updatedReservation)
         {
+            Console.WriteLine($"{updatedReservation.GuestCount}");
             updatedReservation = _reservationsLogic.ReloadReservation(updatedReservation);
+            Console.WriteLine($"{updatedReservation.GuestCount}");
 
 
             Console.Clear();
@@ -374,12 +376,14 @@ namespace Project.Presentation
                 if (MakesDishSelection == "Y")
                 {
                     DishSelectionStep(newguestcount, oldguestcount, reservation);
-                    _reservationsLogic.UpdateGuestCountForReservation(newguestcount, reservation);
+                    reservation.GuestCount = newguestcount;
+                    _reservationsLogic.UpdateGuestCountForReservation(reservation);
                     break;
                 }
                 else if (MakesDishSelection == "N")
                 {
-                    _reservationsLogic.UpdateGuestCountForReservation(newguestcount, reservation);
+                    reservation.GuestCount = newguestcount;
+                    _reservationsLogic.UpdateGuestCountForReservation(reservation);
                     if (oldguestcount > newguestcount)
                     {
                         _dishLogic.DeleteDishesFromReservation(reservation);

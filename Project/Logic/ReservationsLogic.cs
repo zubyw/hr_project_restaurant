@@ -301,9 +301,9 @@ namespace Project.Logic
             return _reservationsAccess.DoesReservationHaveDishes(reservation);
         }
 
-        public void UpdateGuestCountForReservation(int newguestcount, ReservationModel reservation)
+        public void UpdateGuestCountForReservation(ReservationModel reservation)
         {
-            _reservationsAccess.UpdateReservationGuestCount(reservation, newguestcount);
+            _reservationsAccess.UpdateReservationGuestCount(reservation);
         }
 
 
@@ -334,9 +334,9 @@ namespace Project.Logic
             }
             return 0;
         }
-        public ReservationModel ReloadReservation(ReservationModel reservation)
+        public ReservationModel? ReloadReservation(ReservationModel reservation)
         {
-            return GetReservationById(reservation.ID);
+            return _reservationsAccess.GetReservationByIdSimple(reservation.ID);
         }
 
         public void UpdateTableForReservation(ReservationModel reservation)
