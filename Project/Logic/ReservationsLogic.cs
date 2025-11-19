@@ -88,9 +88,8 @@ namespace Project.Logic
         }
 
         // Update the status of a reservation (admin/staff or when reservation is updated use)
-        public bool UpdateReservationStatus(int reservationId, string newStatus)
+        public bool UpdateReservationStatus(ReservationModel reservation, string newStatus = "Canceled")
         {
-            ReservationModel? reservation = _reservationsAccess.GetById(reservationId);
             if (reservation == null) return false;
 
             reservation.Status = newStatus;
@@ -188,7 +187,7 @@ namespace Project.Logic
             if (reservation == null)
                 return false;
 
-            reservation.Status = "Geannuleerd";
+            reservation.Status = "Canceled";
             reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
             _reservationsAccess.CancelReservation(reservation);
@@ -346,5 +345,20 @@ namespace Project.Logic
         }
 
 
+        public void UpdateDateTimeForReservation(ReservationModel reservation)
+        {
+            _reservationsAccess.UpdateReservationDateTime(reservation);
+        }
+
+
+        public bool IsReservationCanceled(ReservationModel reservation)
+        {
+            string reservationStatus = _reservationsAccess.GetReservationStatus(reservation);
+            if (reservationStatus == "Canceled")
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }
