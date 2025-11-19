@@ -13,6 +13,77 @@ static class ReservationManagement
     private static DishLogic _dishLogic = new DishLogic();
 
     public static void Start()
+    {   
+        string[] options = new string[]
+        {   
+            "View All Reservations",
+            "View Reservations by Date",
+            "Manage Themes",
+            "Manage Dishes",            
+            "Back to Main Menu"
+        };
+
+        int selectedIndex = 0;
+        ConsoleKey key;
+
+        do
+        {
+            Console.Clear();
+            Console.WriteLine("\n=== Reservation Management (Admin) ===");
+
+            // Display options
+            for (int i = 0; i < options.Length; i++)
+            {
+                if (i == selectedIndex)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                Console.WriteLine($"  {options[i]}");
+
+                if (i == selectedIndex)
+                    Console.ResetColor();
+            }
+
+            key = Console.ReadKey(true).Key;
+
+   
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
+                    break;
+
+                case ConsoleKey.DownArrow:
+                    selectedIndex = (selectedIndex + 1) % options.Length;
+                    break;
+
+                case ConsoleKey.Enter:
+                    switch (selectedIndex)
+                    {
+                        case 0:
+                            ViewAllReservationsWithOptions();
+                            break;
+                        case 1:
+                            ViewReservationsByDate();
+                            break;
+                        case 2:
+                            ThemeManagement.Start(); 
+                            break;
+                        case 3:
+                            AdminDishesManagement.Start();
+                            break;    
+                        case 4:
+                            Menu.ShowMainMenu();
+                            break;
+                    }
+                    break;
+            }
+        } while (key != ConsoleKey.Escape);
+    }
+
+    private static void ViewAllReservationsWithOptions()
     {
         Console.Clear();
         Console.WriteLine("=== Admin Reservation Panel ===\n");
@@ -66,16 +137,63 @@ static class ReservationManagement
                 case ConsoleKey.UpArrow:
                     selectedIndex = (selectedIndex - 1 + reservations.Count) % reservations.Count;
                     break;
+
                 case ConsoleKey.DownArrow:
                     selectedIndex = (selectedIndex + 1) % reservations.Count;
                     break;
+
                 case ConsoleKey.Enter:
                     ManageReservation(reservations[selectedIndex]);
                     reservations = _reservationsLogic.GetAllReservations(); // refresh list
                     break;
                 case ConsoleKey.Escape:
-                    return;
+                    selecting = false;
+                    break;
             }
+        }
+    }
+
+    private static void ViewReservationsByDate()
+    {
+        Console.Clear();
+        Console.WriteLine("=== View Reservations by Date ===\n");
+        Console.Write("Enter date (dd-MM-yyyy): ");
+        string? input = Console.ReadLine();
+
+        if (DateTime.TryParseExact(input, "dd-MM-yyyy", null, DateTimeStyles.None, out DateTime selectedDate))
+        {
+            string dateString = selectedDate.ToString("yyyy-MM-dd");
+            List<ReservationModel> reservations = _reservationsLogic.GetReservationsByDate(dateString);
+            
+            if (reservations.Count == 0)
+            {
+                Console.WriteLine($"No reservations found for {selectedDate:dd-MM-yyyy}.");
+                Console.WriteLine("Press any key to return...");
+                Console.ReadKey();
+                return;
+            }
+
+            Console.Clear();
+            Console.WriteLine($"=== Reservations for {selectedDate:dd-MM-yyyy} ===\n");
+            Console.WriteLine("┌──────┬─────────┬──────────────────────────────┬───────┬─────────────────────┬───────────┐");
+            Console.WriteLine("│  ID  │  Table  │          Guest Name          │ Count │      Date/Time      │  Status   │");
+            Console.WriteLine("├──────┼─────────┼──────────────────────────────┼───────┼─────────────────────┼───────────┤");
+
+            foreach (var r in reservations)
+            {
+                string guestName = $"{r.GuestFirstName} {r.GuestLastName}";
+                string dateTime = DateTime.Parse(r.StartAt).ToString("dd-MM-yyyy HH:mm");
+                Console.WriteLine($"│ {r.ID,4} │ {r.TableNumber,2} ({r.TableCapacity}) │ {guestName,-28} │ {r.GuestCount,2}   │ {dateTime,-19} │ {r.Status,-9} │");
+            }
+
+            Console.WriteLine("└──────┴─────────┴──────────────────────────────┴───────┴─────────────────────┴───────────┘");
+            Console.WriteLine("\nPress any key to return...");
+            Console.ReadKey();
+        }
+        else
+        {
+            Console.WriteLine("Invalid date format. Please use dd-MM-yyyy. Press any key to return...");
+            Console.ReadKey();
         }
     }
 
