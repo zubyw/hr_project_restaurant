@@ -234,6 +234,19 @@ public bool CancelReservation(ReservationModel reservation)
         }
     }
 
+    public void UpdateReservationDateTime(ReservationModel reservation)
+    {
+        using (SqliteConnection connection = new SqliteConnection(_connectionString))
+        {
+            string query = "UPDATE Reservations SET StartAt = @Date, UpdatedAt = datetime('now') WHERE Id = @Id";
+            connection.Execute(query, new
+            {
+                Date = reservation.StartAt,
+                Id = reservation.ID
+            });
+        }
+    }
+
 
     public void UpdateReservationStatus(ReservationModel reservation, string status)
     {
@@ -247,6 +260,13 @@ public bool CancelReservation(ReservationModel reservation)
             });
         }
     }
+
+    public string? GetReservationStatus(ReservationModel reservation)
+    {
+        string sql = @"SELECT Status FROM Reservations WHERE ID = @Id";
+
+    using var connection = new SqliteConnection(_connectionString);
+
+    return connection.QueryFirstOrDefault<string>(sql, new { Id = reservation.ID });
+    }
 }
-
-
