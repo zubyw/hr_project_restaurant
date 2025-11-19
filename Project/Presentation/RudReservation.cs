@@ -1,29 +1,30 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization; // <-- toegevoegd
+using System.Globalization;
 using Project.DataModels;
+using Project.Logic;
 
 namespace Project.Presentation
 {
     public class RudReservation
     {
         // Logic layer instance
-        ReservationsLogic logic = new ReservationsLogic();
-
+        private static ReservationsLogic _reservationsLogic = new ReservationsLogic();
+        private static DishLogic _dishLogic = new DishLogic();
         // Starts the reservation menu
-        public void Start(int userId)
+        public void Start()
         {
             // needed for ownership checks in logic
-            ReservationsLogic.CurrentUserId = userId;
+            ReservationsLogic.CurrentUserId = UserLogin.activeUser.ID;
 
             Console.Clear();
             Console.WriteLine("=== My Reservations ===");
             Console.WriteLine();
 
             // Load all reservations for the logged-in user
-            List<ReservationModel> reservations = logic.GetReservationsByUserIdForGuest(userId);
+            List<ReservationModel> reservations = _reservationsLogic.GetReservationsByUserIdForGuest(UserLogin.activeUser.ID);
 
-            // If none, go back
+            // If none, go back to where the function was caled 
             if (reservations.Count == 0)
             {
                 Console.WriteLine("No reservations found.");
@@ -31,189 +32,568 @@ namespace Project.Presentation
                 Console.ReadKey();
                 return;
             }
+            int selectedIndex = 0;
+            bool selecting = true;
 
-            // Table layout (guest view)
-            Console.WriteLine();
-            Console.WriteLine("┌──────┬────────┬────────┬─────────────────────┬───────────┐");
-            Console.WriteLine("│  ID  │ Table  │ Guests │      Date/Time      │  Status   │");
-            Console.WriteLine("├──────┼────────┼────────┼─────────────────────┼───────────┤");
-
-            foreach (ReservationModel r in reservations)
+            while (selecting)
             {
-                string dateTime = DateTime.Parse(r.StartAt).ToString("MM-dd-yyyy HH:mm");
-                Console.WriteLine($"│ {r.ID,4} │ {r.TableId,6} │ {r.GuestCount,6} │ {dateTime,-19} │ {r.Status,-9} │");
-            }
+                Console.Clear();
+                Console.WriteLine();
+                Console.WriteLine("┌────────┬────────┬─────────────────────┬────────────┐");
+                Console.WriteLine("│ Table  │ Guests │      Date/Time      │   Status   │");
+                Console.WriteLine("├────────┼────────┼─────────────────────┼────────────┤");
 
-            Console.WriteLine("└──────┴────────┴────────┴─────────────────────┴───────────┘");
-            Console.WriteLine();
-
-            // Choose reservation to manage
-            Console.Write("Enter reservation ID to manage: ");
-            string? input = Console.ReadLine();
-
-            int selectedId;
-            if (!int.TryParse(input, out selectedId))
-            {
-                Console.WriteLine("Invalid ID.");
-                Console.ReadKey();
-                return;
-            }
-
-            // must exist in shown list for this user
-            bool exists = false;
-            for (int i = 0; i < reservations.Count; i++)
-            {
-                if (reservations[i].ID == selectedId)
+                for (int i = 0; i < reservations.Count; i++)
                 {
-                    exists = true;
-                    break;
+                    var r = reservations[i];
+                    string dateTime = DateTime.ParseExact(r.StartAt, "dd-MM-yyyy HH:mm", null).ToString();
+                    bool isSelected = (i == selectedIndex);
+
+                    if (isSelected)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkCyan;
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    Console.WriteLine($"│ {r.TableId,6} │ {r.GuestCount,6} │ {dateTime,-19} │ {r.Status,-10} │");
+
+                    if (isSelected)
+                        Console.ResetColor();
+                }
+
+                Console.WriteLine("└────────┴────────┴─────────────────────┴────────────┘");
+                Console.WriteLine();
+                Console.WriteLine("↑/↓ to navigate, Enter to select, Esc to go back");
+
+                // Handle input
+                var key = Console.ReadKey(true);
+
+                switch (key.Key)
+                {
+                    case ConsoleKey.UpArrow:
+                        selectedIndex = (selectedIndex - 1 + reservations.Count) % reservations.Count;
+                        break;
+
+                    case ConsoleKey.DownArrow:
+                        selectedIndex = (selectedIndex + 1) % reservations.Count;
+                        break;
+
+                    case ConsoleKey.Enter:
+                        selecting = false;
+                        break;
+
+                    case ConsoleKey.Escape:
+                        Menu.ShowCustomerMenu();
+                        return;
                 }
             }
 
-            if (!exists)
+            // After user presses Enter:
+            ReservationModel selectedReservation = reservations[selectedIndex];
+
+            // Manage that reservation
+            string[] manageOptions = { "Update reservation", "Cancel reservation", "Back" };
+            int manageIndex = 0;
+            bool managing = true;
+            while (managing)
             {
-                Console.WriteLine("This reservation ID does not exist.");
+                Console.Clear();
+                Console.WriteLine($"=== Manage Reservation ===\n");
+                Console.WriteLine($"Table: {selectedReservation.TableId}");
+                Console.WriteLine($"Guests: {selectedReservation.GuestCount}");
+                Console.WriteLine($"Date/Time: {DateTime.Parse(selectedReservation.StartAt):dd-MM-yyyy HH:mm}");
+                Console.WriteLine($"Status: {selectedReservation.Status}\n");
+
+                Console.WriteLine("Use ↑/↓ to navigate and Enter to select:\n");
+
+
+                for (int i = 0; i < manageOptions.Length; i++)
+                {
+                    bool isSelected = i == manageIndex;
+                    if (isSelected)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkCyan;
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    Console.WriteLine($"  {manageOptions[i]}");
+
+                    if (isSelected)
+                        Console.ResetColor();
+                }
+
+                var key = Console.ReadKey(true);
+
+                switch (key.Key)
+                {
+                    case ConsoleKey.UpArrow:
+                        manageIndex = (manageIndex - 1 + manageOptions.Length) % manageOptions.Length;
+                        break;
+
+                    case ConsoleKey.DownArrow:
+                        manageIndex = (manageIndex + 1) % manageOptions.Length;
+                        break;
+
+                    case ConsoleKey.Enter:
+                        switch (manageIndex)
+                        {
+                            case 0: // Update
+                                Update(selectedReservation);
+                                selectedReservation = _reservationsLogic.ReloadReservation(selectedReservation);
+                                break;
+
+                            case 1: // Cancel
+                                // Delete(selectedReservation);
+                                break;
+
+                            case 2: // Back
+                                managing = false;
+                                Start();
+                                break;
+                        }
+                        break;
+
+                    case ConsoleKey.Escape:
+                        managing = false;
+                        break;
+                }
+            }
+        }
+
+        // Update a reservation (same step flow as create: guests -> date -> arrow-time)
+        private void Update(ReservationModel updatedReservation)
+        {
+            updatedReservation = _reservationsLogic.ReloadReservation(updatedReservation);
+
+
+            Console.Clear();
+            Console.WriteLine("=== Update Reservation ===");
+            // ===== Edit Reservation Menu =====
+            string[] editOptions = {
+            "Table Selection",
+            "Guest Count",
+            "Date & Time",
+            "Dish Selection",
+            "Back"
+            };
+
+            int editIndex = 0;
+            bool editing = true;
+
+            // Calculate the longest option name for alignment
+            int longestLabel = editOptions.Max(opt => opt.Length) + 2;
+
+            while (editing)
+            {
+                Console.Clear();
+                Console.WriteLine("=== Update Reservation ===");
+
+                for (int i = 0; i < editOptions.Length; i++)
+                {
+                    bool isSelected = i == editIndex;
+                    if (isSelected)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkCyan;
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    // Current value formatting
+                    string currentValue = i switch
+                    {
+                        0 => $"{updatedReservation.TableId}",
+                        1 => $"{updatedReservation.GuestCount}",
+                        2 => $"{DateTime.Parse(updatedReservation.StartAt):dd-MM-yyyy HH:mm}",
+                        3 => $"{(_reservationsLogic.ReservationContainsDishes(updatedReservation) ? "Made" : "Not made yet")}",
+                        _ => ""
+                    };
+
+                    // Align option name and current value neatly
+                    string label = editOptions[i].PadRight(longestLabel);
+                    Console.WriteLine($"  {label} {currentValue}");
+
+                    if (isSelected)
+                        Console.ResetColor();
+                }
+
+                Console.WriteLine();
+                Console.WriteLine("↑/↓ to navigate, Enter to edit");
+
+                var key = Console.ReadKey(true);
+
+                switch (key.Key)
+                {
+                    case ConsoleKey.UpArrow:
+                        editIndex = (editIndex - 1 + editOptions.Length) % editOptions.Length;
+                        break;
+
+                    case ConsoleKey.DownArrow:
+                        editIndex = (editIndex + 1) % editOptions.Length;
+                        break;
+
+                    case ConsoleKey.Enter:
+                        switch (editIndex)
+                        {
+                            case 0:
+                                EditTableSelection(updatedReservation);
+                                break;
+                            case 1:
+                                EditGuestCount(updatedReservation);
+                                break;
+                            case 2:
+                                // EditDateTime(updatedReservation);
+                                break;
+                            case 3:
+                                EditDishSelection(updatedReservation);
+                                break;
+                            case 4: // User gets send back to selecting a reservation.
+                                Start();
+                                break;
+                        }
+                        break;
+                }
+            }
+        }
+        private void Delete(ReservationModel reservation, int userId)
+        {
+            return;
+        }
+
+        private void EditGuestCount(ReservationModel reservation)
+        {
+            Console.Clear();
+            Console.WriteLine("\n=== Update Guestcount ===");
+            Console.WriteLine($"\nCurrent guest count: {reservation.GuestCount}");
+
+            int availableGuestCount = _reservationsLogic.GetAvailableGuestCount(reservation);
+
+            if (availableGuestCount == 0)
+            {
+                Console.WriteLine("\nNo alternate guest count available for this reservation.");
                 Console.WriteLine("Press any key to return...");
                 Console.ReadKey();
                 return;
             }
 
-            Console.WriteLine("1. Update reservation");
-            Console.WriteLine("2. Cancel reservation");
-            Console.WriteLine("3. Back");
-            Console.Write("Choose: ");
-            string? choice = Console.ReadLine();
+            string[] manageOptions = {
+        $"Change guest count to {availableGuestCount}",
+        "Back"
+    };
 
-            if (choice == "1") Update(selectedId, userId);
-            else if (choice == "2") Delete(selectedId);
+            int manageIndex = 0;
+            bool managing = true;
+
+            while (managing)
+            {
+                Console.Clear();
+                Console.WriteLine("\n=== Update Guestcount ===");
+                Console.WriteLine($"\nCurrent guest count: {reservation.GuestCount}\n");
+
+                // Menu rendering
+                for (int i = 0; i < manageOptions.Length; i++)
+                {
+                    bool isSelected = i == manageIndex;
+                    if (isSelected)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkCyan;
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    Console.WriteLine($"   {manageOptions[i]}");
+
+                    if (isSelected)
+                        Console.ResetColor();
+                }
+
+                // Handle key input
+                var key = Console.ReadKey(true);
+
+                switch (key.Key)
+                {
+                    case ConsoleKey.UpArrow:
+                        manageIndex = (manageIndex - 1 + manageOptions.Length) % manageOptions.Length;
+                        break;
+
+                    case ConsoleKey.DownArrow:
+                        manageIndex = (manageIndex + 1) % manageOptions.Length;
+                        break;
+
+                    case ConsoleKey.Enter:
+                        switch (manageIndex)
+                        {
+                            case 0: // User chooses to change guest count
+
+                                // Perform dish selection and update logic
+                                GuestCountDishSelection(reservation.GuestCount, availableGuestCount, reservation);
+
+
+                                Console.Clear();
+                                Console.WriteLine($"\nGuest count successfully updated to {availableGuestCount}!");
+                                Console.WriteLine("Press any key to return...");
+                                Console.ReadKey();
+                                managing = false;
+                                return;
+
+                            case 1: // Back
+                                managing = false;
+                                break;
+                        }
+                        break;
+                }
+            }
         }
 
-        // Update a reservation (same step flow as create: guests -> date -> arrow-time)
-        private void Update(int id, int userId)
+
+        private void GuestCountDishSelection(int oldguestcount, int newguestcount, ReservationModel reservation, string inputstring = "Make a dish selection? (Y/N)")
         {
-            // final guard: must exist for current user
-            if (!logic.ReservationExistsForCurrentUser(id))
+            Console.WriteLine($"{inputstring}");
+            string? MakesDishSelection = Console.ReadLine()?.Trim().ToUpper();
+            if (string.IsNullOrEmpty(MakesDishSelection))
             {
-                Console.WriteLine("This reservation was not found for your account.");
+                Console.WriteLine("All fields are required!");
+                Console.WriteLine("Press any key to try again...");
                 Console.ReadKey();
+                GuestCountDishSelection(oldguestcount, newguestcount, reservation);
                 return;
             }
+            if (MakesDishSelection == "Y")
+            {
+                DishSelectionStep(newguestcount, oldguestcount, reservation);
+                _reservationsLogic.UpdateGuestCountForReservation(newguestcount, reservation);
+                ReservationModel updated = _reservationsLogic.ReloadReservation(reservation);
+                Update(updated);
+            }
+            else if (MakesDishSelection == "N")
+            {
+                DishLogic dishLogic = new DishLogic();
+                _reservationsLogic.UpdateGuestCountForReservation(newguestcount, reservation);
+                if (oldguestcount > newguestcount)
+                {
+                    _dishLogic.DeleteDishesFromReservation(reservation);
+                }
+                ReservationModel updated = _reservationsLogic.ReloadReservation(reservation);
+                Update(updated);
+            }
+            else
+            {
+                GuestCountDishSelection(oldguestcount, newguestcount, reservation);
+            }
+        }
+        private void EditDishSelection(ReservationModel reservation)
+        {
+            bool ableToDelete = false;
+            if (_reservationsLogic.ReservationContainsDishes(reservation))
+            {
+                Console.Clear();
+                Console.WriteLine("\n=== Update Dish Selection ===");
+                Console.WriteLine();
+                Console.WriteLine("Dish selection already made");
+                Console.WriteLine();
+                ableToDelete = true;
+            }
+            else
+            {
+                Console.Clear();
+                Console.WriteLine("\n=== Update Dish Selection ===");
+                Console.WriteLine();
+                Console.WriteLine("Dish selection not made yet");
+                Console.WriteLine();
+            }
+            bool managing = true;
+            int manageIndex = 0;
 
+            string[] manageOptions = {
+            "Change dish selection",
+            "Remove dish selection",
+            "Back"
+            };
+
+            while (managing)
+            {
+                Console.Clear();
+                Console.WriteLine("\n=== Edit Dish Selection ===");
+                Console.WriteLine($"\nReservation for {reservation.GuestCount} guests\n");
+
+                // Display menu options
+                for (int i = 0; i < manageOptions.Length; i++)
+                {
+                    bool isSelected = i == manageIndex;
+                    if (isSelected)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkCyan;
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    Console.WriteLine($"  {manageOptions[i]}");
+
+                    if (isSelected)
+                        Console.ResetColor();
+                }
+
+                // Handle key input
+                var key = Console.ReadKey(true);
+
+                switch (key.Key)
+                {
+                    case ConsoleKey.UpArrow:
+                        manageIndex = (manageIndex - 1 + manageOptions.Length) % manageOptions.Length;
+                        break;
+
+                    case ConsoleKey.DownArrow:
+                        manageIndex = (manageIndex + 1) % manageOptions.Length;
+                        break;
+
+                    case ConsoleKey.Enter:
+                        switch (manageIndex)
+                        {
+                            case 0: // User makes the choice to change dish selection
+                                DishSelectionStep(reservation.GuestCount, 0, reservation);
+                                ReservationModel updated = _reservationsLogic.ReloadReservation(reservation);
+                                Update(updated);
+                                break;
+
+                            case 1: // User makes the choice to remove his dishselections
+                                if (ableToDelete)
+                                {
+                                    _dishLogic.DeleteDishesFromReservation(reservation);
+                                    Console.WriteLine();
+                                    Console.WriteLine("Deleted dish selection");
+                                    Thread.Sleep(1500);
+                                    ReservationModel updated2 = _reservationsLogic.ReloadReservation(reservation);
+                                    Update(updated2);
+                                }
+                                else
+                                {
+                                    Console.WriteLine();
+                                    Console.WriteLine("Unable to delete a dish selection that doesn't exsist");
+                                    Thread.Sleep(1500);
+                                }
+                                break;
+
+                            case 2: // Back
+                                Update(reservation);
+                                managing = false;
+                                break;
+                        }
+                        break;
+                }
+            }
+        }
+
+        private void EditTableSelection(ReservationModel reservation)
+        {
+            TableAcces tableAccess = new TableAcces();
+            List<TableModel> allTables = tableAccess.GetAllTables();
+            List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(reservation.StartAt, reservation.GuestCount);
+
+            // Show floor plan and let user select a table
+            TableModel? AvailableTable = FloorPlanView.SelectTableFromFloorPlan(allTables, reservedTableIds, reservation.GuestCount);
+
+            if (AvailableTable == null)
+            {
+                Console.WriteLine("Table selection cancelled.");
+                Console.WriteLine("Press any key to return...");
+                Console.ReadKey();
+                Update(reservation);
+                return;
+            }
+            if (AvailableTable.ID == reservation.TableId)
+            {
+                Console.Clear();
+                Console.WriteLine();
+                Console.WriteLine($"Unable to change seating to table thats already selected.");
+                Thread.Sleep(1500);
+                Update(reservation);
+            }
+            reservation.TableId = AvailableTable.ID;
+            _reservationsLogic.UpdateTableForReservation(reservation);
             Console.Clear();
-            Console.WriteLine("=== Update Reservation ===");
             Console.WriteLine();
+            Console.WriteLine($"Changed seating to table {AvailableTable.ID}");
+            Thread.Sleep(1500);
+            Update(reservation);
 
-            // 1) New guest count (1–6)
-            Console.Write("New guest count (1–6): ");
-            string? guestInput = Console.ReadLine();
-            int guests;
-            if (!int.TryParse(guestInput, out guests) || guests < 1 || guests > 6)
+        }
+
+        private void DishSelectionStep(int newguestcount, int oldguestcount, ReservationModel reservation)
+        {
+            var dishLogic = new DishLogic();
+            int? currentThemeId = dishLogic.GetCurrentThemeId();
+            int askForDishesAmount = 0;
+            if (_reservationsLogic.ReservationContainsDishes(reservation))
             {
-                Console.WriteLine("Given amount of people incorrect (1–6)");
-                Console.WriteLine("Press any key to try again...");
-                Console.ReadKey();
-                Start(userId);
-                return;
+                askForDishesAmount = newguestcount > oldguestcount ? newguestcount - oldguestcount : newguestcount;
             }
+            else
+            {
+                askForDishesAmount = newguestcount;
+            }
+            if (currentThemeId.HasValue)
+            {
+                // Show dish selection menu
+                List<DishModel> selectedDishes = DishSelection.SelectDishesForReservation(askForDishesAmount, currentThemeId.Value);
 
-            // 2) Date (YYYY-MM-DD)
+                if (selectedDishes.Count == 0)
+                {
+                    // User cancelled or something went wrong or didnt select any dishes.
+                    ColorConsole.WriteWarning("Dish selection cancelled. Returning to Update Reservation...");
+                    Thread.Sleep(1500);
+                    ReservationModel updated = _reservationsLogic.ReloadReservation(reservation);
+                    Update(updated);
+                    return;
+                }
+                dishLogic.ReserveDishes(selectedDishes, reservation, newguestcount < oldguestcount);
+                Console.WriteLine(reservation.ID);
+                Thread.Sleep(2000);
+            }
+            else
+            {
+                ColorConsole.WriteWarning("No theme available for the current month. Proceeding without dish selection...");
+                Thread.Sleep(2000);
+            }
+        }
+        
+        private void EditDateTime(ReservationModel reservation)
+        {
             Console.Clear();
-            Console.WriteLine("=== Update Reservation ===");
+            Console.WriteLine("\n=== Update Date & Time ===");
+            Console.WriteLine($"\nCurrent Date & Time: {DateTime.Parse(reservation.StartAt):dd-MM-yyyy HH:mm}");
+
             Console.WriteLine();
-            Console.WriteLine("Date: (YYYY-MM-DD)");
-            string? dateIn = Console.ReadLine();
-
-            DateTime dateOnly;
-            if (string.IsNullOrEmpty(dateIn) ||
-                !DateTime.TryParseExact(dateIn, "yyyy-MM-dd", CultureInfo.InvariantCulture,
-                    DateTimeStyles.None, out dateOnly))
+            Console.WriteLine("Date: (DD-MM-YYYY)");
+            string? ReservationDate = Console.ReadLine();
+            if (string.IsNullOrEmpty(ReservationDate))
             {
-                Console.WriteLine("Given date format incorrect (YYYY-MM-DD)");
+                Console.WriteLine("All fields are required!");
                 Console.WriteLine("Press any key to try again...");
                 Console.ReadKey();
-                Start(userId);
+                EditDateTime(reservation);
                 return;
             }
 
-            // ⛔ Verleden datum blokkeren
-            if (dateOnly.Date < DateTime.Today)
+            DateTime reservationDateTime;
+            if (!DateTime.TryParseExact(ReservationDate, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out reservationDateTime))
             {
-                Console.WriteLine("You cannot select a date in the past.");
+                Console.WriteLine("Given date format incorrect (DD-MM-YYYY)");
                 Console.WriteLine("Press any key to try again...");
                 Console.ReadKey();
-                Start(userId);
+                EditDateTime(reservation);
                 return;
             }
 
-            // 3) Time via arrow-key selector (blue highlight)
+            if (!UserMakeReservationLogic.CheckValidDate(ReservationDate))
+            {
+                Console.WriteLine("Given date invalid.");
+                Console.WriteLine("Press any key to try again...");
+                Console.ReadKey();
+                EditDateTime(reservation);
+                return;
+            }
+
             Console.WriteLine("Select Arrival Time:");
-            string selectedTime = logic.SelectArrivalTime(); // returns "HH:mm"
+            string ArrivalTime = _reservationsLogic.SelectArrivalTime();
+            Console.WriteLine($"You selected: {ArrivalTime}");
 
-            // Parse "HH:mm" naar TimeSpan
-            if (!TimeSpan.TryParseExact(selectedTime, "hh\\:mm", CultureInfo.InvariantCulture, out TimeSpan timeOfDay))
-            {
-                Console.WriteLine("Invalid time selected.");
-                Console.WriteLine("Press any key to try again...");
-                Console.ReadKey();
-                Start(userId);
-                return;
-            }
 
-            // Volledige starttijd
-            DateTime startAt = dateOnly.Date + timeOfDay;
-
-            // ⛔ Vandaag + tijd al voorbij blokkeren
-            if (startAt < DateTime.Now)
-            {
-                Console.WriteLine("You cannot select a time in the past.");
-                Console.WriteLine("Press any key to try again...");
-                Console.ReadKey();
-                Start(userId);
-                return;
-            }
-
-            // Combine to "yyyy-MM-dd HH:mm" (no seconds) en run je bestaande business rules (≥ 17:00, etc.)
-            string combined = startAt.ToString("yyyy-MM-dd HH:mm");
-            if (!logic.IsValidReservationDateTime(combined))
-            {
-                Console.WriteLine("Invalid date or time (must be >= 17:00).");
-                Console.WriteLine("Press any key to try again...");
-                Console.ReadKey();
-                Start(userId);
-                return;
-            }
-
-            // Apply update (logic enforces ownership + 1–6 again)
-            logic.UpdateReservationForGuest(id, guests, combined);
-
-            Console.WriteLine("✅ Reservation updated!");
-            Console.WriteLine("Press any key to continue...");
-            Console.ReadKey();
-            Start(userId);
-        }
-
-        // Cancel a reservation
-        private void Delete(int id)
-        {
-            // final guard: must exist for current user
-            if (!logic.ReservationExistsForCurrentUser(id))
-            {
-                Console.WriteLine("This reservation was not found for your account.");
-                Console.ReadKey();
-                return;
-            }
-
-            Console.Clear();
-            Console.WriteLine("Cancel this reservation? (y/n)");
-            string? answer = Console.ReadLine();
-
-            if (answer != null && answer.ToLower() == "y")
-            {
-                logic.DeleteReservationForGuest(id);
-                Console.WriteLine("Reservation cancelled.");
-            }
-
-            Console.ReadKey();
         }
     }
 }

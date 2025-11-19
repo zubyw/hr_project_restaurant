@@ -1,6 +1,8 @@
 using System.Reflection.Metadata;
 using Project.DataModels;
 using Project.DataAccess;
+using Project.Logic;
+
 
 namespace Project.Logic
 {
@@ -14,16 +16,20 @@ namespace Project.Logic
             _dishaccess = dishAccess ?? new DishAccess();
         }
 
-        public List<int> ReserveDishes(List<DishModel> reserveddishes, ReservationModel reservation)
+        public List<int> ReserveDishes(List<DishModel> reservedDishes, ReservationModel reservation, bool emptyPreviousItems = false)
         {
+            if (emptyPreviousItems)
+            {
+                _dishaccess.DeleteDishesOnReservation(reservation);
+            }
             List<int> returnedlist = [];
-            foreach (DishModel dish in reserveddishes)
+            foreach (DishModel dish in reservedDishes)
             {
                 if (dish is not null)
                 {
                     int x = _dishaccess.ReservedDishes(dish, reservation);
                     returnedlist.Add(x);
-                }
+                    }
             }
             return returnedlist;
         }
@@ -49,6 +55,11 @@ namespace Project.Logic
             return themeAccess.GetActiveThemeID();
         }
 
+        public void DeleteDishesFromReservation(ReservationModel reservation)
+        {
+            _dishaccess.DeleteDishesOnReservation(reservation);
+        }
+
         // Admin methods theme / dishes management
         private static readonly string[] _allowedTypes = new string[] 
         { 
@@ -60,7 +71,7 @@ namespace Project.Logic
         private void EnsureThemeExists(int themeId)
         {
             ThemeAccess access = new ThemeAccess();
-            ThemeModel theme = access.GetById(themeId);
+            ThemeModel? theme = access.GetById(themeId);
 
             if (theme == null)
             {
