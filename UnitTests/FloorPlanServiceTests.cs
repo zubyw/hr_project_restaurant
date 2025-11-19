@@ -9,8 +9,8 @@ public class FloorPlanServiceTests : IDisposable
 {
     private readonly InMemoryTableRepository _tableRepo;
     private readonly InMemoryReservationRepository _reservationRepo;
-    private const string TestDate = "2027-02-15";
-    private const string TestSlot = "2027-02-15 19:00:00";
+    private const string TestDate = "15-02-2027";
+    private const string TestSlot = "15-02-2027 19:00:00";
 
     public FloorPlanServiceTests()
     {
@@ -74,8 +74,8 @@ public class FloorPlanServiceTests : IDisposable
             GuestCount = guestCount,
             StartAt = TestSlot,
             Status = "confirmed",
-            CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-            UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+            CreatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss"),
+            UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss")
         };
         _reservationRepo.Add(reservation);
 
@@ -102,8 +102,8 @@ public class FloorPlanServiceTests : IDisposable
             GuestCount = guestCount,
             StartAt = TestSlot,
             Status = "confirmed",
-            CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-            UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+            CreatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss"),
+            UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss")
         };
         _reservationRepo.Add(reservation);
 
@@ -128,13 +128,13 @@ public class FloorPlanServiceTests : IDisposable
             GuestCount = 2,
             StartAt = TestSlot,
             Status = "confirmed",
-            CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-            UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+            CreatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss"),
+            UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss")
         };
         _reservationRepo.Add(reservation);
 
         reservation.TableId = table4!.ID;
-        reservation.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
         _reservationRepo.Update(reservation);
 
         var updatedReservation = _reservationRepo.GetById(reservation.ID);

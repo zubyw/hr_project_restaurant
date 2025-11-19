@@ -48,7 +48,7 @@ public class ReservationsAccess
             FROM Reservations r 
             JOIN Users u ON r.UserId = u.ID 
             JOIN [Table] t ON r.TableId = t.ID 
-            WHERE DATE(r.StartAt) = @Date 
+            WHERE substr(r.StartAt, 1, 10) = @Date 
             ORDER BY r.StartAt";
         using var connection = new SqliteConnection(_connectionString);
         return connection.Query<ReservationModel>(sql, new { Date = date }).ToList();
@@ -62,8 +62,10 @@ public class ReservationsAccess
             FROM Reservations r 
             JOIN Users u ON r.UserId = u.ID 
             JOIN [Table] t ON r.TableId = t.ID 
-            WHERE DATE(r.StartAt) BETWEEN @StartDate AND @EndDate 
-            ORDER BY r.StartAt";
+            WHERE substr(r.StartAt, 7, 4) || substr(r.StartAt, 4, 2) || substr(r.StartAt, 1, 2) 
+                  BETWEEN substr(@StartDate, 7, 4) || substr(@StartDate, 4, 2) || substr(@StartDate, 1, 2)
+                  AND substr(@EndDate, 7, 4) || substr(@EndDate, 4, 2) || substr(@EndDate, 1, 2)
+            ORDER BY substr(r.StartAt, 7, 4) || substr(r.StartAt, 4, 2) || substr(r.StartAt, 1, 2)";
         using var connection = new SqliteConnection(_connectionString);
         return connection.Query<ReservationModel>(sql, new { StartDate = startDate, EndDate = endDate }).ToList();
     }

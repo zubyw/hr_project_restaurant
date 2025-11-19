@@ -23,7 +23,7 @@ public class TableAcces
         SELECT t.ID
         FROM Reservations r
         JOIN [Table] t ON r.TableId = t.ID
-        WHERE DATE(r.StartAt) = @ReservationDate
+        WHERE substr(r.StartAt, 1, 10) = @ReservationDate
         AND r.Status != 'Cancelled'
         AND r.Status != 'geannuleerd'";
         using var connection = new SqliteConnection(_connectionString);

@@ -90,6 +90,7 @@ public class ThemeAccess
             LIMIT 1;
         ";
 
+        // Keep yyyy-MM-dd format for SQLite date() function compatibility
         int? themeId = connection.ExecuteScalar<int?>(sql, new { Today = today.ToString("yyyy-MM-dd") });
 
         return themeId;

@@ -379,7 +379,7 @@ namespace UnitTests
             if (string.IsNullOrWhiteSpace(date))
                 return false;
 
-            return DateTime.TryParseExact(date, "yyyy-MM-dd", null, 
+            return DateTime.TryParseExact(date, "dd-MM-yyyy", null, 
                 System.Globalization.DateTimeStyles.None, out _);
         }
     }
