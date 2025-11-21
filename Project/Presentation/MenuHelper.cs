@@ -6,8 +6,6 @@ public static class MenuHelper
 
         while (true)
         {
-            Console.Clear();
-
             // Draw menu
             for (int i = 0; i < options.Length; i++)
             {
