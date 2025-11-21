@@ -224,7 +224,7 @@ public static class DatabaseInitializer
         if (existingDishes == 0)
         {
             // Create Japanese Theme
-            var japaneseTheme = new
+            ThemeModel japaneseTheme = new ThemeModel()
             {
                 Name = "Japanese",
                 Course = "Authentic Japanese Cuisine",
@@ -235,9 +235,10 @@ public static class DatabaseInitializer
                 VALUES (@Name, @Course, @IsActive)", 
                 japaneseTheme);
             int japaneseThemeId = connection.ExecuteScalar<int>("SELECT last_insert_rowid();");
+            japaneseTheme.ID = connection.ExecuteScalar<int>("SELECT last_insert_rowid();");
 
             // Create Italian Theme
-            var italianTheme = new
+            ThemeModel italianTheme = new ThemeModel()
             {
                 Name = "Italian",
                 Course = "Traditional Italian Flavors",
@@ -248,9 +249,10 @@ public static class DatabaseInitializer
                 VALUES (@Name, @Course, @IsActive)", 
                 italianTheme);
             int italianThemeId = connection.ExecuteScalar<int>("SELECT last_insert_rowid();");
+            italianTheme.ID = connection.ExecuteScalar<int>("SELECT last_insert_rowid();");
 
             // Create French Theme
-            var frenchTheme = new
+            ThemeModel frenchTheme = new ThemeModel()
             {
                 Name = "French",
                 Course = "Classic French Cuisine",
@@ -261,6 +263,7 @@ public static class DatabaseInitializer
                 VALUES (@Name, @Course, @IsActive)", 
                 frenchTheme);
             int frenchThemeId = connection.ExecuteScalar<int>("SELECT last_insert_rowid();");
+            frenchTheme.ID = connection.ExecuteScalar<int>("SELECT last_insert_rowid();");
 
             // ========== JAPANESE DISHES ==========
             
@@ -351,21 +354,21 @@ public static class DatabaseInitializer
                     new { DishId = dishId, ThemeId = dish.ThemeId });
             }
 
-            // Set current month's theme (Japanese for now - you can change this logic)
-            var currentMonth = DateTime.Now.Month;
-            int currentThemeId = currentMonth % 3 == 1 ? japaneseThemeId : 
-                                 currentMonth % 3 == 2 ? italianThemeId : 
-                                 frenchThemeId;
+            var themes = new List<ThemeModel> { japaneseTheme, italianTheme, frenchTheme };
+            var dates = new List<string> { "2025-11-01", "2025-12-01", "2026-01-01" };
 
-            // Add to calendar for current month
-            connection.Execute(@"
-                INSERT INTO Themes_Calendar (ThemeId, Type, TimeSlot, Description) 
-                VALUES (@ThemeId, 'Monthly', @TimeSlot, @Description)", 
-                new { 
-                    ThemeId = currentThemeId, 
-                    TimeSlot = DateTime.Now.ToString("yyyy-MM-01"),
-                    Description = "Current month theme"
-                });
+            for (int i = 0; i < themes.Count; i++)
+            {
+                connection.Execute(@"
+                    INSERT INTO Themes_Calendar (ThemeId, Type, TimeSlot, Description)
+                    VALUES (@ThemeId, 'Monthly', @TimeSlot, @Description)",
+                    new
+                    {
+                        ThemeId = themes[i].ID,
+                        TimeSlot = dates[i],
+                        Description = "Monthly theme"
+                    });
+            }
         }
     }
 }

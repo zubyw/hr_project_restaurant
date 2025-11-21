@@ -140,4 +140,10 @@ public class ThemesLogic
             throw new Exception("Theme month cannot be in the past.");
         }
     }
+
+    public Dictionary<string, int> GetAllActiveDatesAndThemes()
+    {
+        DateTime datetoday = DateTime.Today;
+        return access.GetFutureThemesByMonth(datetoday);
+    }
 }
