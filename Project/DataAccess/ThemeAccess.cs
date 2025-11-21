@@ -158,4 +158,36 @@ public class ThemeAccess
         connection.Close();
         Console.WriteLine("Theme deactivated.");
     }
+    public Dictionary<string, int> GetFutureThemesByMonth(DateTime fromDate)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        // Convert fromDate to yyyy-MM-dd for comparison
+        string fromDateString = fromDate.ToString("yyyy-MM-dd");
+        string fromMonthYear = fromDate.ToString("yyyy-MM");
+
+        string sql = @"
+            SELECT TimeSlot, ThemeId
+            FROM Themes_Calendar
+            WHERE TimeSlot >= @FromDate OR substr(TimeSlot, 1, 7) = @FromMonthYear
+            ORDER BY TimeSlot;
+        ";
+
+        var rows = connection.Query(sql, new { FromDate = fromDateString, FromMonthYear = fromMonthYear });
+
+        var result = new Dictionary<string, int>();
+
+        foreach (var row in rows)
+        {
+            string timeSlot = row.TimeSlot; // yyyy-MM-dd
+            DateTime date = DateTime.Parse(timeSlot);
+            string monthYear = date.ToString("MM-yyyy"); // MM-yyyy string
+
+            int themeId = (int)row.ThemeId;
+            result[monthYear] = themeId;
+        }
+
+        return result;
+    }
 }

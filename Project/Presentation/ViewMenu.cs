@@ -1,22 +1,18 @@
 using Project.DataModels;
 using Project.DataAccess;
+using Project.Logic;
 
 namespace Project.Presentation
 {
     public static class ViewMenu
     {
-        private static DishAccess _dishAccess = new DishAccess();
-        private static ThemeAccess _themeAccess = new ThemeAccess();
+        private static DishLogic _dishLogic = new DishLogic();
+        private static ThemesLogic _themeLogic = new ThemesLogic();
 
         public static void Start()
         {
-            Console.Clear();
-            DisplayMenuHeader();
-
-            // Get active theme
-            int? activeThemeId = _themeAccess.GetActiveThemeID();
-
-            if (activeThemeId == null)
+            Dictionary<string, int> themes = _themeLogic.GetAllActiveDatesAndThemes(); // MonthYear => ThemeId
+            if (themes == null || themes.Count == 0)
             {
                 ColorConsole.WriteError("No active menu theme available at this time.");
                 Console.WriteLine("\nPress any key to return...");
@@ -24,36 +20,62 @@ namespace Project.Presentation
                 return;
             }
 
-            // Get the theme details
-            var theme = _themeAccess.GetById(activeThemeId.Value);
+            // Convert keys to a list so we can index by currentIndex
+            var monthKeys = themes.Keys.ToList();
 
-            if (theme == null)
+            int currentIndex = 0;
+            int startTop = Console.CursorTop;
+
+            while (true)
             {
-                ColorConsole.WriteError("Unable to load menu theme.");
-                Console.WriteLine("\nPress any key to return...");
-                Console.ReadKey();
-                return;
+                Console.SetCursorPosition(0, startTop);
+                Console.Clear(); // clear once per loop
+
+                string currentMonth = monthKeys[currentIndex];
+
+                // Decide which arrows to show
+                string leftArrow = currentIndex > 0 ? "< " : "  ";
+                string rightArrow = currentIndex < monthKeys.Count - 1 ? " >" : "  ";
+
+                // Display month selector
+                Console.WriteLine($"Date : {leftArrow}{currentMonth}{rightArrow}");
+                Console.WriteLine();
+
+                int themeId = themes[currentMonth];
+                var theme = _themeLogic.GetById(themeId);
+
+                if (theme != null)
+                {
+                    DisplayThemeMenu(theme); // just print dishes, don't clear
+                }
+                else
+                {
+                    Console.WriteLine($"No theme available for {currentMonth}");
+                }
+
+                var key = Console.ReadKey(true).Key;
+
+                switch (key)
+                {
+                    case ConsoleKey.LeftArrow:
+                        if (currentIndex > 0) currentIndex--;
+                        break;
+
+                    case ConsoleKey.RightArrow:
+                        if (currentIndex < monthKeys.Count - 1) currentIndex++;
+                        break;
+
+                    case ConsoleKey.Escape:
+                        return;
+                }
             }
-
-            // Display the active theme menu
-            DisplayThemeMenu(theme);
-        }
-
-        private static void DisplayMenuHeader()
-        {
-            Console.WriteLine("╔════════════════════════════════════════════════════════════════════════════╗");
-            Console.WriteLine("║                    🍽️  KEVIN'S FINE DINING - MENU  🍽️                      ║");
-            Console.WriteLine("╚════════════════════════════════════════════════════════════════════════════╝");
-            Console.WriteLine();
         }
 
         private static void DisplayThemeMenu(ThemeModel theme)
         {
-            Console.Clear();
-            
             // Get all dishes for this theme
-            var dishIds = _dishAccess.GetallDishIdByThemeId(theme.ID);
-            var dishes = dishIds.Count > 0 ? _dishAccess.GetDishesByIds(dishIds) : new List<DishModel>();
+            List<DishModel> dishes = _dishLogic.GetDishesByTheme(theme.ID);
+            
 
             // Separate by type
             var starters = dishes.Where(d => d.Type == "Starter").ToList();
@@ -115,8 +137,7 @@ namespace Project.Presentation
             }
 
             Console.WriteLine(new string('─', 80));
-            Console.WriteLine("\nPress any key to return to theme selection...");
-            Console.ReadKey();
+            Console.WriteLine("\nPress ESC to return to the main menu...");
         }
 
         private static void DisplayDish(DishModel dish)
