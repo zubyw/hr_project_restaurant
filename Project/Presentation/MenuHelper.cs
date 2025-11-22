@@ -1,11 +1,14 @@
 public static class MenuHelper
 {
-    public static int ShowMenuUpDown(string[] options, int selectedIndex = 0)
+    public static int ShowMenuUpDown(string[] options, string title = "", int selectedIndex = 0)
     {
         ConsoleKey key;
 
         while (true)
         {
+            Console.Clear();
+            Console.WriteLine(title);
+            Console.WriteLine();
             // Draw menu
             for (int i = 0; i < options.Length; i++)
             {

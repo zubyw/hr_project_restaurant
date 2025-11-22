@@ -9,7 +9,7 @@ namespace Project.DataAccess
         private readonly string _connectionString = "Data Source=DataSources/project.db";
         private readonly string Table = "Dishes";
 
-        public void AddDish(DishModel dish)
+        public void Write(DishModel dish)
         {
             string sql = $"INSERT INTO {Table} (Name, Price, Description, Type) VALUES (@Name, @Price, @Description, @Type)";
             using var connection = new SqliteConnection(_connectionString);
@@ -180,5 +180,27 @@ namespace Project.DataAccess
             connection.Close();
             return list;
         }
+
+        public bool GetDishByName(string dishName)
+        {
+            string sql = "SELECT COUNT(*) FROM Dishes WHERE Name = @Name";
+
+            using var connection = new SqliteConnection(_connectionString);
+            int count = connection.ExecuteScalar<int>(sql, new { Name = dishName });
+
+            return count > 0;
+        }
+
+        public List<DishModel> GetAllDishes()
+        {
+            string sql = @"
+            SELECT ID, Name, Price, Description, Type
+            FROM Dishes";
+            using var connection = new SqliteConnection(_connectionString);
+            List<DishModel> AllDishes = connection.Query<DishModel>(sql).ToList();
+
+            return AllDishes;
+        }
+
     }
 }

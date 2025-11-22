@@ -11,156 +11,198 @@ public static class AdminDishesManagement
     {
         string[] options =
         {
-            "Show dishes by theme",
-            "Add dish to theme",
-            "Update dish in theme",
-            "Delete dish from theme",
+            "Create new dish",
+            "Manage all dishes",
             "Back"
         };
 
-        int index = 0;
-
         while (true)
+    {
+        int index = MenuHelper.ShowMenuUpDown(options, "=== Admin: Dishes Management ===");
+        try
         {
-            Console.Clear();
-            Console.WriteLine("=== Admin: Dishes Management ===");
-
-            for (int i = 0; i < options.Length; i++)
+            switch (index)
             {
-                if (i == index)
-                {
-                    Console.BackgroundColor = ConsoleColor.DarkCyan;
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
+                case 0:
+                    Add();
+                    break;
 
-                Console.WriteLine(options[i]);
-                Console.ResetColor();
-            }
+                case 1:
+                    ManageAllDishes();
+                    break;
 
-            ConsoleKey key = Console.ReadKey(true).Key;
-
-            if (key == ConsoleKey.UpArrow)
-            {
-                index--;
-                if (index < 0) index = options.Length - 1;
-            }
-            else if (key == ConsoleKey.DownArrow)
-            {
-                index++;
-                if (index >= options.Length) index = 0;
-            }
-            else if (key == ConsoleKey.Enter)
-            {
-                try
-                {
-                    switch (index)
-                    {
-                        case 0:
-                            ShowByTheme();
-                            break;
-                        case 1:
-                            Add();
-                            break;
-                        case 2:
-                            Update();
-                            break;
-                        case 3:
-                            Delete();
-                            break;
-                        case 4:
-                            ReservationManagement.Start();
-                            return;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error: " + ex.Message);
-                    Console.ReadKey();
-                }
+                case 2:
+                    return;
             }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error: " + ex.Message);
+            Console.ReadKey();
+        }
+    }
     }
 
-    private static void ShowByTheme()
+    private static void Add()
     {
         Console.Clear();
-        int themeId = AskInt("Theme ID: ");
+        Console.WriteLine("=== Create new dish ===");
+        
+        Console.Write("Name: ");
+        string name = Console.ReadLine();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+        Console.WriteLine("Name cannot be empty.");
+        Add();
+        }
+        if(_logic.DoesDishExist(name))
+        {
+            Console.WriteLine("There akready is a dish with this name");
+            Thread.Sleep(1500);
+            Start();
+        }
+        Console.Clear();
+        Console.WriteLine("=== Create new dish ===");
+        Console.Write("Price (example: 12.50): ");
+        string priceInput = Console.ReadLine();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+        Console.WriteLine("Price cannot be empty.");
+        Add();
+        }
+        decimal price = decimal.Parse(priceInput.Replace(',', '.'),System.Globalization.CultureInfo.InvariantCulture);
+        
+        Console.Clear();
+        Console.WriteLine("=== Create new dish ===");
+        Console.Write("Description: ");
+        string description = Console.ReadLine();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+        Console.WriteLine("Name cannot be empty.");
+        Add();
+        }
 
-        List<DishModel> list = _logic.AdminGetDishesByTheme(themeId);
 
-        if (list.Count == 0)
+        Console.Clear();
+        Console.WriteLine("=== Create new dish ===\nType (Starter/Main/Dessert): ");
+        string[] types = { "Starter", "Main", "Dessert" };
+        int typeIndex = MenuHelper.ShowMenuUpDown(types, "=== Create new dish ===\nType (Starter/Main/Dessert): ");
+        string type = types[typeIndex];
+        DishModel dish = new DishModel(){Name = name,Price = price, Description = description, Type = type}; 
+        _logic.WriteIntoDB(dish);
+
+        Console.WriteLine("Dish created.");
+        Thread.Sleep(1500);
+    }
+
+    private static void ManageAllDishes()
+    {
+        List<DishModel> dishes = _logic.GetAllDishes();
+
+        if (dishes.Count == 0)
         {
             Console.WriteLine("No dishes found.");
             Console.ReadKey();
             return;
         }
 
-        Console.WriteLine();
-        Console.WriteLine("┌────────┬──────────┬──────────────────────┬────────────┬──────────┐");
-        Console.WriteLine("│   ID   │  Theme   │         Name         │    Type    │  Price   │");
-        Console.WriteLine("├────────┼──────────┼──────────────────────┼────────────┼──────────┤");
+        int index = 0;
 
-        foreach (DishModel d in list)
+        while (true)
         {
-            string name = d.Name.Length > 22 ? d.Name.Substring(0, 22) : d.Name;
-            string type = d.Type.Length > 10 ? d.Type.Substring(0, 10) : d.Type;
-            string price = d.Price.ToString("0.00").Replace('.', ',');
+            Console.Clear();
+            Console.WriteLine("=== All Dishes ===\n");
 
-            Console.WriteLine(
-                $"│ {d.ID,6} │ {themeId,8} │ {name,-21} │ {type,-9} │ {price,7} │");
+            Console.WriteLine("┌────────────────────────┬───────────────┬───────────┐");
+            Console.WriteLine("│ Name                   │ Type          │ Price     │");
+            Console.WriteLine("├────────────────────────┼───────────────┼───────────┤");
+
+            for (int i = 0; i < dishes.Count; i++)
+            {
+                var dish = dishes[i];
+
+                string name = dish.Name.Length > 20 ? dish.Name[..17] + "..." : dish.Name;
+                string type = dish.Type.Length > 12 ? dish.Type[..9] + "..." : dish.Type;
+
+                bool selected = (i == index);
+
+                if (selected)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                Console.WriteLine("│ {0,-22} │ {1,-13} │ {2,9:F2} │",
+                    name, type, dish.Price);
+
+                if (selected)
+                    Console.ResetColor();
+            }
+
+            Console.WriteLine("└────────────────────────┴───────────────┴───────────┘");
+
+            Console.WriteLine("\n ↑↓ Select dish | ESC = back");
+
+            ConsoleKey key = Console.ReadKey(true).Key;
+
+            if (key == ConsoleKey.DownArrow)
+            {
+                index = (index + 1) % dishes.Count;
+            }
+            else if (key == ConsoleKey.UpArrow)
+            {
+                index = (index - 1 + dishes.Count) % dishes.Count;
+            }
+            else if (key == ConsoleKey.Enter)
+            {
+                DishModel selectedDish = dishes[index];
+                ManageDish(selectedDish);
+                return;
+            }
+            else if (key == ConsoleKey.Escape)
+            {
+                return;
+            }
         }
-
-        Console.WriteLine("└────────┴──────────┴──────────────────────┴────────────┴──────────┘");
-        Console.WriteLine();
-        Console.WriteLine("Press any key to return...");
-        Console.ReadKey();
     }
 
-
-    private static void Add()
+    private static void ManageDish(DishModel dish)
     {
-        Console.Clear();
-        Console.WriteLine("=== Add Dish to Theme ===");
-        int themeId = AskInt("Theme ID: ");
-        Console.Write("Name: ");
-        string name = Console.ReadLine();
-        Console.Write("Price (e.g. 12.50): ");
-        decimal price = AskDecimal();
-        Console.Write("Description: ");
-        string description = Console.ReadLine();
-        Console.Write("Type (Starter/Main/Dessert): ");
-        string type = Console.ReadLine();
+        string[] options =
+        {
+            "Edit dish",
+            "Delete dish",
+            "Back"
+        };
 
-        int newId = _logic.AdminAddDishToTheme(themeId, name, price, description, type);
-
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("Dish created. ID: " + newId);
-        Console.ResetColor();
-        Console.ReadKey();
-    }
-
-    private static void Update()
+        while (true)
     {
-        Console.Clear();
-        Console.WriteLine("=== Update Dish in Theme ===");
-        int dishId = AskInt("Dish ID: ");
-        int themeId = AskInt("Theme ID: ");
-        Console.Write("New name: ");
-        string name = Console.ReadLine();
-        Console.Write("New price: ");
-        decimal price = AskDecimal();
-        Console.Write("New description: ");
-        string description = Console.ReadLine();
-        Console.Write("New type (Starter/Main/Dessert): ");
-        string type = Console.ReadLine();
+        int index = MenuHelper.ShowMenuUpDown(options, "=== Admin: Manage dish ===");
+        try
+        {
+            switch (index)
+            {
+                case 0:
+                    Add();
+                    break;
 
-        _logic.AdminUpdateDishInTheme(dishId, themeId, name, price, description, type);
+                case 1:
+                    ManageAllDishes();
+                    break;
 
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("Dish updated.");
-        Console.ResetColor();
-        Console.ReadKey();
+                case 2:
+                    return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error: " + ex.Message);
+            Console.ReadKey();
+        }
     }
+    }
+
+
 
     private static void Delete()
     {
@@ -200,3 +242,7 @@ public static class AdminDishesManagement
         return v;
     }
 }
+        // Console.WriteLine();
+        // Console.WriteLine("┌────────┬───────────────────────┬────────────┬──────────┐");
+        // Console.WriteLine("│  Name  │       Description     │    Type    │  Price   │");
+        // Console.WriteLine("├────────┼───────────────────────┼────────────┼──────────┤");
