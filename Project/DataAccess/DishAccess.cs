@@ -202,5 +202,19 @@ namespace Project.DataAccess
             return AllDishes;
         }
 
+        public void DeleteDishes_Themes(DishModel dish)
+        {
+            string sql = $"DELETE FROM Dishes_Themes WHERE DishId = @Id";
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Execute(sql, new { Id = dish.ID });
+        }
+
+        public void DeleteReservationDishes(DishModel dish)
+        {
+            string sql = $"DELETE FROM Reservations_Dishes WHERE DishId = @Id";
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Execute(sql, new { Id = dish.ID });
+        }
+
     }
 }

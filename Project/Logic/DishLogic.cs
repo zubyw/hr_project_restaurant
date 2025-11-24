@@ -207,5 +207,24 @@ namespace Project.Logic
         {
             return _dishaccess.GetAllDishes();
         }
+        public void UpdateDish(DishModel dish)
+        {
+            _dishaccess.Update(dish);
+        }
+
+        public void DeleteDishInDishes(DishModel dish)
+        {
+            _dishaccess.Delete(dish);
+        }
+
+        public void DeleteDishInDishes_Themes(DishModel dish)
+        {
+            _dishaccess.DeleteDishes_Themes(dish);
+        }
+
+        public void DeleteDishInReservations_Dishes(DishModel dish)
+        {
+            _dishaccess.DeleteReservationDishes(dish);
+        }
     }
 }

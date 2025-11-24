@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Project.Logic;
 using Project.DataModels;
+using System.Runtime.InteropServices;
 
 public static class AdminDishesManagement
 {
@@ -157,11 +158,10 @@ public static class AdminDishesManagement
             {
                 DishModel selectedDish = dishes[index];
                 ManageDish(selectedDish);
-                return;
             }
             else if (key == ConsoleKey.Escape)
             {
-                return;
+                Start();
             }
         }
     }
@@ -183,11 +183,11 @@ public static class AdminDishesManagement
             switch (index)
             {
                 case 0:
-                    Add();
-                    break;
+                    EditDish(dish);
+                    return;
 
                 case 1:
-                    ManageAllDishes();
+                    Delete(dish);
                     break;
 
                 case 2:
@@ -203,46 +203,130 @@ public static class AdminDishesManagement
     }
 
 
-
-    private static void Delete()
+    private static void EditDish(DishModel dish)
     {
-        Console.Clear();
-        Console.WriteLine("=== Delete Dish from Theme ===");
-        int dishId = AskInt("Dish ID: ");
-        int themeId = AskInt("Theme ID: ");
+        string[] options =
+        {
+            "Edit Name",
+            "Edit Price",
+            "Edit Description",
+            "Edit Type",
+            "Back"
+        };
 
-        _logic.AdminDeleteDishFromTheme(dishId, themeId);
+        while (true)
+    {
+        int index = MenuHelper.ShowMenuUpDown(options, $"=== Admin: Manage dish ===\n\n{dish.ToString()}");
+        try
+        {
+            switch (index)
+            {
+                case 0:
+                    Console.Clear();
+                    Console.WriteLine($"Name: {dish.Name}");
+                    Console.WriteLine();
+                    string newname = Console.ReadLine();
+                    if (string.IsNullOrWhiteSpace(newname))
+                    {
+                    Console.WriteLine("Name cannot be empty.");
+                    Thread.Sleep(1500);
+                    continue;
+                    }
+                    dish.Name = newname;
+                    _logic.UpdateDish(dish);
+                    break;
 
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("Dish deleted.");
-        Console.ResetColor();
-        Console.ReadKey();
+                case 1:
+                    Console.Clear();
+                    Console.WriteLine($"Price: {dish.Price}");
+                    Console.WriteLine();
+                    string newprice = Console.ReadLine();
+                    if (string.IsNullOrWhiteSpace(newprice))
+                    {
+                    Console.WriteLine("Name cannot be empty.");
+                    Thread.Sleep(1500);
+                    continue;
+                    }
+                    decimal price = decimal.Parse(newprice.Replace(',', '.'),System.Globalization.CultureInfo.InvariantCulture);
+                    dish.Price = price;
+                    _logic.UpdateDish(dish);
+                    break;
+
+                case 2:
+                    Console.Clear();
+                    Console.WriteLine($"Description: {dish.Description}");
+                    Console.WriteLine();
+                    string newDescription = Console.ReadLine();
+                    if (string.IsNullOrWhiteSpace(newDescription))
+                    {
+                    Console.WriteLine("Name cannot be empty.");
+                    Thread.Sleep(1500);
+                    continue;
+                    }
+                    dish.Description = newDescription;
+                    _logic.UpdateDish(dish);
+                    break;
+                case 3:
+                    string[] types = { "Starter", "Main", "Dessert" };
+                    int typeIndex = MenuHelper.ShowMenuUpDown(types, $"Type: {dish.Type}");
+                    string type = types[typeIndex];
+                    if (type == dish.Type)
+                        {
+                            Console.WriteLine($"{type} is already this dish's type");
+                            Thread.Sleep(1500);
+                            continue;
+                        }
+                    dish.Type = type;
+                    _logic.UpdateDish(dish);
+                    break;
+                case 4:
+                    return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error: " + ex.Message);
+            Console.ReadKey();
+        }
+    }
     }
 
-    private static int AskInt(string label)
-    {
-        Console.Write(label);
-        string s = Console.ReadLine();
-        int n;
-        if (!int.TryParse(s, out n))
-        {
-            throw new Exception("Invalid number.");
-        }
-        return n;
-    }
 
-    private static decimal AskDecimal()
+
+    private static void Delete(DishModel dish)
     {
-        string s = Console.ReadLine();
-        decimal v;
-        if (!decimal.TryParse(s, out v))
+            string[] options =
+            {
+                "Yes",
+                "No"
+            };
+
+            while (true)
         {
-            throw new Exception("Invalid decimal.");
+            int index = MenuHelper.ShowMenuUpDown(options, $"=== Admin: delete dish ===\n\n{dish.ToString()}\n\nDelete dish?");
+            try
+            {
+                switch (index)
+                {
+                    case 0: // remove dish from: Dishes, Dishes_Themes, Reservation_Dishes
+                        _logic.DeleteDishInDishes_Themes(dish);
+                        _logic.DeleteDishInReservations_Dishes(dish);
+                        _logic.DeleteDishInDishes(dish);
+                        Console.WriteLine($"Dish: {dish.Name} deleted");
+                        Thread.Sleep(1500);
+                        ManageAllDishes();
+                        return;
+                    case 1:
+                        return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                Console.ReadKey();
+            }
         }
-        return v;
     }
 }
-        // Console.WriteLine();
-        // Console.WriteLine("┌────────┬───────────────────────┬────────────┬──────────┐");
-        // Console.WriteLine("│  Name  │       Description     │    Type    │  Price   │");
-        // Console.WriteLine("├────────┼───────────────────────┼────────────┼──────────┤");
+
+    
