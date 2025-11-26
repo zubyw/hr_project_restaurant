@@ -9,82 +9,38 @@ public static class ThemeManagement
     {
         string[] options =
         {
-            "Show all themes",
             "Create new theme",
-            "Update theme",
-            "Activate theme",
-            "Deactivate theme",
-            "Delete theme completely",
-            "Back to admin menu"
+            "Manage all themes",
+            "Manage theme calander",
+            "Back"
         };
-
-        int index = 0;
 
         while (true)
         {
-            Console.Clear();
-            Console.WriteLine("=== Theme Management ===");
-
-            for (int i = 0; i < options.Length; i++)
+        int index = MenuHelper.ShowMenuUpDown(options, "=== Admin: Themes Management ===");
+        try
+        {
+            switch (index)
             {
-                if (i == index)
-                {
-                    Console.BackgroundColor = ConsoleColor.DarkCyan;
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
+                case 0:
+                    Add();
+                    break;
 
-                Console.WriteLine(options[i]);
-                Console.ResetColor();
-            }
+                case 1:
+                    ManageAllThemes();
+                    break;
 
-            ConsoleKey key = Console.ReadKey(true).Key;
-
-            if (key == ConsoleKey.UpArrow)
-            {
-                index--;
-                if (index < 0) index = options.Length - 1;
-            }
-            else if (key == ConsoleKey.DownArrow)
-            {
-                index++;
-                if (index >= options.Length) index = 0;
-            }
-            else if (key == ConsoleKey.Enter)
-            {
-                try
-                {
-                    switch (index)
-                    {
-                        case 0:
-                            ShowAll();
-                            break;
-                        case 1:
-                            Create();
-                            break;
-                        case 2:
-                            Update();
-                            break;
-                        case 3:
-                            Activate();
-                            break;
-                        case 4:
-                            Deactivate();
-                            break;
-                        case 5:
-                            Delete();
-                            break;
-                        case 6:
-                            ReservationManagement.Start();
-                            return;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error: " + ex.Message);
-                    Console.ReadKey();
-                }
+                case 2:
+                    Menu.ShowAdminMenu();
+                    break;
             }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error: " + ex.Message);
+            Console.ReadKey();
+        }
+    }
     }
 
     private static void ShowAll()
@@ -129,47 +85,105 @@ public static class ThemeManagement
     }
 
 
-    private static void Create()
+    private static void Add()
     {
         Console.Clear();
-        Console.WriteLine("=== Create Theme ===");
-        Console.Write("Theme name: ");
+        Console.WriteLine("=== Create new theme ===");
+        
+        Console.Write("Name: ");
         string name = Console.ReadLine();
-        Console.Write("Course: ");
-        string course = Console.ReadLine();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+        Console.WriteLine("Name cannot be empty.");
+        Add();
+        }
+        if(logic.DoesThemeExist(name))
+        {
+            Console.WriteLine("There already is a theme with this name");
+            Thread.Sleep(1500);
+            Start();
+        }
+        Console.Clear();
+        Console.WriteLine("=== Create new theme ===");
+        Console.Write("Description");
+        string description = Console.ReadLine();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+        Console.WriteLine("Description cannot be empty.");
+        Add();
+        }
 
-        int year;
+        ThemeModel theme = new ThemeModel(){Name = name, Course = description};
+        logic.WriteTheme(theme);
+        Start();
+    }
+
+
+    private static void ManageAllThemes()
+    {
+        Console.Clear();
+        List<ThemeModel> themes = logic.GetAll();
+
+        if (themes.Count == 0)
+        {
+            Console.WriteLine("No themes found.");
+            return;
+        }
+        int index = 0;
+
         while (true)
         {
-            Console.Write("Year (yyyy, >= 2025): ");
-            if (int.TryParse(Console.ReadLine(), out year))
+
+            Console.WriteLine("┌────────────────────────────┬──────────────────────────────────────────────────────────────┐");
+            Console.WriteLine("│ Name                       │ Description                                                  │");
+            Console.WriteLine("├────────────────────────────┼──────────────────────────────────────────────────────────────┤");
+
+            for (int i = 0; i < themes.Count; i++)
             {
-                break;
+                var theme = themes[i];
+
+                string name = theme.Name.Length > 26 ? theme.Name[..23] + "..." : theme.Name;
+                string description = theme.Course.Length > 60 ? theme.Course[..57] + "..." : theme.Course;
+
+                bool selected = (i == index);
+
+                if (selected)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                Console.WriteLine("│ {0,-26} │ {1,-60} │", name, description);
+
+                if (selected)
+                    Console.ResetColor();
             }
-            Console.WriteLine("Invalid year, try again.");
-        }
 
-        int month;
-        while (true)
-        {
-            Console.Write("Month (1-12): ");
-            if (int.TryParse(Console.ReadLine(), out month) &&
-                month >= 1 && month <= 12)
+            Console.WriteLine("└────────────────────────────┴──────────────────────────────────────────────────────────────┘");
+
+
+            Console.WriteLine("\n ↑↓ Select theme | ESC = back");
+
+            ConsoleKey key = Console.ReadKey(true).Key;
+
+            if (key == ConsoleKey.DownArrow)
             {
-                break;
-            }   
-            Console.WriteLine("Invalid month, try again.");
+                index = (index + 1) % themes.Count;
+            }
+            else if (key == ConsoleKey.UpArrow)
+            {
+                index = (index - 1 + themes.Count) % themes.Count;
+            }
+            else if (key == ConsoleKey.Enter)
+            {
+                // ThemeModel selectedTheme = themes[index];
+                // ManageTheme(selectedTheme);
+            }
+            else if (key == ConsoleKey.Escape)
+            {
+                Start();
+            }
         }
-
-    
-        DateTime timeSlot = new DateTime(year, month, 1);
-
-        logic.CreateTheme(name, course, timeSlot);
-
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("Theme created successfully.");
-        Console.ResetColor();
-        Console.ReadKey();
     }
 
     private static void Update()

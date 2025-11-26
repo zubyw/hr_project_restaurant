@@ -6,28 +6,11 @@ public class ThemeAccess
     private readonly string _connectionString = "Data Source=DataSources/project.db";
     private readonly string Table = "Themes";
 
-    public void AddTheme(ThemeModel theme, DateTime TimeSlot)
+    public void Write(ThemeModel theme)
     {
-        string sql = $"INSERT INTO {Table} (Name, Course, IsActive) VALUES (@Name, @Course, @IsActive)";
+        string sql = $"INSERT INTO {Table} (Name, Course) VALUES (@Name, @Course)";
         using var connection = new SqliteConnection(_connectionString);
         connection.Execute(sql, theme);
-
-        int themeId = connection.ExecuteScalar<int>("SELECT last_insert_rowid();");
-
-        string insertCalendarSql = @"
-        INSERT INTO Themes_Calendar (ThemeId, Type, TimeSlot, Description)
-        VALUES (@ThemeID, @Type, @TimeSlot, @Description);
-    ";
-
-    var calendarParams = new
-    {
-        ThemeID = themeId,
-        Type = theme.Name,
-        TimeSlot,
-        Description = theme.Course
-    };
-
-    connection.Execute(insertCalendarSql, calendarParams);
     }
 
 
@@ -190,4 +173,14 @@ public class ThemeAccess
 
         return result;
     }
+
+    public bool GetThemeByName(string themeName)
+        {
+            string sql = "SELECT COUNT(*) FROM Themes WHERE Name = @Name";
+
+            using var connection = new SqliteConnection(_connectionString);
+            int count = connection.ExecuteScalar<int>(sql, new { Name = themeName });
+
+            return count > 0;
+        }
 }

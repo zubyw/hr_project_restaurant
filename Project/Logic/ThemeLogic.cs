@@ -26,28 +26,9 @@ public class ThemesLogic
         return theme;
     }
 
-    public void CreateTheme(string name, string course, DateTime timeSlot)
+    public void WriteTheme(ThemeModel theme)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new Exception("Name empty");
-        }
-
-        EnsureValidThemeMonth(timeSlot);
-
-        if (Exists(name))
-        {
-            throw new Exception("Theme exists");
-        }
-
-        ThemeModel theme = new ThemeModel
-        {
-            Name = name,
-            Course = course,
-            IsActive = 1
-        };
-
-        access.AddTheme(theme, timeSlot);
+        access.Write(theme);
     }
 
     public void UpdateTheme(int id, string name, string course, int active, DateTime timeSlot)
@@ -146,4 +127,9 @@ public class ThemesLogic
         DateTime datetoday = DateTime.Today;
         return access.GetFutureThemesByMonth(datetoday);
     }
+
+    public bool DoesThemeExist(string dishname)
+        {
+            return access.GetThemeByName(dishname);
+        }
 }

@@ -33,7 +33,8 @@ public static class AdminDishesManagement
                     break;
 
                 case 2:
-                    return;
+                    Menu.ShowAdminMenu();
+                    break;
             }
         }
         catch (Exception ex)
@@ -58,7 +59,7 @@ public static class AdminDishesManagement
         }
         if(_logic.DoesDishExist(name))
         {
-            Console.WriteLine("There akready is a dish with this name");
+            Console.WriteLine("There already is a dish with this name");
             Thread.Sleep(1500);
             Start();
         }
