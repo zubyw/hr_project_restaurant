@@ -273,10 +273,25 @@ public bool CancelReservation(ReservationModel reservation)
     }
 
     public ReservationModel? GetReservationByIdSimple(int id)
-{
-    string sql = @"SELECT * FROM Reservations WHERE ID = @Id";
-    using var connection = new SqliteConnection(_connectionString);
-    return connection.QueryFirstOrDefault<ReservationModel>(sql, new { Id = id });
-}
+    {
+        string sql = @"SELECT * FROM Reservations WHERE ID = @Id";
+        using var connection = new SqliteConnection(_connectionString);
+        return connection.QueryFirstOrDefault<ReservationModel>(sql, new { Id = id });
+    }
+    public List<(string DishName, int Count)> GetDishCountsByDate(string date)
+    {
+        string sql = @"
+            SELECT d.Name as DishName, COUNT(*) as Count
+            FROM Reservations_Dishes rd
+            JOIN Dishes d ON rd.DishId = d.ID
+            JOIN Reservations r ON rd.ReservationId = r.ID
+            WHERE substr(r.StartAt, 1, 10) = @Date
+            GROUP BY d.Name
+            ORDER BY d.Name";
+            
+        using var connection = new SqliteConnection(_connectionString);
+        return connection.Query<(string DishName, int Count)>(sql, new { Date = date }).ToList();
+    }
+
 
 }

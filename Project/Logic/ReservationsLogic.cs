@@ -301,10 +301,14 @@ namespace Project.Logic
             return _reservationsAccess.DoesReservationHaveDishes(reservation);
         }
 
-        public void UpdateGuestCountForReservation(ReservationModel reservation)
+        public void UpdateGuestCountForReservation(ReservationModel reservation, int newGuestCount)
         {
+            reservation.GuestCount = newGuestCount;
+            reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
+
             _reservationsAccess.UpdateReservationGuestCount(reservation);
         }
+
 
 
         public void DeleteDishesFromReservation(ReservationModel reservation)
@@ -360,5 +364,14 @@ namespace Project.Logic
             }
             return false;
         }
+
+
+        public List<(string DishName, int Count)> GetDishCountsForDate(string date)
+        {
+            return _reservationsAccess.GetDishCountsByDate(date);
+        }
     }
 }
+    
+
+

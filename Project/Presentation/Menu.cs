@@ -18,7 +18,7 @@ static class Menu
         {
             Console.Clear();
             Console.WriteLine("\n=== Kevin's Fine Dining - Authentication ===");
-            
+
             // Display options
             for (int i = 0; i < options.Length; i++)
             {
@@ -64,10 +64,10 @@ static class Menu
     static public void ShowMainMenu()
     {
         Console.Clear();
-        
+
         // Check if user is admin or regular user
         bool isAdmin = IsCurrentUserAdmin();
-        
+
         if (isAdmin)
         {
             ShowAdminMenu();
@@ -81,7 +81,8 @@ static class Menu
     // Admin menu with full access
     static public void ShowAdminMenu()
     {
-        string[] options = new string[] { "View Reservations", "Logout" };
+        // Toegevoegd: "Dish Orders Overview"
+        string[] options = new string[] { "View Reservations", "Dish Orders Overview", "Logout" };
         int selectedIndex = 0;
 
         ConsoleKey key;
@@ -89,7 +90,7 @@ static class Menu
         {
             Console.Clear();
             Console.WriteLine("\n=== Kevin's Fine Dining - Admin Panel ===");
-            
+
             // Display options
             for (int i = 0; i < options.Length; i++)
             {
@@ -120,6 +121,9 @@ static class Menu
                             ReservationManagement.Start();
                             break;
                         case 1:
+                            DishOrderOverview.Start(); // <-- verwijzing naar de nieuwe admin-console view
+                            break;
+                        case 2:
                             Console.WriteLine("Logging out...");
                             CurrentUser = null;
                             Start(); // Go back to login/register menu
@@ -141,7 +145,7 @@ static class Menu
         {
             Console.Clear();
             Console.WriteLine($"\n=== Welcome {CurrentUser?.FirstName} {CurrentUser?.LastName} ===");
-            
+
             // Display options
             for (int i = 0; i < options.Length; i++)
             {
@@ -204,10 +208,10 @@ static class Menu
     private static bool IsCurrentUserAdmin()
     {
         if (CurrentUser == null) return false;
-        
+
         // Check if user is admin by email or by getting user role from Users table
         if (CurrentUser.EmailAddress == "admin@gmail.com") return true;
-        
+
         try
         {
             var usersAccess = new UsersAccess();
