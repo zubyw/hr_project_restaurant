@@ -360,42 +360,43 @@ namespace Project.Presentation
         }
 
 
-        private void GuestCountDishSelection(int oldguestcount, int newguestcount, ReservationModel reservation, string inputstring = "Make a dish selection? (Y/N)")
+private void GuestCountDishSelection(int oldguestcount, int newguestcount, ReservationModel reservation, string inputstring = "Make a dish selection? (Y/N)")
+{
+    while (true)
+    {
+        Console.WriteLine($"{inputstring}");
+        string? MakesDishSelection = Console.ReadLine()?.Trim().ToUpper();
+        if (string.IsNullOrEmpty(MakesDishSelection))
         {
-            while (true)
-            {
-                Console.WriteLine($"{inputstring}");
-                string? MakesDishSelection = Console.ReadLine()?.Trim().ToUpper();
-                if (string.IsNullOrEmpty(MakesDishSelection))
-                {
-                    Console.WriteLine("All fields are required!");
-                    Console.WriteLine("Press any key to try again...");
-                    Console.ReadKey();
-                    continue;
-                }
-                if (MakesDishSelection == "Y")
-                {
-                    DishSelectionStep(newguestcount, oldguestcount, reservation);
-                    reservation.GuestCount = newguestcount;
-                    _reservationsLogic.UpdateGuestCountForReservation(reservation);
-                    break;
-                }
-                else if (MakesDishSelection == "N")
-                {
-                    reservation.GuestCount = newguestcount;
-                    _reservationsLogic.UpdateGuestCountForReservation(reservation);
-                    if (oldguestcount > newguestcount)
-                    {
-                        _dishLogic.DeleteDishesFromReservation(reservation);
-                    }
-                    break;
-                }
-                else
-                {
-                    continue;
-                }
-            }
+            Console.WriteLine("All fields are required!");
+            Console.WriteLine("Press any key to try again...");
+            Console.ReadKey();
+            continue;
         }
+        if (MakesDishSelection == "Y")
+        {
+            DishSelectionStep(newguestcount, oldguestcount, reservation);
+            reservation.GuestCount = newguestcount;
+            _reservationsLogic.UpdateGuestCountForReservation(reservation, newguestcount); // <-- hier
+            break;
+        }
+        else if (MakesDishSelection == "N")
+        {
+            reservation.GuestCount = newguestcount;
+            _reservationsLogic.UpdateGuestCountForReservation(reservation, newguestcount); // <-- hier
+            if (oldguestcount > newguestcount)
+            {
+                _dishLogic.DeleteDishesFromReservation(reservation);
+            }
+            break;
+        }
+        else
+        {
+            continue;
+        }
+    }
+}
+
 
         private void EditDishSelection(ReservationModel reservation)
         {
