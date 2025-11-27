@@ -46,7 +46,7 @@ public class ThemeAccess
 
     public void Update(ThemeModel theme)
     {
-        string sql = $"UPDATE {Table} SET Name = @Name, Course = @Course, IsActive = @IsActive WHERE ID = @ID";
+        string sql = $"UPDATE {Table} SET Name = @Name, Course = @Course WHERE ID = @ID";
         using var connection = new SqliteConnection(_connectionString);
         connection.Execute(sql, theme);
     }
@@ -86,7 +86,7 @@ public class ThemeAccess
         return connection.Query<ThemeModel>(sql).ToList();
     }
 
-    public void DeleteThemeCompletely(int themeId)
+    public void DeleteThemeCompletely(ThemeModel theme)
     {
         SqliteConnection connection = new SqliteConnection(_connectionString);
         connection.Open();
