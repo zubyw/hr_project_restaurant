@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Project.Presentation;
 
 public static class ThemeManagement
 {
@@ -27,12 +28,12 @@ public static class ThemeManagement
                     break;
 
                 case 1:
-                    ManageAllThemes();
+                    ManageTheme();
                     break;
 
                 case 2:
-                    // ManageThemeCalandar();
-                    // break;
+                    ManageThemeCalendar();
+                    break;
                 case 3:
                     Menu.ShowAdminMenu();
                     break;
@@ -81,7 +82,7 @@ public static class ThemeManagement
     }
 
 
-    private static void ManageAllThemes()
+    private static ThemeModel? ManageAllThemes()
     {
         Console.Clear();
         List<ThemeModel> themes = logic.GetAll();
@@ -89,7 +90,7 @@ public static class ThemeManagement
         if (themes.Count == 0)
         {
             Console.WriteLine("No themes found.");
-            return;
+            return null;
         }
         int index = 0;
 
@@ -140,7 +141,7 @@ public static class ThemeManagement
             else if (key == ConsoleKey.Enter)
             {
                 ThemeModel selectedTheme = themes[index];
-                ManageTheme(selectedTheme);
+                return selectedTheme;
             }
             else if (key == ConsoleKey.Escape)
             {
@@ -150,11 +151,17 @@ public static class ThemeManagement
     }
 
 
-    private static void ManageTheme(ThemeModel theme)
+    private static void ManageTheme()
     {
+        ThemeModel? theme = ManageAllThemes();
+        if (theme is null)
+        {
+            Start();
+        }
         string[] options =
         {
             "Edit theme",
+            "Add dishes to theme",
             "Delete theme",
             "Back"
         };
@@ -168,13 +175,16 @@ public static class ThemeManagement
             {
                 case 0:
                     EditTheme(theme);
-                    return;
+                    break;
 
                 case 1:
-                    // Delete(theme);
+                    // AddDishesToTheme.
                     break;
 
                 case 2:
+                    Delete(theme);
+                    break;
+                case 3:
                     return;
             }
         }
@@ -215,7 +225,7 @@ public static class ThemeManagement
                     }
                     theme.Name = newname;
                     logic.UpdateTheme(theme);
-                    break;
+                    return;
 
                 case 1:
                     Console.Clear();
@@ -226,7 +236,7 @@ public static class ThemeManagement
                     {
                     Console.WriteLine("Name cannot be empty.");
                     Thread.Sleep(1500);
-                    continue;
+                    return;
                     }
                     theme.Course = newcourse;
                     logic.UpdateTheme(theme);
@@ -255,14 +265,14 @@ public static class ThemeManagement
 
             while (true)
         {
-            int index = MenuHelper.ShowMenuUpDown(options, $"=== Admin: delete theme ===\n\n{theme.ToString()}\n\nDelete dish?");
+            int index = MenuHelper.ShowMenuUpDown(options, $"=== Admin: delete theme ===\n\n{theme.ToString()}\n\nDelete Theme?");
             try
             {
                 switch (index)
                 {
                     case 0:
                         logic.DeleteThemeCompletely(theme);
-                        Console.WriteLine($"Dish: {theme.Name} deleted");
+                        Console.WriteLine($"Theme: {theme.Name} deleted");
                         Thread.Sleep(1500);
                         ManageAllThemes();
                         return;
@@ -276,5 +286,70 @@ public static class ThemeManagement
                 Console.ReadKey();
             }
         }
+    }
+
+    private static void ManageThemeCalendar()
+    {
+        string[] options =
+            {
+                "View theme calendar",
+                "Set month/s to theme",
+                "Back"
+            };
+
+            while (true)
+        {
+            int index = MenuHelper.ShowMenuUpDown(options, $"=== Admin: Manage theme calendar ===");
+            try
+            {
+                switch (index)
+                {
+                    case 0:
+                        ViewMenu.Start();
+                        break;
+                    case 1:
+                        // LinkMonthsToTheme();
+                        break;
+                    case 2:
+                        return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                Console.ReadKey();
+            }
+        }
+
+
+        
+    }
+
+    private static void LinkMonthsToTheme()
+    {
+        List<string> months = new List<string>();
+
+        DateTime now = DateTime.Now;
+
+        int year = now.Year;
+        int month = now.Month + 1;
+        if (month == 13)
+        {
+            month = 1;
+            year++;
+        }
+
+        for (int i = 0; i < 120; i++)
+        {
+            months.Add($"{year}-{month:00}");
+
+            month++;
+            if (month == 13)
+            {
+                month = 1;
+                year++;
+            }
+        }
+        
     }
 }
