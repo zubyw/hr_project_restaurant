@@ -8,6 +8,7 @@ namespace Project.DataAccess
     {
         private readonly string _connectionString = "Data Source=DataSources/project.db";
         private readonly string Table = "Dishes";
+        private readonly AllergenAccess _allergenAccess = new AllergenAccess();
 
         public void Write(DishModel dish)
         {
@@ -20,7 +21,29 @@ namespace Project.DataAccess
         {
             string sql = $"SELECT * FROM {Table} WHERE ID = @Id";
             using var connection = new SqliteConnection(_connectionString);
-            return connection.QueryFirstOrDefault<DishModel>(sql, new { Id = id });
+            var dish = connection.QueryFirstOrDefault<DishModel>(sql, new { Id = id });
+            
+            if (dish != null)
+            {
+                PopulateAllergenInfo(dish);
+            }
+            
+            return dish;
+        }
+
+        private void PopulateAllergenInfo(DishModel dish)
+        {
+            var allergens = _allergenAccess.GetAllergensByDishId(dish.ID);
+            dish.AllergenIds = allergens.Select(a => a.ID).ToList();
+            dish.AllergenNames = allergens.Select(a => a.Name).ToList();
+        }
+
+        private void PopulateAllergenInfo(List<DishModel> dishes)
+        {
+            foreach (var dish in dishes)
+            {
+                PopulateAllergenInfo(dish);
+            }
         }
 
         public void Update(DishModel dish)
