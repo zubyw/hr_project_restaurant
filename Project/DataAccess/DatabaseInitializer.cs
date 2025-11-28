@@ -74,6 +74,15 @@ public static class DatabaseInitializer
             )";
         connection.Execute(createDishesTable);
 
+        // Create Allergens table
+        var createAllergensTable = @"
+            CREATE TABLE IF NOT EXISTS Allergens (
+                ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                Name TEXT NOT NULL UNIQUE,
+                Description TEXT NOT NULL
+            )";
+        connection.Execute(createAllergensTable);
+
         // Create Reservations table
         var createReservationsTable = @"
             CREATE TABLE IF NOT EXISTS Reservations (
@@ -114,6 +123,16 @@ public static class DatabaseInitializer
             )";
         connection.Execute(createDishesThemesTable);
 
+        var createDishesAllergensTable = @"
+            CREATE TABLE IF NOT EXISTS Dishes_Allergens (
+                ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                DishId INTEGER NOT NULL,
+                AllergenId INTEGER NOT NULL,
+                FOREIGN KEY (DishId) REFERENCES Dishes(ID),
+                FOREIGN KEY (AllergenId) REFERENCES Allergens(ID)
+            )";
+        connection.Execute(createDishesAllergensTable);
+
         var createReservationsDishesTable = @"
             CREATE TABLE IF NOT EXISTS Reservations_Dishes (
                 ID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -141,6 +160,9 @@ public static class DatabaseInitializer
 
         // create default tables if none exist
         CreateDefaultTables(connection);
+
+        // Create default allergens if none exist
+        CreateDefaultAllergens(connection);
 
         // Create default themes and dishes if none exist
         CreateDefaultThemesAndDishes(connection);
@@ -212,6 +234,30 @@ public static class DatabaseInitializer
                     INSERT INTO [Table] (TableNumber, TableCapacity, IsActive) 
                     VALUES (@TableNumber, @TableCapacity, 1)", 
                     table);
+            }
+        }
+    }
+
+    private static void CreateDefaultAllergens(SqliteConnection connection)
+    {
+        // Check if there are already allergens
+        var existingAllergens = connection.QueryFirstOrDefault<int>("SELECT COUNT(*) FROM Allergens");
+
+        if (existingAllergens == 0)
+        {
+            var allergens = new[]
+            {
+                new { Name = "Dairy", Description = "Contains milk or milk products" },
+                new { Name = "Gluten", Description = "Contains wheat, barley, or other gluten-containing grains" },
+                new { Name = "Nuts", Description = "Contains tree nuts or peanuts" }
+            };
+
+            foreach (var allergen in allergens)
+            {
+                connection.Execute(@"
+                    INSERT INTO Allergens (Name, Description) 
+                    VALUES (@Name, @Description)", 
+                    allergen);
             }
         }
     }
