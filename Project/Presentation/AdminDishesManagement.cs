@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using Project.Logic;
 using Project.DataModels;
+using Project.DataAccess;
 using System.Runtime.InteropServices;
 
 public static class AdminDishesManagement
 {
     private static readonly DishLogic _logic = new DishLogic();
+    private static readonly AllergenAccess _allergenAccess = new AllergenAccess();
 
     public static void Start()
     {
@@ -51,7 +53,7 @@ public static class AdminDishesManagement
         Console.WriteLine("=== Create new dish ===");
         
         Console.Write("Name: ");
-        string name = Console.ReadLine();
+        string name = Console.ReadLine() ?? "";
         if (string.IsNullOrWhiteSpace(name))
         {
         Console.WriteLine("Name cannot be empty.");
@@ -66,8 +68,8 @@ public static class AdminDishesManagement
         Console.Clear();
         Console.WriteLine("=== Create new dish ===");
         Console.Write("Price (example: 12.50): ");
-        string priceInput = Console.ReadLine();
-        if (string.IsNullOrWhiteSpace(name))
+        string priceInput = Console.ReadLine() ?? "";
+        if (string.IsNullOrWhiteSpace(priceInput))
         {
         Console.WriteLine("Price cannot be empty.");
         Add();
@@ -77,10 +79,10 @@ public static class AdminDishesManagement
         Console.Clear();
         Console.WriteLine("=== Create new dish ===");
         Console.Write("Description: ");
-        string description = Console.ReadLine();
-        if (string.IsNullOrWhiteSpace(name))
+        string description = Console.ReadLine() ?? "";
+        if (string.IsNullOrWhiteSpace(description))
         {
-        Console.WriteLine("Name cannot be empty.");
+        Console.WriteLine("Description cannot be empty.");
         Add();
         }
 
@@ -90,11 +92,95 @@ public static class AdminDishesManagement
         string[] types = { "Starter", "Main", "Dessert" };
         int typeIndex = MenuHelper.ShowMenuUpDown(types, "=== Create new dish ===\nType (Starter/Main/Dessert): ");
         string type = types[typeIndex];
-        DishModel dish = new DishModel(){Name = name,Price = price, Description = description, Type = type}; 
-        _logic.WriteIntoDB(dish);
+        
+        // Select allergens
+        List<int> selectedAllergenIds = SelectAllergens();
+        
+        DishModel dish = new DishModel(){Name = name, Price = price, Description = description, Type = type}; 
+        int dishId = _logic.WriteIntoDBAndReturnId(dish);
+        
+        // Link allergens to dish
+        foreach (int allergenId in selectedAllergenIds)
+        {
+            _allergenAccess.LinkDishToAllergen(dishId, allergenId);
+        }
 
         Console.WriteLine("Dish created.");
         Thread.Sleep(1500);
+    }
+
+    private static List<int> SelectAllergens()
+    {
+        List<AllergenModel> allergens = _allergenAccess.GetAll();
+        List<bool> selectedStates = new List<bool>();
+        
+        // Initialize all as not selected
+        for (int i = 0; i < allergens.Count; i++)
+        {
+            selectedStates.Add(false);
+        }
+
+        int currentIndex = 0;
+
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine("╔════════════════════════════════════════════════════════════════════════════╗");
+            Console.WriteLine("║  SELECT ALLERGENS (use SPACE to toggle, ENTER to confirm)".PadRight(77) + "║");
+            Console.WriteLine("╚════════════════════════════════════════════════════════════════════════════╝");
+            Console.WriteLine();
+
+            for (int i = 0; i < allergens.Count; i++)
+            {
+                bool isSelected = i == currentIndex;
+                bool isChecked = selectedStates[i];
+
+                if (isSelected)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                string checkbox = isChecked ? "[X]" : "[ ]";
+                Console.WriteLine($"  {checkbox} {allergens[i].Name} - {allergens[i].Description}");
+
+                if (isSelected)
+                {
+                    Console.ResetColor();
+                }
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("↑↓ Navigate | SPACE Toggle | ENTER Confirm");
+
+            var key = Console.ReadKey(true).Key;
+
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    currentIndex = (currentIndex - 1 + allergens.Count) % allergens.Count;
+                    break;
+
+                case ConsoleKey.DownArrow:
+                    currentIndex = (currentIndex + 1) % allergens.Count;
+                    break;
+
+                case ConsoleKey.Spacebar:
+                    selectedStates[currentIndex] = !selectedStates[currentIndex];
+                    break;
+
+                case ConsoleKey.Enter:
+                    List<int> selectedIds = new List<int>();
+                    for (int i = 0; i < allergens.Count; i++)
+                    {
+                        if (selectedStates[i])
+                        {
+                            selectedIds.Add(allergens[i].ID);
+                        }
+                    }
+                    return selectedIds;
+            }
+        }
     }
 
     private static void ManageAllDishes()
@@ -212,6 +298,7 @@ public static class AdminDishesManagement
             "Edit Price",
             "Edit Description",
             "Edit Type",
+            "Manage Allergens",
             "Back"
         };
 
@@ -226,7 +313,7 @@ public static class AdminDishesManagement
                     Console.Clear();
                     Console.WriteLine($"Name: {dish.Name}");
                     Console.WriteLine();
-                    string newname = Console.ReadLine();
+                    string newname = Console.ReadLine() ?? "";
                     if (string.IsNullOrWhiteSpace(newname))
                     {
                     Console.WriteLine("Name cannot be empty.");
@@ -241,10 +328,10 @@ public static class AdminDishesManagement
                     Console.Clear();
                     Console.WriteLine($"Price: {dish.Price}");
                     Console.WriteLine();
-                    string newprice = Console.ReadLine();
+                    string newprice = Console.ReadLine() ?? "";
                     if (string.IsNullOrWhiteSpace(newprice))
                     {
-                    Console.WriteLine("Name cannot be empty.");
+                    Console.WriteLine("Price cannot be empty.");
                     Thread.Sleep(1500);
                     continue;
                     }
@@ -257,10 +344,10 @@ public static class AdminDishesManagement
                     Console.Clear();
                     Console.WriteLine($"Description: {dish.Description}");
                     Console.WriteLine();
-                    string newDescription = Console.ReadLine();
+                    string newDescription = Console.ReadLine() ?? "";
                     if (string.IsNullOrWhiteSpace(newDescription))
                     {
-                    Console.WriteLine("Name cannot be empty.");
+                    Console.WriteLine("Description cannot be empty.");
                     Thread.Sleep(1500);
                     continue;
                     }
@@ -281,6 +368,9 @@ public static class AdminDishesManagement
                     _logic.UpdateDish(dish);
                     break;
                 case 4:
+                    ManageAllergens(dish);
+                    break;
+                case 5:
                     return;
             }
         }

@@ -54,6 +54,11 @@ namespace Project.Logic
             _dishaccess.Write(dish);
         }
 
+        public int WriteIntoDBAndReturnId(DishModel dish)
+        {
+            return _dishaccess.AddDishReturnId(dish);
+        }
+
         public int? GetCurrentThemeId()
         {
             var themeAccess = new ThemeAccess();
