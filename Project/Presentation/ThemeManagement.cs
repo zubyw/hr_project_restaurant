@@ -298,28 +298,29 @@ public static class ThemeManagement
             };
 
             while (true)
-        {
-            int index = MenuHelper.ShowMenuUpDown(options, $"=== Admin: Manage theme calendar ===");
-            try
             {
-                switch (index)
+                int index = MenuHelper.ShowMenuUpDown(options, $"=== Admin: Manage theme calendar ===");
+                try
                 {
-                    case 0:
-                        ViewMenu.Start();
-                        break;
-                    case 1:
-                        // LinkMonthsToTheme();
-                        break;
-                    case 2:
-                        return;
+                    switch (index)
+                    {
+                        case 0:
+                            ViewMenu.Start();
+                            break;
+                        case 1:
+                            LinkMonthsToTheme();
+                            break;
+                        case 2:
+                            Start();
+                            return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error: " + ex.Message);
+                    Console.ReadKey();
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error: " + ex.Message);
-                Console.ReadKey();
-            }
-        }
 
 
         
@@ -327,29 +328,55 @@ public static class ThemeManagement
 
     private static void LinkMonthsToTheme()
     {
-        List<string> months = new List<string>();
+        ThemeModel selectedtheme = ManageAllThemes();
+        if (selectedtheme is null) Start();
 
-        DateTime now = DateTime.Now;
+        //this gets all the available months (in logic it checks which months are already chosen)
+        List<string> monthOptions = logic.GetAvailableMonths();
 
-        int year = now.Year;
-        int month = now.Month + 1;
-        if (month == 13)
+
+        monthOptions.Add("Done");
+
+        List<string> chosenMonths = new List<string>();
+
+        while (true)
         {
-            month = 1;
-            year++;
+            int index = MenuHelper.ShowMenuUpDown(monthOptions.ToArray(), "=== Admin: Choose months ===");
+
+            string selected = monthOptions[index];
+
+            if (selected == "Done")
+                break;
+
+            if (chosenMonths.Contains(selected))
+            {
+                Console.Clear();
+                Console.WriteLine($"This month already is in this selection: {selected}");
+                Thread.Sleep(1500);
+                continue;
+            }
+
+            // Add month to the chosen list
+            Console.Clear();
+            Console.WriteLine($"Added: {selected}");
+
+            chosenMonths.Add(DateTime.ParseExact(selected, "MM-yyyy", null).ToString("yyyy-MM"));
+
+            Thread.Sleep(1500);
         }
 
-        for (int i = 0; i < 120; i++)
+        // DONE — chosenMonths contains the final selection
+        Console.Clear();
+        Console.WriteLine("Saved final month selection");
+        Console.WriteLine("Final month selection:");
+        foreach (var m in chosenMonths)
         {
-            months.Add($"{year}-{month:00}");
-
-            month++;
-            if (month == 13)
-            {
-                month = 1;
-                year++;
-            }
+            Console.WriteLine(" - " + m);
         }
         
+        Thread.Sleep(3000);
+        logic.LinkMonthsToTheme(chosenMonths, selectedtheme);
+        Thread.Sleep(3000);
+        ManageThemeCalendar();
     }
 }

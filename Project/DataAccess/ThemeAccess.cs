@@ -183,8 +183,18 @@ public class ThemeAccess
 
             return count > 0;
         }
-    // public List<string> GetThemeCalendar()
-    // {
-        
-    // }
+    public List<string> GetThemeCalendarTakenMonths()
+    {
+        string sql = "SELECT TimeSlot FROM Themes_Calendar";
+        using var connection = new SqliteConnection(_connectionString);
+        List<string> timeSlots = connection.Query<string>(sql).ToList();
+        return timeSlots;
+    }
+
+    public void LinkMonthToTheme(string month, ThemeModel theme)
+    {
+        string sql = $"INSERT INTO Themes_Calendar (ThemeId, TimeSlot) VALUES (@ThemeId, @TimeSlot)";
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Execute(sql, new {ThemeId = theme.ID, TimeSlot = month + "-01"});
+    }
 }

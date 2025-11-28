@@ -102,4 +102,56 @@ public class ThemesLogic
         {
             return access.GetThemeByName(dishname);
         }
+    
+    public List<string> GetAvailableMonths()
+    {
+        List<string> timeslots = access.GetThemeCalendarTakenMonths();
+        
+        List<string> takenMonths = timeslots
+            .Select(ts => DateTime.Parse(ts))
+            .Where(d => d >= DateTime.Today)
+            .OrderBy(d => d)
+            .Select(d => d.ToString("MM-yyyy"))
+            .ToList();
+
+        List<string> allMonths = new List<string>();
+
+        DateTime now = DateTime.Now;
+
+        int year = now.Year;
+        int month = now.Month + 1;
+        if (month == 13)
+        {
+            month = 1;
+            year++;
+        }
+
+        for (int i = 0; i < 36; i++)
+        {
+            allMonths.Add($"{month:00}-{year}");
+
+            month++;
+            if (month == 13)
+            {
+                month = 1;
+                year++;
+            }
+        }
+        
+        List<string> availableMonths = allMonths
+        .Where(m => !takenMonths.Contains(m))
+        .ToList();
+
+        return availableMonths;
+    }
+
+    public void LinkMonthsToTheme(List<string> months, ThemeModel theme)
+    {
+        if (months.Count() == 0) return;
+
+        foreach (string m in months)
+        {
+            access.LinkMonthToTheme(m, theme);
+        }
+    }
 }
