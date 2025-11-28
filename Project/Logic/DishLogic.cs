@@ -2,6 +2,7 @@ using System.Reflection.Metadata;
 using Project.DataModels;
 using Project.DataAccess;
 using Project.Logic;
+using System.Dynamic;
 
 
 namespace Project.Logic
@@ -47,6 +48,10 @@ namespace Project.Logic
                 return _dishaccess.GetDishesByIds(dishIds);
             }
             return new List<DishModel>();
+        }
+        public void WriteIntoDB(DishModel dish)
+        {
+            _dishaccess.Write(dish);
         }
 
         public int? GetCurrentThemeId()
@@ -193,6 +198,34 @@ namespace Project.Logic
 
             _dishaccess.Delete(dish);
         }
+        public bool DoesDishExist(string dishname)
+        {
+            return _dishaccess.GetDishByName(dishname);
+        }
+
+        public List<DishModel> GetAllDishes()
+        {
+            return _dishaccess.GetAllDishes();
+        }
+        public void UpdateDish(DishModel dish)
+        {
+            _dishaccess.Update(dish);
+        }
+
+        public void DeleteDishInDishes(DishModel dish)
+        {
+            _dishaccess.Delete(dish);
+        }
+
+        public void DeleteDishInDishes_Themes(DishModel dish)
+        {
+            _dishaccess.DeleteDishes_Themes(dish);
+        }
+
+        public void DeleteDishInReservations_Dishes(DishModel dish)
+        {
+            _dishaccess.DeleteReservationDishes(dish);
+        }
     
     
         private ReservationsAccess _reservationsAccess = new ReservationsAccess();
@@ -203,6 +236,4 @@ namespace Project.Logic
         }
 
     }
-
-
 }

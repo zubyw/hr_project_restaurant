@@ -81,57 +81,35 @@ static class Menu
     // Admin menu with full access
     static public void ShowAdminMenu()
     {
-        // Toegevoegd: "Dish Orders Overview"
-        string[] options = new string[] { "View Reservations", "Dish Orders Overview", "Logout" };
-        int selectedIndex = 0;
-
-        ConsoleKey key;
-        do
+        string[] options = new string[] { "Manage Reservations", "Manage Themes", "Manage Dishes", "Logout" };
+        while (true)
         {
-            Console.Clear();
-            Console.WriteLine("\n=== Kevin's Fine Dining - Admin Panel ===");
+            int index = MenuHelper.ShowMenuUpDown(options, "=== Kevin's Fine Dining - Admin Panel ===");
 
-            // Display options
-            for (int i = 0; i < options.Length; i++)
+            try
             {
-                if (i == selectedIndex)
+                switch (index)
                 {
-                    Console.BackgroundColor = ConsoleColor.DarkCyan;
-                    Console.ForegroundColor = ConsoleColor.White;
+                    case 0:
+                        ReservationManagement.Start();
+                        break;
+                    case 1:
+                        ThemeManagement.Start();
+                        break;
+                    case 2:
+                        AdminDishesManagement.Start();
+                        break;
+                    case 3:
+                        Start();
+                        break;
                 }
-                Console.WriteLine($"  {options[i]}");
-                Console.ResetColor();
             }
-
-            key = Console.ReadKey(true).Key;
-
-            // Handle arrow keys
-            switch (key)
+            catch (Exception ex)
             {
-                case ConsoleKey.UpArrow:
-                    selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
-                    break;
-                case ConsoleKey.DownArrow:
-                    selectedIndex = (selectedIndex + 1) % options.Length;
-                    break;
-                case ConsoleKey.Enter:
-                    switch (selectedIndex)
-                    {
-                        case 0:
-                            ReservationManagement.Start();
-                            break;
-                        case 1:
-                            DishOrderOverview.Start(); // <-- verwijzing naar de nieuwe admin-console view
-                            break;
-                        case 2:
-                            Console.WriteLine("Logging out...");
-                            CurrentUser = null;
-                            Start(); // Go back to login/register menu
-                            break;
-                    }
-                    break;
+                Console.WriteLine("Error: " + ex.Message);
+                Console.ReadKey();
             }
-        } while (key != ConsoleKey.Enter);
+        }
     }
 
     // Customer menu with limited access

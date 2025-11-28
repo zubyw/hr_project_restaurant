@@ -26,58 +26,14 @@ public class ThemesLogic
         return theme;
     }
 
-    public void CreateTheme(string name, string course, DateTime timeSlot)
+    public void WriteTheme(ThemeModel theme)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new Exception("Name empty");
-        }
-
-        EnsureValidThemeMonth(timeSlot);
-
-        if (Exists(name))
-        {
-            throw new Exception("Theme exists");
-        }
-
-        ThemeModel theme = new ThemeModel
-        {
-            Name = name,
-            Course = course,
-            IsActive = 1
-        };
-
-        access.AddTheme(theme, timeSlot);
+        access.Write(theme);
     }
 
-    public void UpdateTheme(int id, string name, string course, int active, DateTime timeSlot)
+    public void UpdateTheme(ThemeModel theme)
     {
-        if (id <= 0)
-        {
-            throw new Exception("Invalid id");
-        }
-
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new Exception("Name empty");
-        }
-
-
-        EnsureValidThemeMonth(timeSlot);
-
-
-        ThemeModel existing = access.GetById(id);
-        if (existing == null)
-        {
-            throw new Exception("Not found");
-        }
-
-        existing.Name = name;
-        existing.Course = course;
-        existing.IsActive = active;
-
-        access.Update(existing);
-        access.UpdateThemeCalendar(id, existing.Name, existing.Course, timeSlot);
+        access.Update(theme);
     }
 
 
@@ -101,14 +57,9 @@ public class ThemesLogic
         access.DeactivateTheme(id);
     }
 
-    public void DeleteThemeCompletely(int id)
+    public void DeleteThemeCompletely(ThemeModel theme)
     {
-        if (id <= 0)
-        {
-            throw new Exception("Invalid id");
-        }
-
-        access.DeleteThemeCompletely(id);
+        access.DeleteThemeCompletely(theme);
     }
 
     private bool Exists(string name)
@@ -146,4 +97,9 @@ public class ThemesLogic
         DateTime datetoday = DateTime.Today;
         return access.GetFutureThemesByMonth(datetoday);
     }
+
+    public bool DoesThemeExist(string dishname)
+        {
+            return access.GetThemeByName(dishname);
+        }
 }
