@@ -384,6 +384,93 @@ public static class AdminDishesManagement
 
 
 
+    private static void ManageAllergens(DishModel dish)
+    {
+        List<AllergenModel> allergens = _allergenAccess.GetAll();
+        List<int> currentAllergenIds = _allergenAccess.GetAllergenIdsByDishId(dish.ID);
+        List<bool> selectedStates = new List<bool>();
+        
+        // Initialize selected states based on current allergens
+        for (int i = 0; i < allergens.Count; i++)
+        {
+            selectedStates.Add(currentAllergenIds.Contains(allergens[i].ID));
+        }
+
+        int currentIndex = 0;
+
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine("╔════════════════════════════════════════════════════════════════════════════╗");
+            Console.WriteLine($"║  MANAGE ALLERGENS FOR: {dish.Name}".PadRight(77) + "║");
+            Console.WriteLine("║  (use SPACE to toggle, ENTER to save)".PadRight(77) + "║");
+            Console.WriteLine("╚════════════════════════════════════════════════════════════════════════════╝");
+            Console.WriteLine();
+
+            for (int i = 0; i < allergens.Count; i++)
+            {
+                bool isSelected = i == currentIndex;
+                bool isChecked = selectedStates[i];
+
+                if (isSelected)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                string checkbox = isChecked ? "[X]" : "[ ]";
+                Console.WriteLine($"  {checkbox} {allergens[i].Name} - {allergens[i].Description}");
+
+                if (isSelected)
+                {
+                    Console.ResetColor();
+                }
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("↑↓ Navigate | SPACE Toggle | ENTER Save | ESC Cancel");
+
+            var key = Console.ReadKey(true).Key;
+
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    currentIndex = (currentIndex - 1 + allergens.Count) % allergens.Count;
+                    break;
+
+                case ConsoleKey.DownArrow:
+                    currentIndex = (currentIndex + 1) % allergens.Count;
+                    break;
+
+                case ConsoleKey.Spacebar:
+                    selectedStates[currentIndex] = !selectedStates[currentIndex];
+                    break;
+
+                case ConsoleKey.Enter:
+                    // Save changes
+                    _allergenAccess.UnlinkAllAllergensFromDish(dish.ID);
+                    for (int i = 0; i < allergens.Count; i++)
+                    {
+                        if (selectedStates[i])
+                        {
+                            _allergenAccess.LinkDishToAllergen(dish.ID, allergens[i].ID);
+                        }
+                    }
+                    
+                    // Update dish model with new allergens
+                    dish.AllergenIds = _allergenAccess.GetAllergenIdsByDishId(dish.ID);
+                    dish.AllergenNames = _allergenAccess.GetAllergensByDishId(dish.ID).Select(a => a.Name).ToList();
+                    
+                    Console.WriteLine("\nAllergens updated successfully!");
+                    Thread.Sleep(1500);
+                    return;
+
+                case ConsoleKey.Escape:
+                    return;
+            }
+        }
+    }
+
     private static void Delete(DishModel dish)
     {
             string[] options =
