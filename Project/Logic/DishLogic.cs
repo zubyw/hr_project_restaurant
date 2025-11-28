@@ -11,7 +11,7 @@ namespace Project.Logic
     public class DishLogic
     {
         private DishAccess _dishaccess;
-        
+
         public DishLogic(DishAccess? dishAccess = null)
         {
             _dishaccess = dishAccess ?? new DishAccess();
@@ -30,7 +30,7 @@ namespace Project.Logic
                 {
                     int x = _dishaccess.ReservedDishes(dish, reservation);
                     returnedlist.Add(x);
-                    }
+                }
             }
             return returnedlist;
         }
@@ -66,11 +66,11 @@ namespace Project.Logic
         }
 
         // Admin methods theme / dishes management
-        private static readonly string[] _allowedTypes = new string[] 
-        { 
-            "Starter", 
-            "Main", 
-            "Dessert" 
+        private static readonly string[] _allowedTypes = new string[]
+        {
+            "Starter",
+            "Main",
+            "Dessert"
         };
 
         private void EnsureThemeExists(int themeId)
@@ -185,7 +185,7 @@ namespace Project.Logic
         }
 
         public void AdminDeleteDishFromTheme(int dishId, int themeId)
-        {   
+        {
             EnsureThemeExists(themeId);
 
             _dishaccess.UnlinkDishFromTheme(dishId, themeId);
@@ -226,5 +226,14 @@ namespace Project.Logic
         {
             _dishaccess.DeleteReservationDishes(dish);
         }
+    
+    
+        private ReservationsAccess _reservationsAccess = new ReservationsAccess();
+
+        public List<(string DishName, int Count)> GetDishCountsForDate(string date)
+        {
+            return _reservationsAccess.GetDishCountsByDate(date);
+        }
+
     }
 }

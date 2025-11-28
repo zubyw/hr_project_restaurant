@@ -18,7 +18,7 @@ static class Menu
         {
             Console.Clear();
             Console.WriteLine("\n=== Kevin's Fine Dining - Authentication ===");
-            
+
             // Display options
             for (int i = 0; i < options.Length; i++)
             {
@@ -64,10 +64,10 @@ static class Menu
     static public void ShowMainMenu()
     {
         Console.Clear();
-        
+
         // Check if user is admin or regular user
         bool isAdmin = IsCurrentUserAdmin();
-        
+
         if (isAdmin)
         {
             ShowAdminMenu();
@@ -123,7 +123,7 @@ static class Menu
         {
             Console.Clear();
             Console.WriteLine($"\n=== Welcome {CurrentUser?.FirstName} {CurrentUser?.LastName} ===");
-            
+
             // Display options
             for (int i = 0; i < options.Length; i++)
             {
@@ -186,10 +186,10 @@ static class Menu
     private static bool IsCurrentUserAdmin()
     {
         if (CurrentUser == null) return false;
-        
+
         // Check if user is admin by email or by getting user role from Users table
         if (CurrentUser.EmailAddress == "admin@gmail.com") return true;
-        
+
         try
         {
             var usersAccess = new UsersAccess();
