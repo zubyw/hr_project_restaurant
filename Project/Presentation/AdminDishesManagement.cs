@@ -114,7 +114,6 @@ public static class AdminDishesManagement
         List<AllergenModel> allergens = _allergenAccess.GetAll();
         List<bool> selectedStates = new List<bool>();
         
-        // Initialize all as not selected
         for (int i = 0; i < allergens.Count; i++)
         {
             selectedStates.Add(false);
@@ -125,9 +124,7 @@ public static class AdminDishesManagement
         while (true)
         {
             Console.Clear();
-            Console.WriteLine("╔════════════════════════════════════════════════════════════════════════════╗");
-            Console.WriteLine("║  SELECT ALLERGENS (use SPACE to toggle, ENTER to confirm)".PadRight(77) + "║");
-            Console.WriteLine("╚════════════════════════════════════════════════════════════════════════════╝");
+            Console.WriteLine("=== Select allergens ===");
             Console.WriteLine();
 
             for (int i = 0; i < allergens.Count; i++)
@@ -142,7 +139,7 @@ public static class AdminDishesManagement
                 }
 
                 string checkbox = isChecked ? "[X]" : "[ ]";
-                Console.WriteLine($"  {checkbox} {allergens[i].Name} - {allergens[i].Description}");
+                Console.WriteLine($"{checkbox} {allergens[i].Name}");
 
                 if (isSelected)
                 {
@@ -151,7 +148,7 @@ public static class AdminDishesManagement
             }
 
             Console.WriteLine();
-            Console.WriteLine("↑↓ Navigate | SPACE Toggle | ENTER Confirm");
+            Console.WriteLine("Press SPACE to toggle | ENTER to confirm");
 
             var key = Console.ReadKey(true).Key;
 
@@ -298,7 +295,7 @@ public static class AdminDishesManagement
             "Edit Price",
             "Edit Description",
             "Edit Type",
-            "Manage Allergens",
+            "Edit Allergens",
             "Back"
         };
 
@@ -390,7 +387,6 @@ public static class AdminDishesManagement
         List<int> currentAllergenIds = _allergenAccess.GetAllergenIdsByDishId(dish.ID);
         List<bool> selectedStates = new List<bool>();
         
-        // Initialize selected states based on current allergens
         for (int i = 0; i < allergens.Count; i++)
         {
             selectedStates.Add(currentAllergenIds.Contains(allergens[i].ID));
@@ -401,10 +397,6 @@ public static class AdminDishesManagement
         while (true)
         {
             Console.Clear();
-            Console.WriteLine("╔════════════════════════════════════════════════════════════════════════════╗");
-            Console.WriteLine($"║  MANAGE ALLERGENS FOR: {dish.Name}".PadRight(77) + "║");
-            Console.WriteLine("║  (use SPACE to toggle, ENTER to save)".PadRight(77) + "║");
-            Console.WriteLine("╚════════════════════════════════════════════════════════════════════════════╝");
             Console.WriteLine();
 
             for (int i = 0; i < allergens.Count; i++)
@@ -419,7 +411,7 @@ public static class AdminDishesManagement
                 }
 
                 string checkbox = isChecked ? "[X]" : "[ ]";
-                Console.WriteLine($"  {checkbox} {allergens[i].Name} - {allergens[i].Description}");
+                Console.WriteLine($"{checkbox} {allergens[i].Name}");
 
                 if (isSelected)
                 {
@@ -428,7 +420,7 @@ public static class AdminDishesManagement
             }
 
             Console.WriteLine();
-            Console.WriteLine("↑↓ Navigate | SPACE Toggle | ENTER Save | ESC Cancel");
+            Console.WriteLine("Press SPACE to toggle | ENTER to save | ESC to cancel");
 
             var key = Console.ReadKey(true).Key;
 
@@ -447,7 +439,6 @@ public static class AdminDishesManagement
                     break;
 
                 case ConsoleKey.Enter:
-                    // Save changes
                     _allergenAccess.UnlinkAllAllergensFromDish(dish.ID);
                     for (int i = 0; i < allergens.Count; i++)
                     {
@@ -457,7 +448,6 @@ public static class AdminDishesManagement
                         }
                     }
                     
-                    // Update dish model with new allergens
                     dish.AllergenIds = _allergenAccess.GetAllergenIdsByDishId(dish.ID);
                     dish.AllergenNames = _allergenAccess.GetAllergensByDishId(dish.ID).Select(a => a.Name).ToList();
                     

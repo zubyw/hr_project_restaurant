@@ -4,23 +4,28 @@ using Project.DataAccess;
 public static class DishSelection
 {
     private static DishAccess _dishAccess = new DishAccess();
+    private static AllergenAccess _allergenAccess = new AllergenAccess();
+    private static List<int> _activeAllergenFilters = new List<int>();
     
     public static List<DishModel> SelectDishesForReservation(int guestCount, int themeId)
     {
+        _activeAllergenFilters.Clear();
+        
+        ManageAllergenFilters();
+        
         List<DishModel> allSelectedDishes = new List<DishModel>();
         
-        // Get all available dishes for this theme
         var availableDishes = GetDishesByTheme(themeId);
+        availableDishes = ApplyAllergenFilters(availableDishes);
         
-        // Separate by type
+
         var starters = availableDishes.Where(d => d.Type == "Starter").ToList();
         var mains = availableDishes.Where(d => d.Type == "Main").ToList();
         var desserts = availableDishes.Where(d => d.Type == "Dessert").ToList();
         
-        // Get theme name for display
         string themeName = GetThemeName(themeId);
         
-        // Each guest selects dishes
+
         List<List<DishModel?>> allSelectedDishesPerGuest = new List<List<DishModel?>>();
 
         for (int guestNumber = 1; guestNumber <= guestCount; guestNumber++)
@@ -32,21 +37,18 @@ public static class DishSelection
 
             List<DishModel?> guestDishes = new List<DishModel?>();
 
-            // Select starter
             var selectedStarter = SelectDish(starters, "Starters", guestNumber, out IsNotDishSelecting);
-            if (IsNotDishSelecting) return new List<DishModel>(); // User cancelled
-            guestDishes.Add(selectedStarter); // can be null
+            if (IsNotDishSelecting) return new List<DishModel>();
+            guestDishes.Add(selectedStarter);
             if (selectedStarter != null) allSelectedDishes.Add(selectedStarter);
 
-            // Select main
             var selectedMain = SelectDish(mains, "Main Courses", guestNumber, out IsNotDishSelecting);
-            if (IsNotDishSelecting) return new List<DishModel>(); // User cancelled
+            if (IsNotDishSelecting) return new List<DishModel>();
             guestDishes.Add(selectedMain);
             if (selectedMain != null) allSelectedDishes.Add(selectedMain);
 
-            // Select dessert
             var selectedDessert = SelectDish(desserts, "Desserts", guestNumber, out IsNotDishSelecting);
-            if (IsNotDishSelecting) return new List<DishModel>(); // User cancelled
+            if (IsNotDishSelecting) return new List<DishModel>();
             guestDishes.Add(selectedDessert);
             if (selectedDessert != null) allSelectedDishes.Add(selectedDessert);
             
@@ -56,13 +58,12 @@ public static class DishSelection
     
 
         
-        // Show summary and confirm
         if (ShowReservationSummary(allSelectedDishesPerGuest, guestCount))
         {
             return allSelectedDishes;
         }
         
-        return new List<DishModel>(); // User didn't confirm
+        return new List<DishModel>();
     }
     
     private static DishModel? SelectDish(List<DishModel> dishes, string courseType, int guestNumber, out bool IsNotDishSelecting)
@@ -90,7 +91,7 @@ public static class DishSelection
             Console.WriteLine("╚════════════════════════════════════════════════════════════════════════════╝");
             Console.WriteLine();
 
-            // Display dishes
+
             int totalOptions = dishes.Count + 1;
             for (int i = 0; i < totalOptions; i++)
             {
@@ -113,11 +114,17 @@ public static class DishSelection
                     }
                     Console.WriteLine();
 
-                    // Show description for selected item
                     if (isSelected)
                     {
                         Console.ForegroundColor = ConsoleColor.Gray;
                         Console.WriteLine($"       {dish.Description}");
+                        
+                        if (dish.AllergenNames.Count > 0)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            Console.WriteLine($"Contains: {string.Join(", ", dish.AllergenNames)}");
+                        }
+                        
                         Console.ResetColor();
                     }
                 }
@@ -133,7 +140,6 @@ public static class DishSelection
                 }
             }
 
-            // Handle input
             var key = Console.ReadKey(true);
 
             switch (key.Key)
@@ -148,7 +154,6 @@ public static class DishSelection
 
                 case ConsoleKey.Enter:
                     Console.WriteLine();
-                    // Confirm selection of dish
                     if (selectedIndex < dishes.Count)
                     {
                         var selected = dishes[selectedIndex];
@@ -156,7 +161,6 @@ public static class DishSelection
                         Thread.Sleep(1200);
                         return selected;
                     }
-                    // Confirm selection of not choosing a dish
                     else
                     {
                         Console.WriteLine("No Dish Selected.");
@@ -185,7 +189,6 @@ public static class DishSelection
     decimal totalPrice = 0;
     
 
-    // Group by guest
     for (int guestNumber = 1; guestNumber <= guestCount; guestNumber++)
     {
 
@@ -231,10 +234,9 @@ public static class DishSelection
     
     private static List<DishModel> GetDishesByTheme(int themeId)
     {
-        // Get all dish IDs for this theme
         var dishIds = _dishAccess.GetallDishIdByThemeId(themeId);
         
-        // Get the actual dishes
+
         if (dishIds.Count > 0)
         {
             return _dishAccess.GetDishesByIds(dishIds);
@@ -252,10 +254,91 @@ public static class DishSelection
     
     private static void DisplayThemeHeader(string themeName, int currentGuest, int totalGuests)
     {
-        Console.WriteLine("╔════════════════════════════════════════════════════════════════════════════╗");
-        ColorConsole.WriteTitle($"║  🍣 Theme of the Month: {themeName}".PadRight(77) + "║");
-        ColorConsole.WriteInfo($"║  Selecting dishes for Guest {currentGuest} of {totalGuests}".PadRight(77) + "║");
-        Console.WriteLine("╚════════════════════════════════════════════════════════════════════════════╝");
+        Console.WriteLine($"=== Theme: {themeName} - Guest {currentGuest} of {totalGuests} ===");
         Console.WriteLine();
+    }
+
+    private static List<DishModel> ApplyAllergenFilters(List<DishModel> dishes)
+    {
+        if (_activeAllergenFilters.Count == 0)
+        {
+            return dishes;
+        }
+
+
+        return dishes.Where(dish => 
+            !dish.AllergenIds.Any(allergenId => _activeAllergenFilters.Contains(allergenId))
+        ).ToList();
+    }
+
+    private static void ManageAllergenFilters()
+    {
+        List<AllergenModel> allergens = _allergenAccess.GetAll();
+        List<bool> selectedStates = new List<bool>();
+        
+        for (int i = 0; i < allergens.Count; i++)
+        {
+            selectedStates.Add(_activeAllergenFilters.Contains(allergens[i].ID));
+        }
+
+        int currentIndex = 0;
+
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine("=== Select allergens to avoid ===");
+            Console.WriteLine();
+
+            for (int i = 0; i < allergens.Count; i++)
+            {
+                bool isSelected = i == currentIndex;
+                bool isChecked = selectedStates[i];
+
+                if (isSelected)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                string checkbox = isChecked ? "[X]" : "[ ]";
+                Console.WriteLine($"{checkbox} {allergens[i].Name}");
+
+                if (isSelected)
+                {
+                    Console.ResetColor();
+                }
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("Press SPACE to toggle | ENTER to continue");
+
+            var key = Console.ReadKey(true).Key;
+
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    currentIndex = (currentIndex - 1 + allergens.Count) % allergens.Count;
+                    break;
+
+                case ConsoleKey.DownArrow:
+                    currentIndex = (currentIndex + 1) % allergens.Count;
+                    break;
+
+                case ConsoleKey.Spacebar:
+                    selectedStates[currentIndex] = !selectedStates[currentIndex];
+                    break;
+
+                case ConsoleKey.Enter:
+                    _activeAllergenFilters.Clear();
+                    for (int i = 0; i < allergens.Count; i++)
+                    {
+                        if (selectedStates[i])
+                        {
+                            _activeAllergenFilters.Add(allergens[i].ID);
+                        }
+                    }
+                    return;
+            }
+        }
     }
 }

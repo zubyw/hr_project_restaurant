@@ -11,7 +11,7 @@ namespace Project.Presentation
 
         public static void Start()
         {
-            Dictionary<string, int> themes = _themeLogic.GetAllActiveDatesAndThemes(); // MonthYear => ThemeId
+            Dictionary<string, int> themes = _themeLogic.GetAllActiveDatesAndThemes();
             if (themes == null || themes.Count == 0)
             {
                 ColorConsole.WriteError("No active menu theme available at this time.");
@@ -20,7 +20,6 @@ namespace Project.Presentation
                 return;
             }
 
-            // Convert keys to a list so we can index by currentIndex
             var monthKeys = themes.Keys.ToList();
 
             int currentIndex = 0;
@@ -29,15 +28,13 @@ namespace Project.Presentation
             while (true)
             {
                 Console.SetCursorPosition(0, startTop);
-                Console.Clear(); // clear once per loop
+                Console.Clear();
 
                 string currentMonth = monthKeys[currentIndex];
 
-                // Decide which arrows to show
                 string leftArrow = currentIndex > 0 ? "< " : "  ";
                 string rightArrow = currentIndex < monthKeys.Count - 1 ? " >" : "  ";
 
-                // Display month selector
                 Console.WriteLine($"Date : {leftArrow}{currentMonth}{rightArrow}");
                 Console.WriteLine();
 
@@ -46,7 +43,7 @@ namespace Project.Presentation
 
                 if (theme != null)
                 {
-                    DisplayThemeMenu(theme); // just print dishes, don't clear
+                    DisplayThemeMenu(theme);
                 }
                 else
                 {
@@ -73,22 +70,17 @@ namespace Project.Presentation
 
         private static void DisplayThemeMenu(ThemeModel theme)
         {
-            // Get all dishes for this theme
             List<DishModel> dishes = _dishLogic.GetDishesByTheme(theme.ID);
-            
 
-            // Separate by type
             var starters = dishes.Where(d => d.Type == "Starter").ToList();
             var mains = dishes.Where(d => d.Type == "Main").ToList();
             var desserts = dishes.Where(d => d.Type == "Dessert").ToList();
 
-            // Header
             Console.WriteLine("╔════════════════════════════════════════════════════════════════════════════╗");
             Console.WriteLine($"║  {theme.Name.ToUpper()}".PadRight(77) + "║");
             Console.WriteLine("╚════════════════════════════════════════════════════════════════════════════╝");
             Console.WriteLine();
 
-            // Display Starters
             if (starters.Count > 0)
             {
                 Console.ForegroundColor = ConsoleColor.DarkCyan;
@@ -102,7 +94,6 @@ namespace Project.Presentation
                 Console.WriteLine();
             }
 
-            // Display Main Courses
             if (mains.Count > 0)
             {
                 Console.ForegroundColor = ConsoleColor.DarkCyan;
@@ -116,7 +107,6 @@ namespace Project.Presentation
                 Console.WriteLine();
             }
 
-            // Display Desserts
             if (desserts.Count > 0)
             {
                 Console.ForegroundColor = ConsoleColor.DarkCyan;
@@ -145,6 +135,13 @@ namespace Project.Presentation
             Console.WriteLine($"  {dish.Name}".PadRight(50) + $"€{dish.Price:F2}");
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine($"    {dish.Description}");
+            
+            if (dish.AllergenNames.Count > 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"Contains: {string.Join(", ", dish.AllergenNames)}");
+            }
+            
             Console.ResetColor();
             Console.WriteLine();
         }
