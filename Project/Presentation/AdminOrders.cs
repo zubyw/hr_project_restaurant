@@ -11,15 +11,8 @@ static class DishOrderOverview
         Console.Clear();
         Console.WriteLine("=== Dish Orders Overview ===\n");
 
-        Console.Write("Enter date (dd-MM-yyyy): ");
-        string? input = Console.ReadLine()?.Trim();
-
-        if (!DateTime.TryParseExact(input, "dd-MM-yyyy", null, System.Globalization.DateTimeStyles.None, out _))
-        {
-            Console.WriteLine("Invalid date format. Press any key to return...");
-            Console.ReadKey();
-            return; // terug naar het admin-menu
-        }
+        DateTime date = MenuHelper.SelectDateArrowsLeftRight(true);
+        string input = date.ToString("dd-MM-yyyy");
 
         List<(string DishName, int Count)> dishCounts = _dishLogic.GetDishCountsForDate(input);
 
@@ -29,7 +22,6 @@ static class DishOrderOverview
         }
         else
         {
-            Console.WriteLine($"\nOrders for {input}:\n");
             foreach (var item in dishCounts)
             {
                 Console.WriteLine($"{item.DishName} - {item.Count}");
