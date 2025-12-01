@@ -44,9 +44,11 @@ public static class MenuHelper
             }
         }
     }
-    public static DateTime SelectDateArrowsLeftRight(DateTime initialDate, DateTime minDate, bool includeDays = true)
+    public static DateTime SelectDateArrowsLeftRight(bool includeDays = true)
     {
-        DateTime current = initialDate;
+        DateTime minDate = DateTime.Now;
+
+        DateTime current = DateTime.Now;
 
         int startTop = Console.CursorTop;
 
@@ -55,9 +57,11 @@ public static class MenuHelper
         while (true)
         {
             Console.SetCursorPosition(0, startTop);
+            string leftArrow = current > minDate ? "< " : "  ";
+            string rightArrow = " >";
 
             string line = includeDays
-                ? $" Selected: {current:dd-MM-yyyy} "
+                ? $" Selected: {leftArrow} {current:dd-MM-yyyy} {rightArrow}"
                 : $" Selected: {current:MM-yyyy} ";
 
             Console.WriteLine(line.PadRight(Console.WindowWidth));
