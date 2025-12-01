@@ -122,7 +122,7 @@ public static class DishSelection
                         if (dish.AllergenNames.Count > 0)
                         {
                             Console.ForegroundColor = ConsoleColor.Yellow;
-                            Console.WriteLine($"Contains: {string.Join(", ", dish.AllergenNames)}");
+                            Console.WriteLine($"       Contains: {string.Join(", ", dish.AllergenNames)}");
                         }
                         
                         Console.ResetColor();
