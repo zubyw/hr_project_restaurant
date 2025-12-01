@@ -183,8 +183,25 @@ public class ThemeAccess
 
             return count > 0;
         }
-    // public List<string> GetThemeCalendar()
-    // {
-        
-    // }
+    public List<string> GetThemeCalendarTakenMonths()
+    {
+        string sql = "SELECT TimeSlot FROM Themes_Calendar";
+        using var connection = new SqliteConnection(_connectionString);
+        List<string> timeSlots = connection.Query<string>(sql).ToList();
+        return timeSlots;
+    }
+
+    public void LinkMonthToTheme(string month, ThemeModel theme)
+    {
+        string sql = $"INSERT INTO Themes_Calendar (ThemeId, TimeSlot) VALUES (@ThemeId, @TimeSlot)";
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Execute(sql, new {ThemeId = theme.ID, TimeSlot = month + "-01"});
+    }
+
+    public void DeleteDishonTheme(ThemeModel theme, DishModel dish)
+    {
+        string sql = $"DELETE FROM Dishes_Themes WHERE DishId = @dishId AND ThemeId = themeId";
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Execute(sql, new { dishId = dish.ID, themeId = theme.ID});
+    }
 }

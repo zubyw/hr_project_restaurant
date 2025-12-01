@@ -81,7 +81,7 @@ static class Menu
     // Admin menu with full access
     static public void ShowAdminMenu()
     {
-        string[] options = new string[] { "Manage Reservations", "Manage Themes", "Manage Dishes", "Logout" };
+        string[] options = new string[] { "Manage Reservations", "Dish Orders", "Manage Themes", "Manage Dishes", "Logout" };
         while (true)
         {
             int index = MenuHelper.ShowMenuUpDown(options, "=== Kevin's Fine Dining - Admin Panel ===");
@@ -94,12 +94,15 @@ static class Menu
                         ReservationManagement.Start();
                         break;
                     case 1:
-                        ThemeManagement.Start();
+                        DishOrderOverview.Start();
                         break;
                     case 2:
-                        AdminDishesManagement.Start();
+                        ThemeManagement.Start();
                         break;
                     case 3:
+                        AdminDishesManagement.Start();
+                        break;
+                    case 4:
                         Start();
                         break;
                 }

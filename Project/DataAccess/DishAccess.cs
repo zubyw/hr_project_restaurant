@@ -135,11 +135,11 @@ namespace Project.DataAccess
         }
         
 
-        public void LinkDishToTheme(int dishId, int themeId)
+        public void LinkDishToTheme(DishModel dish, ThemeModel theme)
         {
             string sql = "INSERT INTO Dishes_Themes (DishId, ThemeId) VALUES (@DishId, @ThemeId);";
             SqliteConnection connection = new SqliteConnection(_connectionString);
-            connection.Execute(sql, new { DishId = dishId, ThemeId = themeId });
+            connection.Execute(sql, new { DishId = dish.ID, ThemeId = theme.ID });
             connection.Close();
         }
 
@@ -166,7 +166,7 @@ namespace Project.DataAccess
             return count > 0;
         }
 
-        public List<DishModel> GetByTheme(int themeId)
+        public List<DishModel> GetByTheme(ThemeModel theme)
         {
             string sql = @"
                 SELECT d.ID, d.Name, d.Price, d.Description, d.Type
@@ -176,7 +176,7 @@ namespace Project.DataAccess
                 ORDER BY d.Type, d.Name;";
 
             SqliteConnection connection = new SqliteConnection(_connectionString);
-            List<DishModel> list = connection.Query<DishModel>(sql, new { ThemeId = themeId }).ToList();
+            List<DishModel> list = connection.Query<DishModel>(sql, new { ThemeId = theme.ID }).ToList();
             connection.Close();
             return list;
         }
