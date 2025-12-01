@@ -310,7 +310,7 @@ public static class DishSelection
             }
 
             Console.WriteLine();
-            Console.WriteLine("Press SPACE to toggle | ENTER to continue");
+            Console.WriteLine("Press SPACE to select | ENTER to continue");
 
             var key = Console.ReadKey(true).Key;
 

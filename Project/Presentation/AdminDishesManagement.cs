@@ -148,7 +148,7 @@ public static class AdminDishesManagement
             }
 
             Console.WriteLine();
-            Console.WriteLine("Press SPACE to toggle | ENTER to confirm");
+            Console.WriteLine("Press SPACE to select | ENTER to confirm");
 
             var key = Console.ReadKey(true).Key;
 
@@ -420,7 +420,7 @@ public static class AdminDishesManagement
             }
 
             Console.WriteLine();
-            Console.WriteLine("Press SPACE to toggle | ENTER to save | ESC to cancel");
+            Console.WriteLine("Press SPACE to select | ENTER to save | ESC to cancel");
 
             var key = Console.ReadKey(true).Key;
 
