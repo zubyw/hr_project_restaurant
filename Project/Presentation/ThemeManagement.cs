@@ -54,7 +54,7 @@ public static class ThemeManagement
         Console.WriteLine("=== Create new theme ===");
         
         Console.Write("Name: ");
-        string name = Console.ReadLine();
+        string? name = Console.ReadLine();
         if (string.IsNullOrWhiteSpace(name))
         {
         Console.WriteLine("Name cannot be empty.");
@@ -69,7 +69,7 @@ public static class ThemeManagement
         Console.Clear();
         Console.WriteLine("=== Create new theme ===");
         Console.Write("Description");
-        string description = Console.ReadLine();
+        string? description = Console.ReadLine();
         if (string.IsNullOrWhiteSpace(name))
         {
         Console.WriteLine("Description cannot be empty.");
@@ -161,7 +161,7 @@ public static class ThemeManagement
         string[] options =
         {
             "Edit theme",
-            "Add dishes to theme",
+            "Manage dishes in theme",
             "Delete theme",
             "Back"
         };
@@ -178,7 +178,7 @@ public static class ThemeManagement
                     break;
 
                 case 1:
-                    // AddDishesToTheme.
+                    DishesInTheme(theme);
                     break;
 
                 case 2:
@@ -216,7 +216,7 @@ public static class ThemeManagement
                     Console.Clear();
                     Console.WriteLine($"Name: {theme.Name}");
                     Console.WriteLine();
-                    string newname = Console.ReadLine();
+                    string? newname = Console.ReadLine();
                     if (string.IsNullOrWhiteSpace(newname))
                     {
                     Console.WriteLine("Name cannot be empty.");
@@ -231,7 +231,7 @@ public static class ThemeManagement
                     Console.Clear();
                     Console.WriteLine($"Description: {theme.Course}");
                     Console.WriteLine();
-                    string newcourse = Console.ReadLine();
+                    string? newcourse = Console.ReadLine();
                     if (string.IsNullOrWhiteSpace(newcourse))
                     {
                     Console.WriteLine("Name cannot be empty.");
@@ -252,6 +252,159 @@ public static class ThemeManagement
             Console.ReadKey();
         }
     }
+    }
+
+    private static void DishesInTheme(ThemeModel theme)
+    {
+        string[] options =
+        {
+            "Add dishes",
+            "Delete dish",
+            "Back"
+        };
+
+        while (true)
+        {
+            int index = MenuHelper.ShowMenuUpDown(options, $"=== Admin: Manage dishes in theme ===");
+            try
+            {
+                switch (index)
+                {
+                    case 0:
+                        AddDishesToTheme(theme);
+                        return;
+
+                    case 1:
+                        DeleteDishesFromTheme(theme);
+                        return;
+
+                    case 2:
+                        return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                Console.ReadKey();
+            }
+        }
+    }
+
+
+    private static DishModel? ChooseDishes(List<DishModel> dishes)
+    {
+        int index = 0;
+
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine();
+
+            Console.WriteLine("┌────────────────────────┬───────────────┬───────────┐");
+            Console.WriteLine("│ Name                   │ Type          │ Price     │");
+            Console.WriteLine("├────────────────────────┼───────────────┼───────────┤");
+
+            for (int i = 0; i < dishes.Count; i++)
+            {
+                var dish = dishes[i];
+
+                string name = dish.Name.Length > 20 ? dish.Name[..17] + "..." : dish.Name;
+                string type = dish.Type.Length > 12 ? dish.Type[..9] + "..." : dish.Type;
+
+                bool selected = (i == index);
+
+                if (selected)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                Console.WriteLine("│ {0,-22} │ {1,-13} │ {2,9:F2} │",
+                    name, type, dish.Price);
+
+                if (selected)
+                    Console.ResetColor();
+            }
+
+            Console.WriteLine("└────────────────────────┴───────────────┴───────────┘");
+
+            Console.WriteLine("\n ↑↓ Select dish | ESC = done/back");
+
+            ConsoleKey key = Console.ReadKey(true).Key;
+
+            if (key == ConsoleKey.DownArrow)
+            {
+                index = (index + 1) % dishes.Count;
+            }
+            else if (key == ConsoleKey.UpArrow)
+            {
+                index = (index - 1 + dishes.Count) % dishes.Count;
+            }
+            else if (key == ConsoleKey.Enter)
+            {
+                DishModel selectedDish = dishes[index];
+                return selectedDish;
+            }
+            else if (key == ConsoleKey.Escape)
+            {
+                return null;
+            }
+        }
+    }
+
+    private static void AddDishesToTheme(ThemeModel theme)
+    {
+        List<DishModel> dishes = logic.GetAllAvailableDishes(theme);
+        List<DishModel> chosenDishes = [];
+
+        if (dishes.Count == 0)
+        {
+            Console.WriteLine("No dishes found.");
+            Console.ReadKey();
+            return;
+        }
+        bool choosingdishes = true;
+        while (choosingdishes)
+        {
+            DishModel chosendish = ChooseDishes(dishes);
+            if (chosendish is null) choosingdishes = false;
+            else
+            {
+                dishes.Remove(chosendish);
+                chosenDishes.Add(chosendish);
+            }
+        }
+        if (chosenDishes.Count() == 0)
+        {
+            Start();
+        }
+        logic.AddDishesToTheme(chosenDishes, theme);
+        Console.WriteLine("Added dishes to theme ");
+        Thread.Sleep(1500);
+        return; 
+    }
+
+    private static void DeleteDishesFromTheme(ThemeModel theme)
+    {
+        List<DishModel> allDishesInTheme = logic.GetAllDishesInTheme(theme);
+
+        DishModel chosendish = ChooseDishes(allDishesInTheme);
+        if (chosendish is null)
+        {
+            Console.Clear();
+            Console.WriteLine("Back to Menu");
+            Thread.Sleep(1500);
+            Start();
+        }
+        else
+        {
+            logic.DeleteDishonTheme(chosendish, theme);
+            Console.Clear();
+            Console.WriteLine("Deleted dish on theme");
+            Thread.Sleep(1500);
+            Start();
+        }
+
     }
 
 
@@ -306,10 +459,10 @@ public static class ThemeManagement
                     {
                         case 0:
                             ViewMenu.Start();
-                            break;
+                            return;
                         case 1:
                             LinkMonthsToTheme();
-                            break;
+                            return;
                         case 2:
                             Start();
                             return;
@@ -328,7 +481,7 @@ public static class ThemeManagement
 
     private static void LinkMonthsToTheme()
     {
-        ThemeModel selectedtheme = ManageAllThemes();
+        ThemeModel? selectedtheme = ManageAllThemes();
         if (selectedtheme is null) Start();
 
         //this gets all the available months (in logic it checks which months are already chosen)
@@ -365,7 +518,6 @@ public static class ThemeManagement
             Thread.Sleep(1500);
         }
 
-        // DONE — chosenMonths contains the final selection
         Console.Clear();
         Console.WriteLine("Saved final month selection");
         Console.WriteLine("Final month selection:");

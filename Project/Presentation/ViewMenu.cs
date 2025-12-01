@@ -137,7 +137,7 @@ namespace Project.Presentation
             }
 
             Console.WriteLine(new string('─', 80));
-            Console.WriteLine("\nPress ESC to return to the main menu...");
+            Console.WriteLine("\nPress ESC to return...");
         }
 
         private static void DisplayDish(DishModel dish)

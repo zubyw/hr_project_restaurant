@@ -12,6 +12,9 @@ namespace Project.Logic
     {
         private DishAccess _dishaccess;
 
+        private ReservationsAccess _reservationsAccess = new ReservationsAccess();
+
+
         public DishLogic(DishAccess? dishAccess = null)
         {
             _dishaccess = dishAccess ?? new DishAccess();
@@ -72,132 +75,6 @@ namespace Project.Logic
             "Main",
             "Dessert"
         };
-
-        private void EnsureThemeExists(int themeId)
-        {
-            ThemeAccess access = new ThemeAccess();
-            ThemeModel? theme = access.GetById(themeId);
-
-            if (theme == null)
-            {
-                throw new Exception("Theme not found");
-            }
-        }
-
-        private void EnsureValidType(string type)
-        {
-            bool valid = false;
-
-            for (int i = 0; i < _allowedTypes.Length; i++)
-            {
-                if (_allowedTypes[i].Equals(type, StringComparison.OrdinalIgnoreCase))
-                {
-                    valid = true;
-                    break;
-                }
-            }
-
-            if (!valid)
-            {
-                throw new Exception("Type must be Starter, Main or Dessert");
-            }
-        }
-
-        private void EnsureValidName(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new Exception("Name is required");
-            }
-        }
-
-        private void EnsureValidPrice(decimal price)
-        {
-            if (price <= 0)
-            {
-                throw new Exception("Price must be greater than 0");
-            }
-        }
-
-        private void EnsureNotDuplicate(int themeId, string name, string type)
-        {
-            DishAccess admin = new DishAccess();
-            bool exists = admin.ExistsByNameTypeInTheme(themeId, name, type);
-
-            if (exists)
-            {
-                throw new Exception("Dish already exists for this theme and type");
-            }
-        }
-
-        public List<DishModel> AdminGetDishesByTheme(int themeId)
-        {
-            EnsureThemeExists(themeId);
-
-            DishAccess admin = new DishAccess();
-            List<DishModel> list = admin.GetByTheme(themeId);
-
-            return list;
-        }
-
-        public int AdminAddDishToTheme(int themeId, string name, decimal price, string description, string type)
-        {
-            EnsureThemeExists(themeId);
-            EnsureValidName(name);
-            EnsureValidPrice(price);
-            EnsureValidType(type);
-            EnsureNotDuplicate(themeId, name, type);
-
-            DishModel dish = new DishModel
-            {
-                ThemeId = themeId,
-                Name = name,
-                Price = price,
-                Description = description,
-                Type = type
-            };
-
-            int newId = _dishaccess.AddDishReturnId(dish);
-            _dishaccess.LinkDishToTheme(newId, themeId);
-
-            return newId;
-        }
-
-
-        public void AdminUpdateDishInTheme(int dishId, int themeId, string name, decimal price, string description, string type)
-        {
-            EnsureThemeExists(themeId);
-            EnsureValidName(name);
-            EnsureValidPrice(price);
-            EnsureValidType(type);
-
-            DishModel dish = new DishModel
-            {
-                ID = dishId,
-                ThemeId = themeId,
-                Name = name,
-                Price = price,
-                Description = description,
-                Type = type
-            };
-
-            _dishaccess.Update(dish);
-        }
-
-        public void AdminDeleteDishFromTheme(int dishId, int themeId)
-        {
-            EnsureThemeExists(themeId);
-
-            _dishaccess.UnlinkDishFromTheme(dishId, themeId);
-
-            DishModel? dish = _dishaccess.GetById(dishId);
-            if (dish == null)
-            {
-                throw new Exception("Dish not found");
-            }
-
-            _dishaccess.Delete(dish);
-        }
         public bool DoesDishExist(string dishname)
         {
             return _dishaccess.GetDishByName(dishname);
@@ -228,8 +105,6 @@ namespace Project.Logic
         }
     
     
-        private ReservationsAccess _reservationsAccess = new ReservationsAccess();
-
         public List<(string DishName, int Count)> GetDishCountsForDate(string date)
         {
             return _reservationsAccess.GetDishCountsByDate(date);

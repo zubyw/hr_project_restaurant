@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using Project.DataAccess;
 
 public class ThemesLogic
 {
     private readonly ThemeAccess access = new ThemeAccess();
+
+    private readonly DishAccess _dishaccess = new DishAccess();
 
     public List<ThemeModel> GetAll()
     {
@@ -154,4 +157,36 @@ public class ThemesLogic
             access.LinkMonthToTheme(m, theme);
         }
     }
+
+    public List<DishModel> GetAllAvailableDishes(ThemeModel theme)
+        {
+            List<DishModel> dishesInTheme = _dishaccess.GetByTheme(theme);
+            List<DishModel> allDishes = _dishaccess.GetAllDishes();
+
+            List<DishModel> availableDishes = allDishes
+            .Where(d => !dishesInTheme.Any(t => t.ID == d.ID))
+            .ToList();
+            return availableDishes;
+        }
+
+    public void AddDishesToTheme(List<DishModel> listdishes, ThemeModel theme)
+    {
+        if (listdishes is null) return;
+        foreach (DishModel d in listdishes)
+        {
+            _dishaccess.LinkDishToTheme(d, theme);
+        }
+        return;
+    }
+
+    public List<DishModel> GetAllDishesInTheme(ThemeModel theme)
+        {
+            return _dishaccess.GetByTheme(theme);   
+        }
+    
+    public void DeleteDishonTheme(DishModel dish, ThemeModel theme)
+    {
+        access.DeleteDishonTheme(theme, dish);
+    }
+
 }

@@ -197,4 +197,11 @@ public class ThemeAccess
         using var connection = new SqliteConnection(_connectionString);
         connection.Execute(sql, new {ThemeId = theme.ID, TimeSlot = month + "-01"});
     }
+
+    public void DeleteDishonTheme(ThemeModel theme, DishModel dish)
+    {
+        string sql = $"DELETE FROM Dishes_Themes WHERE DishId = @dishId AND ThemeId = themeId";
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Execute(sql, new { dishId = dish.ID, themeId = theme.ID});
+    }
 }
