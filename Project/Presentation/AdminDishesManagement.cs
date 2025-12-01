@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using Project.Logic;
 using Project.DataModels;
+using Project.DataAccess;
 using System.Runtime.InteropServices;
 
 public static class AdminDishesManagement
 {
     private static readonly DishLogic _logic = new DishLogic();
+    private static readonly AllergenAccess _allergenAccess = new AllergenAccess();
 
     public static void Start()
     {
@@ -51,7 +53,7 @@ public static class AdminDishesManagement
         Console.WriteLine("=== Create new dish ===");
         
         Console.Write("Name: ");
-        string name = Console.ReadLine();
+        string name = Console.ReadLine() ?? "";
         if (string.IsNullOrWhiteSpace(name))
         {
         Console.WriteLine("Name cannot be empty.");
@@ -66,8 +68,8 @@ public static class AdminDishesManagement
         Console.Clear();
         Console.WriteLine("=== Create new dish ===");
         Console.Write("Price (example: 12.50): ");
-        string priceInput = Console.ReadLine();
-        if (string.IsNullOrWhiteSpace(name))
+        string priceInput = Console.ReadLine() ?? "";
+        if (string.IsNullOrWhiteSpace(priceInput))
         {
         Console.WriteLine("Price cannot be empty.");
         Add();
@@ -77,10 +79,10 @@ public static class AdminDishesManagement
         Console.Clear();
         Console.WriteLine("=== Create new dish ===");
         Console.Write("Description: ");
-        string description = Console.ReadLine();
-        if (string.IsNullOrWhiteSpace(name))
+        string description = Console.ReadLine() ?? "";
+        if (string.IsNullOrWhiteSpace(description))
         {
-        Console.WriteLine("Name cannot be empty.");
+        Console.WriteLine("Description cannot be empty.");
         Add();
         }
 
@@ -90,11 +92,92 @@ public static class AdminDishesManagement
         string[] types = { "Starter", "Main", "Dessert" };
         int typeIndex = MenuHelper.ShowMenuUpDown(types, "=== Create new dish ===\nType (Starter/Main/Dessert): ");
         string type = types[typeIndex];
-        DishModel dish = new DishModel(){Name = name,Price = price, Description = description, Type = type}; 
-        _logic.WriteIntoDB(dish);
+        
+        // Select allergens
+        List<int> selectedAllergenIds = SelectAllergens();
+        
+        DishModel dish = new DishModel(){Name = name, Price = price, Description = description, Type = type}; 
+        int dishId = _logic.WriteIntoDBAndReturnId(dish);
+        
+        // Link allergens to dish
+        foreach (int allergenId in selectedAllergenIds)
+        {
+            _allergenAccess.LinkDishToAllergen(dishId, allergenId);
+        }
 
         Console.WriteLine("Dish created.");
         Thread.Sleep(1500);
+    }
+
+    private static List<int> SelectAllergens()
+    {
+        List<AllergenModel> allergens = _allergenAccess.GetAll();
+        List<bool> selectedStates = new List<bool>();
+        
+        for (int i = 0; i < allergens.Count; i++)
+        {
+            selectedStates.Add(false);
+        }
+
+        int currentIndex = 0;
+
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine("=== Select allergens ===");
+            Console.WriteLine();
+
+            for (int i = 0; i < allergens.Count; i++)
+            {
+                bool isSelected = i == currentIndex;
+                bool isChecked = selectedStates[i];
+
+                if (isSelected)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                string checkbox = isChecked ? "[X]" : "[ ]";
+                Console.WriteLine($"{checkbox} {allergens[i].Name}");
+
+                if (isSelected)
+                {
+                    Console.ResetColor();
+                }
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("Press SPACE to select | ENTER to confirm");
+
+            var key = Console.ReadKey(true).Key;
+
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    currentIndex = (currentIndex - 1 + allergens.Count) % allergens.Count;
+                    break;
+
+                case ConsoleKey.DownArrow:
+                    currentIndex = (currentIndex + 1) % allergens.Count;
+                    break;
+
+                case ConsoleKey.Spacebar:
+                    selectedStates[currentIndex] = !selectedStates[currentIndex];
+                    break;
+
+                case ConsoleKey.Enter:
+                    List<int> selectedIds = new List<int>();
+                    for (int i = 0; i < allergens.Count; i++)
+                    {
+                        if (selectedStates[i])
+                        {
+                            selectedIds.Add(allergens[i].ID);
+                        }
+                    }
+                    return selectedIds;
+            }
+        }
     }
 
     private static void ManageAllDishes()
@@ -212,6 +295,7 @@ public static class AdminDishesManagement
             "Edit Price",
             "Edit Description",
             "Edit Type",
+            "Edit Allergens",
             "Back"
         };
 
@@ -226,7 +310,7 @@ public static class AdminDishesManagement
                     Console.Clear();
                     Console.WriteLine($"Name: {dish.Name}");
                     Console.WriteLine();
-                    string newname = Console.ReadLine();
+                    string newname = Console.ReadLine() ?? "";
                     if (string.IsNullOrWhiteSpace(newname))
                     {
                     Console.WriteLine("Name cannot be empty.");
@@ -241,10 +325,10 @@ public static class AdminDishesManagement
                     Console.Clear();
                     Console.WriteLine($"Price: {dish.Price}");
                     Console.WriteLine();
-                    string newprice = Console.ReadLine();
+                    string newprice = Console.ReadLine() ?? "";
                     if (string.IsNullOrWhiteSpace(newprice))
                     {
-                    Console.WriteLine("Name cannot be empty.");
+                    Console.WriteLine("Price cannot be empty.");
                     Thread.Sleep(1500);
                     continue;
                     }
@@ -257,10 +341,10 @@ public static class AdminDishesManagement
                     Console.Clear();
                     Console.WriteLine($"Description: {dish.Description}");
                     Console.WriteLine();
-                    string newDescription = Console.ReadLine();
+                    string newDescription = Console.ReadLine() ?? "";
                     if (string.IsNullOrWhiteSpace(newDescription))
                     {
-                    Console.WriteLine("Name cannot be empty.");
+                    Console.WriteLine("Description cannot be empty.");
                     Thread.Sleep(1500);
                     continue;
                     }
@@ -281,6 +365,9 @@ public static class AdminDishesManagement
                     _logic.UpdateDish(dish);
                     break;
                 case 4:
+                    ManageAllergens(dish);
+                    break;
+                case 5:
                     return;
             }
         }
@@ -293,6 +380,86 @@ public static class AdminDishesManagement
     }
 
 
+
+    private static void ManageAllergens(DishModel dish)
+    {
+        List<AllergenModel> allergens = _allergenAccess.GetAll();
+        List<int> currentAllergenIds = _allergenAccess.GetAllergenIdsByDishId(dish.ID);
+        List<bool> selectedStates = new List<bool>();
+        
+        for (int i = 0; i < allergens.Count; i++)
+        {
+            selectedStates.Add(currentAllergenIds.Contains(allergens[i].ID));
+        }
+
+        int currentIndex = 0;
+
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine();
+
+            for (int i = 0; i < allergens.Count; i++)
+            {
+                bool isSelected = i == currentIndex;
+                bool isChecked = selectedStates[i];
+
+                if (isSelected)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                string checkbox = isChecked ? "[X]" : "[ ]";
+                Console.WriteLine($"{checkbox} {allergens[i].Name}");
+
+                if (isSelected)
+                {
+                    Console.ResetColor();
+                }
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("Press SPACE to select | ENTER to save | ESC to cancel");
+
+            var key = Console.ReadKey(true).Key;
+
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    currentIndex = (currentIndex - 1 + allergens.Count) % allergens.Count;
+                    break;
+
+                case ConsoleKey.DownArrow:
+                    currentIndex = (currentIndex + 1) % allergens.Count;
+                    break;
+
+                case ConsoleKey.Spacebar:
+                    selectedStates[currentIndex] = !selectedStates[currentIndex];
+                    break;
+
+                case ConsoleKey.Enter:
+                    _allergenAccess.UnlinkAllAllergensFromDish(dish.ID);
+                    for (int i = 0; i < allergens.Count; i++)
+                    {
+                        if (selectedStates[i])
+                        {
+                            _allergenAccess.LinkDishToAllergen(dish.ID, allergens[i].ID);
+                        }
+                    }
+                    
+                    dish.AllergenIds = _allergenAccess.GetAllergenIdsByDishId(dish.ID);
+                    dish.AllergenNames = _allergenAccess.GetAllergensByDishId(dish.ID).Select(a => a.Name).ToList();
+                    
+                    Console.WriteLine("\nAllergens updated successfully!");
+                    Thread.Sleep(1500);
+                    return;
+
+                case ConsoleKey.Escape:
+                    return;
+            }
+        }
+    }
 
     private static void Delete(DishModel dish)
     {

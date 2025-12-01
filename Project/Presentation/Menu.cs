@@ -169,8 +169,6 @@ static class Menu
                             ShowMainMenu();
                             break;
                         case 3:
-                            Console.WriteLine("Update profile feature coming soon...");
-                            Console.WriteLine("Press any key to continue...");
                             Console.ReadKey();
                             ShowMainMenu();
                             break;

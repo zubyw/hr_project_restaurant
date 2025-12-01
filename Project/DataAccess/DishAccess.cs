@@ -8,6 +8,7 @@ namespace Project.DataAccess
     {
         private readonly string _connectionString = "Data Source=DataSources/project.db";
         private readonly string Table = "Dishes";
+        private readonly AllergenAccess _allergenAccess = new AllergenAccess();
 
         public void Write(DishModel dish)
         {
@@ -20,7 +21,29 @@ namespace Project.DataAccess
         {
             string sql = $"SELECT * FROM {Table} WHERE ID = @Id";
             using var connection = new SqliteConnection(_connectionString);
-            return connection.QueryFirstOrDefault<DishModel>(sql, new { Id = id });
+            var dish = connection.QueryFirstOrDefault<DishModel>(sql, new { Id = id });
+            
+            if (dish != null)
+            {
+                PopulateAllergenInfo(dish);
+            }
+            
+            return dish;
+        }
+
+        private void PopulateAllergenInfo(DishModel dish)
+        {
+            var allergens = _allergenAccess.GetAllergensByDishId(dish.ID);
+            dish.AllergenIds = allergens.Select(a => a.ID).ToList();
+            dish.AllergenNames = allergens.Select(a => a.Name).ToList();
+        }
+
+        private void PopulateAllergenInfo(List<DishModel> dishes)
+        {
+            foreach (var dish in dishes)
+            {
+                PopulateAllergenInfo(dish);
+            }
         }
 
         public void Update(DishModel dish)
@@ -45,6 +68,7 @@ namespace Project.DataAccess
         WHERE Type = @Type";
             using var connection = new SqliteConnection(_connectionString);
             List<DishModel> AllDishesByType = connection.Query<DishModel>(DishesSql, new { Type = type }).ToList();
+            PopulateAllergenInfo(AllDishesByType);
             return AllDishesByType;
         }
 
@@ -71,7 +95,7 @@ namespace Project.DataAccess
         WHERE ID IN @Ids";
             using var connection = new SqliteConnection(_connectionString);
             List<DishModel> AllDishesFromIds = connection.Query<DishModel>(sql, new { Ids = dishIds }).ToList();
-
+            PopulateAllergenInfo(AllDishesFromIds);
             return AllDishesFromIds;
         }
 
@@ -101,7 +125,7 @@ namespace Project.DataAccess
         WHERE r.ID = @Id";
             using var connection = new SqliteConnection(_connectionString);
             List<DishModel> AllDishesFromIds = connection.Query<DishModel>(sql, new { Id = resm.ID }).ToList();
-
+            PopulateAllergenInfo(AllDishesFromIds);
             return AllDishesFromIds;
         }
 
@@ -178,6 +202,7 @@ namespace Project.DataAccess
             SqliteConnection connection = new SqliteConnection(_connectionString);
             List<DishModel> list = connection.Query<DishModel>(sql, new { ThemeId = theme.ID }).ToList();
             connection.Close();
+            PopulateAllergenInfo(list);
             return list;
         }
 
@@ -198,7 +223,7 @@ namespace Project.DataAccess
             FROM Dishes";
             using var connection = new SqliteConnection(_connectionString);
             List<DishModel> AllDishes = connection.Query<DishModel>(sql).ToList();
-
+            PopulateAllergenInfo(AllDishes);
             return AllDishes;
         }
 

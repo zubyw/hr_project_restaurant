@@ -74,6 +74,15 @@ public static class DatabaseInitializer
             )";
         connection.Execute(createDishesTable);
 
+        // Create Allergens table
+        var createAllergensTable = @"
+            CREATE TABLE IF NOT EXISTS Allergens (
+                ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                Name TEXT NOT NULL UNIQUE,
+                Description TEXT NOT NULL
+            )";
+        connection.Execute(createAllergensTable);
+
         // Create Reservations table
         var createReservationsTable = @"
             CREATE TABLE IF NOT EXISTS Reservations (
@@ -114,6 +123,16 @@ public static class DatabaseInitializer
             )";
         connection.Execute(createDishesThemesTable);
 
+        var createDishesAllergensTable = @"
+            CREATE TABLE IF NOT EXISTS Dishes_Allergens (
+                ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                DishId INTEGER NOT NULL,
+                AllergenId INTEGER NOT NULL,
+                FOREIGN KEY (DishId) REFERENCES Dishes(ID),
+                FOREIGN KEY (AllergenId) REFERENCES Allergens(ID)
+            )";
+        connection.Execute(createDishesAllergensTable);
+
         var createReservationsDishesTable = @"
             CREATE TABLE IF NOT EXISTS Reservations_Dishes (
                 ID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -142,6 +161,9 @@ public static class DatabaseInitializer
         // create default tables if none exist
         CreateDefaultTables(connection);
 
+        // Create default allergens if none exist
+        CreateDefaultAllergens(connection);
+
         // Create default themes and dishes if none exist
         CreateDefaultThemesAndDishes(connection);
 
@@ -150,14 +172,12 @@ public static class DatabaseInitializer
 
     private static void CreateDefaultAdminUser(SqliteConnection connection)
     {
-        // Check if admin already exists 
-        var existingUser = connection.QueryFirstOrDefault<UserModel>(
+        var existingAdmin = connection.QueryFirstOrDefault<UserModel>(
             "SELECT * FROM Users WHERE EmailAddress = @Email", 
             new { Email = "admin" });
 
-        if (existingUser == null)
+        if (existingAdmin == null)
         {
-            // Create admin user in Users table
             var adminUser = new
             {
                 FirstName = "Admin",
@@ -172,6 +192,28 @@ public static class DatabaseInitializer
                 INSERT INTO Users (FirstName, LastName, PhoneNumber, EmailAddress, Password, Roles) 
                 VALUES (@FirstName, @LastName, @PhoneNumber, @EmailAddress, @Password, @Roles)", 
                 adminUser);
+        }
+
+        var existingGuest = connection.QueryFirstOrDefault<UserModel>(
+            "SELECT * FROM Users WHERE EmailAddress = @Email", 
+            new { Email = "user" });
+
+        if (existingGuest == null)
+        {
+            var guestUser = new
+            {
+                FirstName = "Guest",
+                LastName = "User",
+                PhoneNumber = "1234567890",
+                EmailAddress = "user",
+                Password = "user",
+                Roles = "guest"
+            };
+            
+            connection.Execute(@"
+                INSERT INTO Users (FirstName, LastName, PhoneNumber, EmailAddress, Password, Roles) 
+                VALUES (@FirstName, @LastName, @PhoneNumber, @EmailAddress, @Password, @Roles)", 
+                guestUser);
         }
     }
 
@@ -212,6 +254,30 @@ public static class DatabaseInitializer
                     INSERT INTO [Table] (TableNumber, TableCapacity, IsActive) 
                     VALUES (@TableNumber, @TableCapacity, 1)", 
                     table);
+            }
+        }
+    }
+
+    private static void CreateDefaultAllergens(SqliteConnection connection)
+    {
+        // Check if there are already allergens
+        var existingAllergens = connection.QueryFirstOrDefault<int>("SELECT COUNT(*) FROM Allergens");
+
+        if (existingAllergens == 0)
+        {
+            var allergens = new[]
+            {
+                new { Name = "Dairy", Description = "Contains milk or milk products" },
+                new { Name = "Gluten", Description = "Contains wheat, barley, or other gluten-containing grains" },
+                new { Name = "Nuts", Description = "Contains tree nuts or peanuts" }
+            };
+
+            foreach (var allergen in allergens)
+            {
+                connection.Execute(@"
+                    INSERT INTO Allergens (Name, Description) 
+                    VALUES (@Name, @Description)", 
+                    allergen);
             }
         }
     }
@@ -334,12 +400,14 @@ public static class DatabaseInitializer
                 new { Name = "Macarons", Price = 7.50m, Description = "Assorted French meringue cookies", Type = "Dessert", ThemeId = frenchThemeId }
             };
 
-            // Insert all dishes
             var allDishes = japaneseDishes.Concat(italianDishes).Concat(frenchDishes);
+            
+            var allergenDairy = connection.QuerySingle<int>("SELECT ID FROM Allergens WHERE Name = 'Dairy'");
+            var allergenGluten = connection.QuerySingle<int>("SELECT ID FROM Allergens WHERE Name = 'Gluten'");
+            var allergenNuts = connection.QuerySingle<int>("SELECT ID FROM Allergens WHERE Name = 'Nuts'");
             
             foreach (var dish in allDishes)
             {
-                // Insert dish
                 connection.Execute(@"
                     INSERT INTO Dishes (Name, Price, Description, Type) 
                     VALUES (@Name, @Price, @Description, @Type)", 
@@ -347,11 +415,90 @@ public static class DatabaseInitializer
                 
                 int dishId = connection.ExecuteScalar<int>("SELECT last_insert_rowid();");
                 
-                // Link dish to theme
                 connection.Execute(@"
                     INSERT INTO Dishes_Themes (DishId, ThemeId) 
                     VALUES (@DishId, @ThemeId)", 
                     new { DishId = dishId, ThemeId = dish.ThemeId });
+                
+                switch (dish.Name)
+                {
+                    case "Miso Soup":
+                    case "Gyoza":
+                    case "Beef Yakisoba":
+                    case "Ramen":
+                        connection.Execute("INSERT INTO Dishes_Allergens (DishId, AllergenId) VALUES (@DishId, @AllergenId)", 
+                            new { DishId = dishId, AllergenId = allergenGluten });
+                        break;
+                    
+                    case "Mochi Ice Cream":
+                    case "Yuzu Cheesecake":
+                    case "Matcha Tiramisu":
+                        connection.Execute("INSERT INTO Dishes_Allergens (DishId, AllergenId) VALUES (@DishId, @AllergenId)", 
+                            new { DishId = dishId, AllergenId = allergenDairy });
+                        break;
+                    
+                    case "Caprese Salad":
+                    case "Arancini":
+                        connection.Execute("INSERT INTO Dishes_Allergens (DishId, AllergenId) VALUES (@DishId, @AllergenId)", 
+                            new { DishId = dishId, AllergenId = allergenDairy });
+                        break;
+                    
+                    case "Spaghetti Carbonara":
+                    case "Margherita Pizza":
+                        connection.Execute("INSERT INTO Dishes_Allergens (DishId, AllergenId) VALUES (@DishId, @AllergenId)", 
+                            new { DishId = dishId, AllergenId = allergenGluten });
+                        connection.Execute("INSERT INTO Dishes_Allergens (DishId, AllergenId) VALUES (@DishId, @AllergenId)", 
+                            new { DishId = dishId, AllergenId = allergenDairy });
+                        break;
+                    
+                    case "Risotto ai Funghi":
+                        connection.Execute("INSERT INTO Dishes_Allergens (DishId, AllergenId) VALUES (@DishId, @AllergenId)", 
+                            new { DishId = dishId, AllergenId = allergenDairy });
+                        break;
+                    
+                    case "Tiramisu":
+                    case "Panna Cotta":
+                    case "Gelato":
+                        connection.Execute("INSERT INTO Dishes_Allergens (DishId, AllergenId) VALUES (@DishId, @AllergenId)", 
+                            new { DishId = dishId, AllergenId = allergenDairy });
+                        break;
+                    
+                    case "Cannoli":
+                        connection.Execute("INSERT INTO Dishes_Allergens (DishId, AllergenId) VALUES (@DishId, @AllergenId)", 
+                            new { DishId = dishId, AllergenId = allergenDairy });
+                        connection.Execute("INSERT INTO Dishes_Allergens (DishId, AllergenId) VALUES (@DishId, @AllergenId)", 
+                            new { DishId = dishId, AllergenId = allergenGluten });
+                        break;
+                    
+                    case "French Onion Soup":
+                        connection.Execute("INSERT INTO Dishes_Allergens (DishId, AllergenId) VALUES (@DishId, @AllergenId)", 
+                            new { DishId = dishId, AllergenId = allergenDairy });
+                        connection.Execute("INSERT INTO Dishes_Allergens (DishId, AllergenId) VALUES (@DishId, @AllergenId)", 
+                            new { DishId = dishId, AllergenId = allergenGluten });
+                        break;
+                    
+                    case "Escargots":
+                        connection.Execute("INSERT INTO Dishes_Allergens (DishId, AllergenId) VALUES (@DishId, @AllergenId)", 
+                            new { DishId = dishId, AllergenId = allergenDairy });
+                        break;
+                    
+                    case "Crème Brûlée":
+                        connection.Execute("INSERT INTO Dishes_Allergens (DishId, AllergenId) VALUES (@DishId, @AllergenId)", 
+                            new { DishId = dishId, AllergenId = allergenDairy });
+                        break;
+                    
+                    case "Profiteroles":
+                        connection.Execute("INSERT INTO Dishes_Allergens (DishId, AllergenId) VALUES (@DishId, @AllergenId)", 
+                            new { DishId = dishId, AllergenId = allergenDairy });
+                        connection.Execute("INSERT INTO Dishes_Allergens (DishId, AllergenId) VALUES (@DishId, @AllergenId)", 
+                            new { DishId = dishId, AllergenId = allergenGluten });
+                        break;
+                    
+                    case "Macarons":
+                        connection.Execute("INSERT INTO Dishes_Allergens (DishId, AllergenId) VALUES (@DishId, @AllergenId)", 
+                            new { DishId = dishId, AllergenId = allergenNuts });
+                        break;
+                }
             }
 
             var themes = new List<ThemeModel> { japaneseTheme, italianTheme, frenchTheme };
