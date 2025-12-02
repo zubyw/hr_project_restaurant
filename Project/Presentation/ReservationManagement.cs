@@ -152,7 +152,7 @@ static class ReservationManagement
                             managing = false;
                             break;
                     }
-                    reservation = _reservationsLogic.ReloadReservation(reservation); // refresh after changes
+                    reservation = _reservationsLogic.ReloadReservation(reservation);
                     break;
                 case ConsoleKey.Escape:
                     managing = false;
@@ -264,11 +264,10 @@ static class ReservationManagement
                 case ConsoleKey.Enter:
                     if ((options[index].Contains("Change") || options[index].Contains("Add")))
                     {
-                        // Get current theme
-                        int? themeId = _dishLogic.GetCurrentThemeId();
-                        if (themeId.HasValue)
+                        ThemeModel? theme = _dishLogic.GetCorrectTheme(reservation.StartAt);
+                        if (theme is not null)
                         {
-                            List<DishModel> selectedDishes = DishSelection.SelectDishesForReservation(reservation.GuestCount, themeId.Value);
+                            List<DishModel> selectedDishes = DishSelection.SelectDishesForReservation(reservation.GuestCount, theme.ID);
                             _dishLogic.ReserveDishes(selectedDishes, reservation, true);
                         }
                     }

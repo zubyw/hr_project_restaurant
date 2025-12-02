@@ -62,10 +62,13 @@ namespace Project.Logic
             return _dishaccess.AddDishReturnId(dish);
         }
 
-        public int? GetCurrentThemeId()
+        public ThemeModel? GetCorrectTheme(string date)
         {
+            DateTime parsedDate = DateTime.Parse(date);
+            string formattedDate = parsedDate.ToString("yyyy-MM");
+            formattedDate += "-01";
             var themeAccess = new ThemeAccess();
-            return themeAccess.GetActiveThemeID();
+            return themeAccess.GetCorrectTheme(formattedDate);
         }
 
         public void DeleteDishesFromReservation(ReservationModel reservation)
