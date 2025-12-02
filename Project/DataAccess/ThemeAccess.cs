@@ -204,4 +204,17 @@ public class ThemeAccess
         using var connection = new SqliteConnection(_connectionString);
         connection.Execute(sql, new { dishId = dish.ID, themeId = theme.ID});
     }
+
+    public ThemeModel? GetCorrectTheme(string date)
+    {
+        string sql = @"
+        SELECT t.*
+        FROM Themes t
+        INNER JOIN Themes_Calendar tc ON t.ID = tc.ThemeId
+        WHERE tc.TimeSlot = @Date
+    ";
+    using var connection = new SqliteConnection(_connectionString);
+    ThemeModel? theme = connection.QueryFirstOrDefault<ThemeModel>(sql, new { Date = date });
+    return theme;
+    }
 }

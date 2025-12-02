@@ -536,7 +536,7 @@ private void GuestCountDishSelection(int oldguestcount, int newguestcount, Reser
         private void DishSelectionStep(int newguestcount, int oldguestcount, ReservationModel reservation)
         {
             var dishLogic = new DishLogic();
-            int? currentThemeId = dishLogic.GetCurrentThemeId();
+            ThemeModel? correctTheme = dishLogic.GetCorrectTheme(reservation.StartAt);
             int askForDishesAmount = 0;
             if (_reservationsLogic.ReservationContainsDishes(reservation))
             {
@@ -546,10 +546,10 @@ private void GuestCountDishSelection(int oldguestcount, int newguestcount, Reser
             {
                 askForDishesAmount = newguestcount;
             }
-            if (currentThemeId.HasValue)
+            if (correctTheme is not null)
             {
                 // Show dish selection menu
-                List<DishModel> selectedDishes = DishSelection.SelectDishesForReservation(askForDishesAmount, currentThemeId.Value);
+                List<DishModel> selectedDishes = DishSelection.SelectDishesForReservation(askForDishesAmount, correctTheme.ID);
 
                 if (selectedDishes.Count == 0)
                 {
@@ -563,7 +563,7 @@ private void GuestCountDishSelection(int oldguestcount, int newguestcount, Reser
             }
             else
             {
-                ColorConsole.WriteWarning("No theme available for the current month. Proceeding without dish selection...");
+                ColorConsole.WriteWarning("No theme available for the chosen month. Proceeding without dish selection...");
                 Thread.Sleep(2000);
             }
         }

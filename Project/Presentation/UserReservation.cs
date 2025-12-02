@@ -120,13 +120,13 @@ static class UserReservation
             {
                 // ===== DISH SELECTION STEP =====
                 var dishLogic = new DishLogic();
-                int? currentThemeId = dishLogic.GetCurrentThemeId();
+                ThemeModel? correctTheme = dishLogic.GetCorrectTheme(CompleteStartDate);
 
                 List<DishModel> selectedDishes = new List<DishModel>();
 
-                if (currentThemeId.HasValue)
+                if (correctTheme is not null)
                 {
-                    selectedDishes = DishSelection.SelectDishesForReservation(intAmountPeople, currentThemeId.Value);
+                    selectedDishes = DishSelection.SelectDishesForReservation(intAmountPeople, correctTheme.ID);
 
                     if (selectedDishes.Count == 0)
                     {
