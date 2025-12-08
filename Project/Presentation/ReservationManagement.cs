@@ -57,7 +57,7 @@ static class ReservationManagement
             }
 
             Console.WriteLine("└──────┴─────────┴──────────────────────────────┴───────┴─────────────────────┴───────────┘");
-            Console.WriteLine("\nUse ↑/↓ to navigate, Enter to select, F1 for Floorplan Overview, Esc to go back");
+            Console.WriteLine("\nUse ↑/↓ to navigate, Enter to select, Esc to go back");
 
             var key = Console.ReadKey(true).Key;
 
