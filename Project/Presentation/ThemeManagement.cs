@@ -296,6 +296,7 @@ public static class ThemeManagement
         int selected = 0;
         DisplayDishes(dishes, selected);
         List<string> hidden = [];
+        List<DishModel> visible = logic.hidefilter(dishes, hidden);
         while (!choice)
         {
             ConsoleKey key = Console.ReadKey(true).Key;
@@ -306,11 +307,11 @@ public static class ThemeManagement
         {
                 if (key == ConsoleKey.DownArrow)
                     {
-                        selected = (selected + 1) % dishes.Count;
+                        selected = (selected + 1) % visible.Count;
                     }
                     else if (key == ConsoleKey.UpArrow)
                     {
-                        selected = (selected - 1 + dishes.Count) % dishes.Count;
+                        selected = (selected - 1 + visible.Count) % visible.Count;
                     }
                     else if (key == ConsoleKey.Escape)
                     {
@@ -321,12 +322,14 @@ public static class ThemeManagement
                         string input = key.ToString().ToLower();
                         if (hidden.Contains(input)) hidden.Remove(input);
                         else hidden.Add(input);
+                        visible = logic.hidefilter(dishes, hidden);
                     }
-                DisplayDishes(logic.hidefilter(dishes, hidden), selected);
+                DisplayDishes(visible, selected);
             }
         
         }
-        DishModel selectedDish = dishes[selected];
+        List<DishModel> endlist = logic.hidefilter(dishes, hidden);
+        DishModel selectedDish = endlist[selected];
         return selectedDish;
     }
 
