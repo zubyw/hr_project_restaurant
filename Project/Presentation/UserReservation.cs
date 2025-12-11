@@ -38,36 +38,7 @@ static class UserReservation
             Console.Clear();
             Console.WriteLine("\n===Reservations===");
             Console.WriteLine();
-            Console.WriteLine("Date: (DD-MM-YYYY)");
-            string? ReservationDate = Console.ReadLine();
-            if (string.IsNullOrEmpty(ReservationDate))
-            {
-                Console.WriteLine("All fields are required!");
-                Console.WriteLine("Press any key to try again...");
-                Console.ReadKey();
-                Start();
-                return;
-            }
-
-            // Converteer naar DateTime volgens dd-MM-yyyy
-            DateTime reservationDateTime;
-            if (!DateTime.TryParseExact(ReservationDate, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out reservationDateTime))
-            {
-                Console.WriteLine("Given date format incorrect (DD-MM-YYYY)");
-                Console.WriteLine("Press any key to try again...");
-                Console.ReadKey();
-                Start();
-                return;
-            }
-
-            if (!UserMakeReservationLogic.CheckValidDate(ReservationDate))
-            {
-                Console.WriteLine("Given date invalid.");
-                Console.WriteLine("Press any key to try again...");
-                Console.ReadKey();
-                Start();
-                return;
-            }
+            string? ReservationDate = CalanderInput.Calander();
 
             Console.WriteLine("Select Arrival Time:");
             string ArrivalTime = _reservationsLogic.SelectArrivalTime();
@@ -93,7 +64,7 @@ static class UserReservation
             }
 
             // Combine date en tijd in dd-MM-yyyy HH:mm formaat
-            string CompleteStartDate = reservationDateTime.ToString("dd-MM-yyyy") + " " + ArrivalTime;
+            string CompleteStartDate = ReservationDate + " " + ArrivalTime;
 
             if (Menu.CurrentUser == null)
             {
