@@ -20,9 +20,9 @@ public static class CalanderInput
         Console.Clear();
         Console.WriteLine("Use arrows and ENTER to confirm date\n");
 
-        Console.WriteLine((level == 0 ? "> " : "  ") + $"Jaar:  {year}");
-        Console.WriteLine((level == 1 ? "> " : "  ") + $"Maand: {month}");
-        Console.WriteLine((level == 2 ? "> " : "  ") + $"Dag:   {day}");
+        Console.WriteLine((level == 0 ? "> " : "  ") + $"Year:  {year}");
+        Console.WriteLine((level == 1 ? "> " : "  ") + $"Month: {month}");
+        Console.WriteLine((level == 2 ? "> " : "  ") + $"Day:   {day}");
 
         var key = Console.ReadKey(true).Key;
 
@@ -39,9 +39,9 @@ public static class CalanderInput
         if (key == ConsoleKey.Enter)
         {
             Console.Clear();
-            Console.WriteLine($"Geselecteerde datum: {day}-{month}-{year}");
+            Console.WriteLine($"Selected date: {day:00}-{month:00}-{year}");
             Thread.Sleep(1500);
-            return $"{day}-{month}-{year}";
+            return $"{day:00}-{month:00}-{year}";
         }
 
         return RunCalander(today, ref year, ref month, ref day, ref level);

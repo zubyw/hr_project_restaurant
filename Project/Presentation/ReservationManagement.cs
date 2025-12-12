@@ -12,6 +12,8 @@ static class ReservationManagement
     private static ReservationsLogic _reservationsLogic = new ReservationsLogic();
     private static DishLogic _dishLogic = new DishLogic();
 
+    private static RudReservation rruservation = new RudReservation();
+
     public static void Start()
     {
         Console.Clear();
@@ -50,7 +52,7 @@ static class ReservationManagement
                     Console.ForegroundColor = ConsoleColor.White;
                 }
 
-                Console.WriteLine($"│ {r.ID,4} │ {r.TableNumber,2} ({r.TableCapacity}) │ {guestName,-28} │ {r.GuestCount,2}   │ {dateTime,-19} │ {r.Status,-9} │");
+                Console.WriteLine($"│ {r.ID,4} │ {r.TableNumber,2} ({r.TableCapacity,2}) │ {guestName,-28} │ {r.GuestCount,3}   │ {dateTime,-19} │ {r.Status,-9} │");
 
                 if (i == selectedIndex)
                     Console.ResetColor();
@@ -209,22 +211,7 @@ static class ReservationManagement
 
     private static void EditDateTime(ReservationModel reservation)
     {
-        Console.Clear();
-        Console.WriteLine($"Current date/time: {DateTime.Parse(reservation.StartAt):dd-MM-yyyy HH:mm}");
-        Console.Write("Enter new date/time (dd-MM-yyyy HH:mm): ");
-        string? input = Console.ReadLine();
-
-        if (DateTime.TryParseExact(input, "dd-MM-yyyy HH:mm", null, DateTimeStyles.None, out DateTime newTime))
-        {
-            _reservationsLogic.ChangeReservationTime(reservation.ID, newTime);
-            Console.WriteLine("Reservation time updated. Press any key to continue...");
-            Console.ReadKey();
-        }
-        else
-        {
-            Console.WriteLine("Invalid format. Please use dd-MM-yyyy HH:mm. Press any key to return...");
-            Console.ReadKey();
-        }
+        rruservation.EditDateTime(reservation);
     }
 
     private static void EditDishSelection(ReservationModel reservation)

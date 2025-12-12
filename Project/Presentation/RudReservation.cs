@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Globalization;
 using Project.DataModels;
 using Project.Logic;
@@ -568,51 +569,21 @@ private void GuestCountDishSelection(int oldguestcount, int newguestcount, Reser
             }
         }
         
-        private void EditDateTime(ReservationModel reservation)
+        public void EditDateTime(ReservationModel reservation)
         {
-            DateTime reservationDateTime;
-            while (true)
-            {
                 Console.Clear();
                 Console.WriteLine("\n=== Update Date & Time ===");
-                Console.WriteLine($"\nCurrent Date & Time: {DateTime.Parse(reservation.StartAt):dd-MM-yyyy HH:mm}");
+                Console.WriteLine($"\nCurrent Date & Time: {DateTime.Parse(reservation.StartAt):dd-MM-yyyy HH:mm}\n");
 
-                Console.WriteLine();
-                Console.WriteLine("Date: (DD-MM-YYYY)");
-                string? ReservationDate = Console.ReadLine();
-                if (string.IsNullOrEmpty(ReservationDate))
-                {
-                    Console.WriteLine("All fields are required!");
-                    Console.WriteLine("Press any key to try again...");
-                    Console.ReadKey();
-                    continue;
-                }
-
-                if (!DateTime.TryParseExact(ReservationDate, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out reservationDateTime))
-                {
-                    Console.WriteLine("Given date format incorrect (DD-MM-YYYY)");
-                    Console.WriteLine("Press any key to try again...");
-                    Console.ReadKey();
-                    continue;
-                }
-
-                if (!UserMakeReservationLogic.CheckValidDate(ReservationDate))
-                {
-                    Console.WriteLine("Given date invalid.");
-                    Console.WriteLine("Press any key to try again...");
-                    Console.ReadKey();
-                    continue;
-                }
-                break;
-            }
+                string? ReservationDate = CalanderInput.Calander();
 
             Console.WriteLine("Select Arrival Time:");
             string ArrivalTime = _reservationsLogic.SelectArrivalTime();
             Console.WriteLine($"You selected: {ArrivalTime}");
             TimeSpan arrivalTime = TimeSpan.Parse(ArrivalTime);
 
-            DateTime newStartAt = reservationDateTime.Date + arrivalTime;
-            DateTime oldStartAt = DateTime.Parse(reservation.StartAt);
+            DateTime newStartAt = DateTime.ParseExact(ReservationDate, "dd-MM-yyyy", null) + arrivalTime;
+            DateTime oldStartAt = DateTime.ParseExact(reservation.StartAt, "dd-MM-yyyy HH:mm", null);
 
             bool sameMonth = newStartAt.Month == oldStartAt.Month && newStartAt.Year == oldStartAt.Year;
 
