@@ -21,67 +21,67 @@ static class ReservationUpdateMenu
     }
 
     // Main update menu
-     public static void Start()
-{
-    string[] options = new string[]
+    public static void Start()
     {
+        string[] options = new string[]
+        {
         "Change reservation time",
         "Change number of guests",
         "Cancel reservation",
         "Back"
-    };
+        };
 
-    int selectedIndex = 0;
-    ConsoleKey key;
+        int selectedIndex = 0;
+        ConsoleKey key;
 
-    do
-    {
-        Console.Clear();
-        Console.WriteLine("\n=== Change Reservations ===");
-
-        // Display options
-        for (int i = 0; i < options.Length; i++)
+        do
         {
-            if (i == selectedIndex)
+            Console.Clear();
+            Console.WriteLine("\n=== Change Reservations ===");
+
+            // Display options
+            for (int i = 0; i < options.Length; i++)
             {
-                Console.BackgroundColor = ConsoleColor.DarkCyan;
-                Console.ForegroundColor = ConsoleColor.White;
-            }
-            Console.WriteLine($"  {options[i]}");
-            Console.ResetColor();
-        }
-
-        key = Console.ReadKey(true).Key;
-
-        // Handle arrow keys
-        switch (key)
-        {
-            case ConsoleKey.UpArrow:
-                selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
-                break;
-            case ConsoleKey.DownArrow:
-                selectedIndex = (selectedIndex + 1) % options.Length;
-                break;
-            case ConsoleKey.Enter:
-                switch (selectedIndex)
+                if (i == selectedIndex)
                 {
-                    case 0:
-                        ChangeReservationTime();
-                        break;
-                    case 1:
-                        ChangeGuestCount();
-                        break;
-                    case 2:
-                        CancelReservation();
-                        break;
-                    case 3:
-                        return; // Back
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
                 }
-                break;
-        }
+                Console.WriteLine($"  {options[i]}");
+                Console.ResetColor();
+            }
 
-    } while (key != ConsoleKey.Enter || selectedIndex != 3); // Blijf menu tonen tot gebruiker op "Back" Enter drukt
-}
+            key = Console.ReadKey(true).Key;
+
+            // Handle arrow keys
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
+                    break;
+                case ConsoleKey.DownArrow:
+                    selectedIndex = (selectedIndex + 1) % options.Length;
+                    break;
+                case ConsoleKey.Enter:
+                    switch (selectedIndex)
+                    {
+                        case 0:
+                            ChangeReservationTime();
+                            break;
+                        case 1:
+                            ChangeGuestCount();
+                            break;
+                        case 2:
+                            CancelReservation();
+                            break;
+                        case 3:
+                            return; // Back
+                    }
+                    break;
+            }
+
+        } while (key != ConsoleKey.Enter || selectedIndex != 3); // Blijf menu tonen tot gebruiker op "Back" Enter drukt
+    }
 
 
     // Change time → date then arrow-time (no typing HH:mm)
@@ -100,6 +100,17 @@ static class ReservationUpdateMenu
         if (!ReservationExistsForCurrentUser(reservationId))
         {
             Console.WriteLine("Reservation not found for this user.");
+            Console.ReadKey();
+            return;
+        }
+
+        ReservationModel? rcheck = _reservationsLogic.GetReservationById(reservationId);
+        if (rcheck != null && !_reservationsLogic.CanModifyOrCancel(rcheck))
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("Reservations within 24 hours cannot be modified or canceled.");
+            Console.ResetColor();
+            Console.WriteLine("Press any key to return...");
             Console.ReadKey();
             return;
         }
@@ -160,6 +171,17 @@ static class ReservationUpdateMenu
             return;
         }
 
+        ReservationModel? rcheck = _reservationsLogic.GetReservationById(reservationId);
+        if (rcheck != null && !_reservationsLogic.CanModifyOrCancel(rcheck))
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Reservations within 24 hours cannot be modified or canceled.");
+            Console.ResetColor();
+            Console.WriteLine("Press any key to return...");
+            Console.ReadKey();
+            return;
+        }
+
         Console.Write("Enter new number of guests (1–6): ");
         int newCount;
         if (!int.TryParse(Console.ReadLine(), out newCount) || newCount < 1 || newCount > 6)
@@ -191,6 +213,17 @@ static class ReservationUpdateMenu
         if (!ReservationExistsForCurrentUser(reservationId))
         {
             Console.WriteLine("Reservation not found for this user.");
+            Console.ReadKey();
+            return;
+        }
+
+        ReservationModel? rcheck = _reservationsLogic.GetReservationById(reservationId);
+        if (rcheck != null && !_reservationsLogic.CanModifyOrCancel(rcheck))
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Reservations within 24 hours cannot be modified or canceled.");
+            Console.ResetColor();
+            Console.WriteLine("Press any key to return...");
             Console.ReadKey();
             return;
         }

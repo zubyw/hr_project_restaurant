@@ -34,6 +34,16 @@ namespace Project.Logic
             return GetOwnedReservation(reservationId) != null;
         }
 
+        // Check whether reservation can be modified or canceled (must be >=24 hours from now)
+        public bool CanModifyOrCancel(ReservationModel reservation)
+        {
+            if (reservation == null) return false;
+            DateTime dt;
+            if (!DateTime.TryParseExact(reservation.StartAt, "dd-MM-yyyy HH:mm", null, System.Globalization.DateTimeStyles.None, out dt))
+                return false;
+            return (dt - DateTime.Now) >= TimeSpan.FromHours(24);
+        }
+
         // --- Reads ---
 
         // Get all reservations from database
@@ -139,7 +149,8 @@ namespace Project.Logic
             ReservationModel? reservation = GetOwnedReservation(reservationId);
             if (reservation == null)
                 return false;
-
+            if (!CanModifyOrCancel(reservation))
+                return false;
             reservation.StartAt = newTime.ToString("dd-MM-yyyy HH:mm:ss");
             reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
@@ -156,7 +167,8 @@ namespace Project.Logic
             ReservationModel? reservation = GetOwnedReservation(reservationId);
             if (reservation == null)
                 return false;
-
+            if (!CanModifyOrCancel(reservation))
+                return false;
             // If current table fits new guest count
             if (reservation.TableCapacity >= newGuestCount)
             {
@@ -186,7 +198,8 @@ namespace Project.Logic
             ReservationModel? reservation = GetOwnedReservation(reservationId);
             if (reservation == null)
                 return false;
-
+            if (!CanModifyOrCancel(reservation))
+                return false;
             reservation.Status = "Canceled";
             reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
@@ -215,6 +228,9 @@ namespace Project.Logic
             if (reservation == null)
                 return;
 
+            if (!CanModifyOrCancel(reservation))
+                return;
+
             _reservationsAccess.UpdateReservationSimple(id, guestCount, startAt);
         }
 
@@ -223,6 +239,9 @@ namespace Project.Logic
         {
             ReservationModel? reservation = GetOwnedReservation(id);
             if (reservation == null)
+                return;
+
+            if (!CanModifyOrCancel(reservation))
                 return;
 
             _reservationsAccess.DeleteReservationSimple(id);
