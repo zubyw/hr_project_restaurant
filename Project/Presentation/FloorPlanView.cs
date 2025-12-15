@@ -9,32 +9,43 @@ namespace Project.Presentation
     {
         private static readonly Dictionary<int, (int Row, int Col)> TablePositions = new Dictionary<int, (int, int)>
         {
-            { 1, (2, 3) },
-            { 2, (2, 10) },
-            { 3, (2, 17) },
-            { 4, (2, 24) },
-            { 5, (7, 3) },
-            { 6, (7, 12) },
-            { 7, (7, 21) },
-            { 8, (7, 30) },
-            { 9, (7, 39) },
-            { 10, (7, 48) },
-            { 11, (12, 3) },
-            { 12, (12, 14) },
-            { 13, (12, 25) },
-            { 14, (12, 36) }
+            { 1, (2, 3) }, { 2, (2, 10) }, { 3, (2, 17) }, { 4, (2, 24) },
+            { 5, (7, 3) }, { 6, (7, 12) }, { 7, (7, 21) }, { 8, (7, 30) },
+            { 9, (7, 39) }, { 10, (7, 48) }, { 11, (12, 3) }, { 12, (12, 14) },
+            { 13, (12, 25) }, { 14, (12, 36) }
         };
 
+        /// <summary>
+        /// Shows a read-only floorplan overview.
+        /// </summary>
+        public static void ShowReadOnlyFloorPlan(List<TableModel> allTables, List<int> reservedTableIds, int guestCount)
+        {
+            Console.Clear();
+            Console.WriteLine();
+            ColorConsole.WriteTitle("╔═══════════════════════════════════════════════╗");
+            ColorConsole.WriteTitle("║         RESTAURANT FLOOR PLAN                 ║");
+            ColorConsole.WriteTitle("╚═══════════════════════════════════════════════╝");
+            Console.WriteLine();
+            Console.WriteLine($"  Party Size: {guestCount} guests");
+            Console.WriteLine();
+
+            DisplayLegend();
+            Console.WriteLine();
+            DisplayFloorPlan(allTables, reservedTableIds, guestCount, -1); // -1 = geen selectie
+            Console.WriteLine("\nPress any key to return...");
+            Console.ReadKey();
+        }
+
+        /// <summary>
+        /// Lets the user select a table (skips reserved and wrong-size tables)
+        /// </summary>
         public static TableModel? SelectTableFromFloorPlan(List<TableModel> allTables, List<int> reservedTableIds, int guestCount)
         {
-            // Start with the first selectable table
-            var firstSelectable = allTables
-                .OrderBy(t => t.TableNumber)
-                .FirstOrDefault(t => IsTableSelectable(t, reservedTableIds, guestCount));
-            int selectedTableNumber = firstSelectable?.TableNumber ?? 0;
-            ConsoleKey key;
+            int selectedIndex = allTables.FindIndex(t => !reservedTableIds.Contains(t.ID) && IsRightSize(t, guestCount));
+            if (selectedIndex == -1) return null;
 
-            do
+            bool selecting = true;
+            while (selecting)
             {
                 Console.Clear();
                 Console.WriteLine();
@@ -48,35 +59,55 @@ namespace Project.Presentation
                 DisplayLegend();
                 Console.WriteLine();
 
-                DisplayFloorPlan(allTables, reservedTableIds, guestCount, selectedTableNumber);
-                
-                key = Console.ReadKey(true).Key;
+                DisplayFloorPlan(allTables, reservedTableIds, guestCount, selectedIndex);
+                Console.WriteLine("\nUse ↑/↓ to navigate, Enter to select, Esc to cancel.");
 
-                if (key == ConsoleKey.UpArrow || key == ConsoleKey.DownArrow || 
-                    key == ConsoleKey.LeftArrow || key == ConsoleKey.RightArrow)
+                var key = Console.ReadKey(true).Key;
+                switch (key)
                 {
-                    selectedTableNumber = NavigateFloorPlan(selectedTableNumber, key, allTables, reservedTableIds, guestCount);
+                    case ConsoleKey.UpArrow:
+                    case ConsoleKey.LeftArrow:
+                        selectedIndex = FindPreviousSelectable(allTables, reservedTableIds, guestCount, selectedIndex);
+                        break;
+                    case ConsoleKey.DownArrow:
+                    case ConsoleKey.RightArrow:
+                        selectedIndex = FindNextSelectable(allTables, reservedTableIds, guestCount, selectedIndex);
+                        break;
+                    case ConsoleKey.Enter:
+                        selecting = false;
+                        break;
+                    case ConsoleKey.Escape:
+                        return null;
                 }
-                else if (key == ConsoleKey.Enter && selectedTableNumber > 0)
-                {
-                    var selectedTable = allTables.FirstOrDefault(t => t.TableNumber == selectedTableNumber);
-                    if (selectedTable != null && IsTableSelectable(selectedTable, reservedTableIds, guestCount))
-                    {
-                        return selectedTable;
-                    }
-                    else if (selectedTable != null)
-                    {
-                        Console.SetCursorPosition(0, Console.CursorTop);
-                        Console.Write(new string(' ', Console.WindowWidth));
-                        Console.SetCursorPosition(0, Console.CursorTop);
-                        ColorConsole.WriteError("Cannot select this table - it's either reserved or wrong size!");
-                        System.Threading.Thread.Sleep(1500);
-                    }
-                }
+            }
 
-            } while (key != ConsoleKey.Escape);
+            return allTables[selectedIndex];
+        }
 
-            return null;
+        private static int FindNextSelectable(List<TableModel> allTables, List<int> reserved, int guestCount, int currentIndex)
+        {
+            int start = currentIndex;
+            do
+            {
+                currentIndex = (currentIndex + 1) % allTables.Count;
+            } while ((reserved.Contains(allTables[currentIndex].ID) || !IsRightSize(allTables[currentIndex], guestCount)) && currentIndex != start);
+            return currentIndex;
+        }
+
+        private static int FindPreviousSelectable(List<TableModel> allTables, List<int> reserved, int guestCount, int currentIndex)
+        {
+            int start = currentIndex;
+            do
+            {
+                currentIndex = (currentIndex - 1 + allTables.Count) % allTables.Count;
+            } while ((reserved.Contains(allTables[currentIndex].ID) || !IsRightSize(allTables[currentIndex], guestCount)) && currentIndex != start);
+            return currentIndex;
+        }
+
+        private static bool IsRightSize(TableModel table, int guestCount)
+        {
+            int requiredTableSize = guestCount <= 2 ? 2 : guestCount <= 4 ? 4 : 6;
+            return table.TableCapacity == requiredTableSize;
         }
 
         private static void DisplayLegend()
@@ -85,22 +116,22 @@ namespace Project.Presentation
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("█ Available  ");
             Console.ResetColor();
-            
+
             Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.Write("█ Wrong Size  ");
             Console.ResetColor();
-            
+
             Console.ForegroundColor = ConsoleColor.Red;
             Console.Write("█ Reserved  ");
             Console.ResetColor();
-            
+
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.Write("█ Selected");
             Console.ResetColor();
             Console.WriteLine();
         }
 
-        private static void DisplayFloorPlan(List<TableModel> allTables, List<int> reservedTableIds, int guestCount, int selectedTableNumber)
+        private static void DisplayFloorPlan(List<TableModel> allTables, List<int> reservedTableIds, int guestCount, int selectedIndex)
         {
             const int floorWidth = 60;
             const int floorHeight = 25;
@@ -109,184 +140,58 @@ namespace Project.Presentation
             ConsoleColor[,] colorGrid = new ConsoleColor[floorHeight, floorWidth];
 
             for (int i = 0; i < floorHeight; i++)
-            {
                 for (int j = 0; j < floorWidth; j++)
                 {
                     grid[i, j] = " ";
                     colorGrid[i, j] = ConsoleColor.Black;
                 }
-            }
 
-            foreach (var table in allTables)
+            for (int i = 0; i < allTables.Count; i++)
             {
-                if (TablePositions.ContainsKey(table.TableNumber))
-                {
-                    var (row, col) = TablePositions[table.TableNumber];
-                    
-                    int boxWidth = table.TableCapacity + 2;
-                    int boxHeight = 3;
-                    
-                    if (row >= 0 && row < floorHeight - boxHeight && col >= 0 && col < floorWidth - boxWidth)
-                    {
-                        ConsoleColor tableColor = GetTableColor(table, reservedTableIds, guestCount, selectedTableNumber);
-                        string capacity = $"{table.TableCapacity}p";
+                var table = allTables[i];
+                if (!TablePositions.ContainsKey(table.TableNumber)) continue;
+                var (row, col) = TablePositions[table.TableNumber];
+                int boxWidth = table.TableCapacity + 2;
+                int boxHeight = 3;
+                if (row < 0 || row >= floorHeight - boxHeight || col < 0 || col >= floorWidth - boxWidth) continue;
 
-                        grid[row, col] = "┌";
-                        for (int i = 1; i < boxWidth - 1; i++)
-                        {
-                            grid[row, col + i] = "─";
-                        }
-                        grid[row, col + boxWidth - 1] = "┐";
+                ConsoleColor tableColor = reservedTableIds.Contains(table.ID) ? ConsoleColor.Red :
+                                          !IsRightSize(table, guestCount) ? ConsoleColor.DarkGray :
+                                          (i == selectedIndex ? ConsoleColor.Cyan : ConsoleColor.White);
 
-                        grid[row + 1, col] = "│";
-                        int paddingLeft = (boxWidth - 2 - capacity.Length) / 2;
-                        for (int i = 1; i < boxWidth - 1; i++)
-                        {
-                            if (i == paddingLeft + 1 && capacity.Length >= 2)
-                            {
-                                grid[row + 1, col + i] = capacity[0].ToString();
-                            }
-                            else if (i == paddingLeft + 2 && capacity.Length >= 2)
-                            {
-                                grid[row + 1, col + i] = capacity[1].ToString();
-                            }
-                            else
-                            {
-                                grid[row + 1, col + i] = " ";
-                            }
-                        }
-                        grid[row + 1, col + boxWidth - 1] = "│";
+                string capacity = $"{table.TableCapacity}p";
 
-                        grid[row + 2, col] = "└";
-                        for (int i = 1; i < boxWidth - 1; i++)
-                        {
-                            grid[row + 2, col + i] = "─";
-                        }
-                        grid[row + 2, col + boxWidth - 1] = "┘";
+                grid[row, col] = "┌";
+                for (int x = 1; x < boxWidth - 1; x++) grid[row, col + x] = "─";
+                grid[row, col + boxWidth - 1] = "┐";
 
-                        for (int i = 0; i < boxHeight; i++)
-                        {
-                            for (int j = 0; j < boxWidth; j++)
-                            {
-                                colorGrid[row + i, col + j] = tableColor;
-                            }
-                        }
-                    }
-                }
+                grid[row + 1, col] = "│";
+                int pad = (boxWidth - 2 - capacity.Length) / 2;
+                for (int x = 1; x < boxWidth - 1; x++)
+                    grid[row + 1, col + x] = (x == pad + 1 && capacity.Length >= 2) ? capacity[0].ToString() :
+                                             (x == pad + 2 && capacity.Length >= 2) ? capacity[1].ToString() : " ";
+                grid[row + 1, col + boxWidth - 1] = "│";
+
+                grid[row + 2, col] = "└";
+                for (int x = 1; x < boxWidth - 1; x++) grid[row + 2, col + x] = "─";
+                grid[row + 2, col + boxWidth - 1] = "┘";
+
+                for (int r = 0; r < boxHeight; r++)
+                    for (int c = 0; c < boxWidth; c++)
+                        colorGrid[row + r, col + c] = tableColor;
             }
-            for (int i = 0; i < floorHeight; i++)
+
+            for (int r = 0; r < floorHeight; r++)
             {
                 Console.Write("  ");
-                for (int j = 0; j < floorWidth; j++)
+                for (int c = 0; c < floorWidth; c++)
                 {
-                    Console.ForegroundColor = colorGrid[i, j];
-                    Console.Write(grid[i, j]);
+                    Console.ForegroundColor = colorGrid[r, c];
+                    Console.Write(grid[r, c]);
                     Console.ResetColor();
                 }
                 Console.WriteLine();
             }
-        }
-
-        private static ConsoleColor GetTableColor(TableModel table, List<int> reservedTableIds, int guestCount, int selectedTableNumber)
-        {
-            bool isReserved = reservedTableIds.Contains(table.ID);
-            // Round up guest count to table size: 1-2 -> 2, 3-4 -> 4, 5-6 -> 6
-            int requiredTableSize = guestCount <= 2 ? 2 : guestCount <= 4 ? 4 : 6;
-            bool isRightSize = table.TableCapacity == requiredTableSize;
-            bool isSelected = table.TableNumber == selectedTableNumber;
-
-            if (isSelected && isRightSize && !isReserved)
-            {
-                return ConsoleColor.Cyan;
-            }
-            else if (isReserved)
-            {
-                return ConsoleColor.Red;
-            }
-            else if (!isRightSize)
-            {
-                return ConsoleColor.DarkGray;
-            }
-            else
-            {
-                return ConsoleColor.White;
-            }
-        }
-
-        private static bool IsTableSelectable(TableModel table, List<int> reservedTableIds, int guestCount)
-        {
-            bool isReserved = reservedTableIds.Contains(table.ID);
-            // Round up guest count to table size: 1-2 -> 2, 3-4 -> 4, 5-6 -> 6
-            int requiredTableSize = guestCount <= 2 ? 2 : guestCount <= 4 ? 4 : 6;
-            bool isRightSize = table.TableCapacity == requiredTableSize;
-            
-            return !isReserved && isRightSize;
-        }
-
-        private static int NavigateFloorPlan(int currentTableNumber, ConsoleKey key, List<TableModel> allTables, List<int> reservedTableIds, int guestCount)
-        {
-            if (currentTableNumber == 0)
-            {
-                var firstSelectable = allTables
-                    .OrderBy(t => t.TableNumber)
-                    .FirstOrDefault(t => IsTableSelectable(t, reservedTableIds, guestCount));
-                return firstSelectable?.TableNumber ?? allTables.First().TableNumber;
-            }
-
-            var currentPos = TablePositions.ContainsKey(currentTableNumber) 
-                ? TablePositions[currentTableNumber] 
-                : (0, 0);
-
-            int targetRow = currentPos.Item1;
-            int targetCol = currentPos.Item2;
-
-            switch (key)
-            {
-                case ConsoleKey.UpArrow:
-                    targetRow -= 5;
-                    break;
-                case ConsoleKey.DownArrow:
-                    targetRow += 5;
-                    break;
-                case ConsoleKey.LeftArrow:
-                    targetCol -= 10;
-                    break;
-                case ConsoleKey.RightArrow:
-                    targetCol += 10;
-                    break;
-            }
-
-            // Get selectable tables only
-            var selectableTables = allTables
-                .Where(t => IsTableSelectable(t, reservedTableIds, guestCount))
-                .Select(t => t.TableNumber)
-                .ToList();
-
-            if (!selectableTables.Any())
-            {
-                return currentTableNumber;
-            }
-
-            var closestTable = TablePositions
-                .Where(kvp => selectableTables.Contains(kvp.Key)) // Only consider selectable tables
-                .OrderBy(kvp => Math.Abs(kvp.Value.Item1 - targetRow) + Math.Abs(kvp.Value.Item2 - targetCol))
-                .Where(kvp => key switch
-                {
-                    ConsoleKey.UpArrow => kvp.Value.Item1 < currentPos.Item1,
-                    ConsoleKey.DownArrow => kvp.Value.Item1 > currentPos.Item1,
-                    ConsoleKey.LeftArrow => kvp.Value.Item2 < currentPos.Item2,
-                    ConsoleKey.RightArrow => kvp.Value.Item2 > currentPos.Item2,
-                    _ => true
-                })
-                .Select(kvp => kvp.Key)
-                .FirstOrDefault();
-
-            if (closestTable != 0)
-            {
-                return closestTable;
-            }
-
-            return currentTableNumber;
         }
     }
 }
