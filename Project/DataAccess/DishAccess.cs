@@ -241,5 +241,35 @@ namespace Project.DataAccess
             connection.Execute(sql, new { Id = dish.ID });
         }
 
+
+        public List<DishModel> GetMainDishesWithoutDrink()
+        {
+            string sql = @"
+                SELECT ID, Name, Price, Description, Type
+                FROM Dishes
+                WHERE Type = 'Main'
+                AND DrinkId IS NULL";
+
+            SqliteConnection connection = new SqliteConnection(_connectionString);
+            List<DishModel> dishes = connection.Query<DishModel>(sql).ToList();
+            connection.Close();
+
+            PopulateAllergenInfo(dishes);
+            return dishes;
+        }
+
+        public void LinkDrinkToDish(int dishId, int drinkId)
+        {
+            string sql = @"
+                UPDATE Dishes
+                SET DrinkId = @DrinkId
+                WHERE ID = @DishId
+                AND Type = 'Main'
+                AND DrinkId IS NULL";
+
+            SqliteConnection connection = new SqliteConnection(_connectionString);
+            connection.Execute(sql, new { DrinkId = drinkId, DishId = dishId });
+            connection.Close();
+        }
     }
 }
