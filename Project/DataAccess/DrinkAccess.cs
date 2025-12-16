@@ -36,5 +36,13 @@ namespace Project.DataAccess
             connection.Close();
             return drink;
         }
+
+        public void Update(Drink drink)
+        {
+            string sql = $"UPDATE {Table} SET Name = @Name, AlcoholPercentage = @AlcoholPercentage, Price = @Price WHERE Id = @Id";
+            SqliteConnection connection = new SqliteConnection(_connectionString);
+            connection.Execute(sql, drink);
+            connection.Close();
+        }
     }
 }
