@@ -260,41 +260,4 @@ static class ReservationManagement
             Console.ReadKey();
         }
     }
-
-    // Allergieën beheren (presentation only)
-    private static void ManageAllergies(ReservationModel reservation)
-    {
-        Console.Clear();
-        Console.WriteLine("=== Manage Allergies ===");
-        Console.WriteLine();
-        Console.WriteLine("Enter allergen IDs (comma separated), or leave empty to go back:");
-
-        string input = Console.ReadLine();
-
-        if (string.IsNullOrWhiteSpace(input))
-            return;
-
-        List<int> allergenIds = new List<int>();
-        string[] parts = input.Split(',');
-
-        foreach (string part in parts)
-        {
-            int id;
-            if (int.TryParse(part.Trim(), out id))
-            {
-                allergenIds.Add(id);
-            }
-        }
-
-        bool success =
-            _reservationsLogic.SetGuestAllergies(reservation.ID, allergenIds);
-
-        if (success)
-            Console.WriteLine("Allergies updated.");
-        else
-            Console.WriteLine("Failed to update allergies.");
-
-        Console.WriteLine("Press any key to return...");
-        Console.ReadKey();
-    }
 }
