@@ -13,5 +13,10 @@ namespace Project.Logic
             Drink drink = new Drink(0, name, alcoholPercentage, price);
             _drinkAccess.Write(drink);
         }
+
+        public List<Drink> GetAllDrinks()
+        {
+            return _drinkAccess.GetAll();
+        }
     }
 }
