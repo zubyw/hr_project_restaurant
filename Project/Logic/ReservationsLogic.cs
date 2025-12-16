@@ -377,9 +377,22 @@ namespace Project.Logic
             return _reservationsAccess.GetGuestAllergies(reservationId);
         }
 
-        public bool SetGuestAllergies(int reservationId, List<AllergenModel> guestAllergies)
+        public bool SetGuestAllergies(int reservationId, List<int> allergenIds)
         {
-            return _reservationsAccess.SetGuestAllergies(reservationId, guestAllergies);
+            List<AllergenModel> allergens = new List<AllergenModel>();
+
+            foreach (int id in allergenIds)
+            {
+                AllergenModel allergen = new AllergenModel
+                {
+                    ID = id,
+                    Name = "Allergen " + id,
+                    Description = "Not specified"
+                };
+
+                allergens.Add(allergen);
+            }
+            return _reservationsAccess.SetGuestAllergies(reservationId, allergens);
         }
     }
 }
