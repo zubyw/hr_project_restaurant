@@ -44,5 +44,19 @@ namespace Project.DataAccess
             connection.Execute(sql, drink);
             connection.Close();
         }
+
+        public bool IsDrinkLinked(int drinkId)
+        {
+            string sql = @"
+                SELECT COUNT(*)
+                FROM Dishes
+                WHERE DrinkId = @DrinkId";
+
+            SqliteConnection connection = new SqliteConnection(_connectionString);
+            int count = connection.ExecuteScalar<int>(sql, new { DrinkId = drinkId });
+            connection.Close();
+
+            return count > 0;
+        }
     }
 }
