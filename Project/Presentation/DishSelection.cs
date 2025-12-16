@@ -126,7 +126,7 @@ public static class DishSelection
                 }
                 else
                 {
-                    string noneOption = "5. No Dish";
+                    string noneOption = $"{dishes.Count + 1}. No Dish";
                     Console.WriteLine($"  {noneOption}");
 
                     if (isSelected)

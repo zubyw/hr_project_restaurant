@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
 using Project.DataModels;
 using Project.Logic;
 using Project.Presentation;
@@ -19,7 +18,6 @@ static class ReservationManagement
         Console.Clear();
         Console.WriteLine("=== Admin Reservation Panel ===\n");
 
-        // Admin sees all reservations
         List<ReservationModel> reservations = _reservationsLogic.GetAllReservations();
 
         if (reservations.Count == 0)
@@ -59,7 +57,7 @@ static class ReservationManagement
             }
 
             Console.WriteLine("└──────┴─────────┴──────────────────────────────┴───────┴─────────────────────┴───────────┘");
-            Console.WriteLine("\nUse ↑/↓ to navigate, Enter to select, F1 for Floorplan Overview, Esc to go back");
+            Console.WriteLine("\nUse ↑/↓ to navigate, Enter to select, Esc to go back");
 
             var key = Console.ReadKey(true).Key;
 
@@ -73,25 +71,13 @@ static class ReservationManagement
                     break;
                 case ConsoleKey.Enter:
                     ManageReservation(reservations[selectedIndex]);
-                    reservations = _reservationsLogic.GetAllReservations(); // refresh list
-                    break;
-                case ConsoleKey.F1:
-                    ShowFloorPlanOverview(); // Admin-only overview
+                    reservations = _reservationsLogic.GetAllReservations(); // refresh
                     break;
                 case ConsoleKey.Escape:
-                    return;
+                    selecting = false;
+                    break;
             }
         }
-    }
-
-    private static void ShowFloorPlanOverview()
-    {
-        TableAcces tableAccess = new TableAcces();
-        List<TableModel> allTables = tableAccess.GetAllTables();
-        // Gebruik 0 als guestCount om alle tafels te tonen
-        List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(DateTime.Now.ToString("yyyy-MM-dd"), 0);
-
-        FloorPlanView.SelectTableFromFloorPlan(allTables, reservedTableIds, 0); // Alleen overzicht, geen selectie update
     }
 
     private static void ManageReservation(ReservationModel reservation)
@@ -114,8 +100,7 @@ static class ReservationManagement
                     Console.ForegroundColor = ConsoleColor.White;
                 }
                 Console.WriteLine($"  {options[i]}");
-                if (i == selectedIndex)
-                    Console.ResetColor();
+                if (i == selectedIndex) Console.ResetColor();
             }
 
             var key = Console.ReadKey(true).Key;
@@ -131,28 +116,13 @@ static class ReservationManagement
                 case ConsoleKey.Enter:
                     switch (selectedIndex)
                     {
-                        case 0:
-                            EditTableSelection(reservation);
-                            break;
-                        case 1:
-                            EditGuestCount(reservation);
-                            break;
-                        case 2:
-                            EditDateTime(reservation);
-                            break;
-                        case 3:
-                            EditDishSelection(reservation);
-                            break;
-                        case 4:
-                            CancelReservation(reservation);
-                            managing = false;
-                            break;
-                        case 5:
-                            DishOrderOverview.Start();
-                            break;
-                        case 6:
-                            managing = false;
-                            break;
+                        case 0: EditTableSelection(reservation); break;
+                        case 1: EditGuestCount(reservation); break;
+                        case 2: EditDateTime(reservation); break;
+                        case 3: EditDishSelection(reservation); break;
+                        case 4: CancelReservation(reservation); managing = false; break;
+                        case 5: DishOrderOverview.Start(); break;
+                        case 6: managing = false; break;
                     }
                     reservation = _reservationsLogic.ReloadReservation(reservation);
                     break;
@@ -163,30 +133,26 @@ static class ReservationManagement
         }
     }
 
-    private static void EditTableSelection(ReservationModel reservation, bool showAllTables = false)
+    private static void EditTableSelection(ReservationModel reservation)
     {
         TableAcces tableAccess = new TableAcces();
         List<TableModel> allTables = tableAccess.GetAllTables();
-        List<int> reservedTableIds;
+        List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(reservation.StartAt, reservation.GuestCount)
+                                              .Where(id => id != reservation.TableId)
+                                              .ToList();
 
-        if (showAllTables)
-        {
-            // Admin overview: show all tables, mark reserved
-            reservedTableIds = tableAccess.GetNonAvailableOnDate(reservation.StartAt, 0);
-        }
-        else
-        {
-            // Normal guest selection
-            reservedTableIds = tableAccess.GetNonAvailableOnDate(reservation.StartAt, reservation.GuestCount);
-        }
+        TableModel? selectedTable = FloorPlanView.SelectTableFromFloorPlan(allTables, reservedTableIds, reservation.GuestCount);
 
-        TableModel? selectedTable = FloorPlanView.SelectTableFromFloorPlan(allTables, reservedTableIds, showAllTables ? 0 : reservation.GuestCount);
-
-        if (selectedTable != null && selectedTable.ID != reservation.TableId && !showAllTables)
+        if (selectedTable != null && !reservedTableIds.Contains(selectedTable.ID))
         {
             reservation.TableId = selectedTable.ID;
             _reservationsLogic.UpdateTableForReservation(reservation);
             Console.WriteLine($"Table changed to {selectedTable.ID}. Press any key to continue...");
+            Console.ReadKey();
+        }
+        else
+        {
+            Console.WriteLine("Cannot select a reserved table. Press any key to return...");
             Console.ReadKey();
         }
     }
@@ -195,12 +161,15 @@ static class ReservationManagement
     {
         Console.Clear();
         Console.WriteLine($"Current guest count: {reservation.GuestCount}");
-        Console.Write("Enter new guest count (2,4,6): ");
-        if (int.TryParse(Console.ReadLine(), out int newCount) && (newCount == 2 || newCount == 4 || newCount == 6))
+        Console.Write("Enter new guest count (1-6): ");
+        if (int.TryParse(Console.ReadLine(), out int newCount) && newCount >= 1 && newCount <= 6)
         {
             _reservationsLogic.UpdateGuestCountForReservation(reservation, newCount);
-            Console.WriteLine("Guest count updated. Press any key to continue...");
+            reservation.GuestCount = newCount;
+            Console.WriteLine("Guest count updated. Please select a new table to fit the guest count...");
             Console.ReadKey();
+
+            EditTableSelection(reservation);
         }
         else
         {
@@ -211,7 +180,22 @@ static class ReservationManagement
 
     private static void EditDateTime(ReservationModel reservation)
     {
-        rruservation.EditDateTime(reservation);
+        Console.Clear();
+        Console.WriteLine($"Current date/time: {DateTime.Parse(reservation.StartAt):dd-MM-yyyy HH:mm}");
+        Console.Write("Enter new date/time (dd-MM-yyyy HH:mm): ");
+        string? input = Console.ReadLine();
+
+        if (DateTime.TryParseExact(input, "dd-MM-yyyy HH:mm", null, DateTimeStyles.None, out DateTime newTime))
+        {
+            _reservationsLogic.ChangeReservationTime(reservation.ID, newTime);
+            Console.WriteLine("Reservation time updated. Press any key to continue...");
+            Console.ReadKey();
+        }
+        else
+        {
+            Console.WriteLine("Invalid format. Press any key to return...");
+            Console.ReadKey();
+        }
     }
 
     private static void EditDishSelection(ReservationModel reservation)
@@ -242,12 +226,8 @@ static class ReservationManagement
             var key = Console.ReadKey(true).Key;
             switch (key)
             {
-                case ConsoleKey.UpArrow:
-                    index = (index - 1 + options.Length) % options.Length;
-                    break;
-                case ConsoleKey.DownArrow:
-                    index = (index + 1) % options.Length;
-                    break;
+                case ConsoleKey.UpArrow: index = (index - 1 + options.Length) % options.Length; break;
+                case ConsoleKey.DownArrow: index = (index + 1) % options.Length; break;
                 case ConsoleKey.Enter:
                     if ((options[index].Contains("Change") || options[index].Contains("Add")))
                     {
