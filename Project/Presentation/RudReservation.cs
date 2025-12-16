@@ -185,6 +185,7 @@ namespace Project.Presentation
             "Guest Count",
             "Date & Time",
             "Dish Selection",
+            "Manage Allergies",
             "Back"
             };
 
@@ -256,7 +257,10 @@ namespace Project.Presentation
                             case 3:
                                 EditDishSelection(updatedReservation);
                                 break;
-                            case 4: // User gets send back to selecting a reservation.
+                            case 4:
+                                ManageAllergies(updatedReservation);
+                                break;
+                            case 5: // User gets send back to selecting a reservation.
                                 Start();
                                 break;
                         }
@@ -652,6 +656,72 @@ private void GuestCountDishSelection(int oldguestcount, int newguestcount, Reser
             Console.Clear();
             Console.WriteLine($"\nDate/time updated to {reservation.StartAt}");
             Thread.Sleep(1500);
+        }
+       
+        private void ManageAllergies(ReservationModel reservation)
+        {
+            string[] allergens =
+            {
+                "Gluten",
+                "Lactose",
+                "Nuts",
+                "Eggs",
+                "Fish",
+                "Shellfish"
+            };
+
+            bool[] selected = new bool[allergens.Length];
+            int index = 0;
+
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("=== Manage Allergies ===");
+                Console.WriteLine("Use ↑/↓ to move, Enter to select, Esc to save\n");
+
+                for (int i = 0; i < allergens.Length; i++)
+                {
+                    if (i == index)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkCyan;
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    if (selected[i])
+                        Console.WriteLine("[x] " + allergens[i]);
+                    else
+                        Console.WriteLine("[ ] " + allergens[i]);
+
+                    if (i == index)
+                        Console.ResetColor();
+                }
+
+                ConsoleKey key = Console.ReadKey(true).Key;
+
+                if (key == ConsoleKey.UpArrow)
+                    index = (index - 1 + allergens.Length) % allergens.Length;
+                else if (key == ConsoleKey.DownArrow)
+                    index = (index + 1) % allergens.Length;
+                else if (key == ConsoleKey.Enter)
+                    selected[index] = !selected[index];
+                else if (key == ConsoleKey.Escape)
+                    break;
+            }
+
+            List<int> allergenIds = new List<int>();
+
+            for (int i = 0; i < selected.Length; i++)
+            {
+                if (selected[i])
+                    allergenIds.Add(i + 1);
+            }
+
+            _reservationsLogic.SetGuestAllergies(reservation.ID, allergenIds);
+
+            Console.Clear();
+            Console.WriteLine("Allergies saved.");
+            Console.WriteLine("Press any key to return...");
+            Console.ReadKey();
         }
     }
 }
