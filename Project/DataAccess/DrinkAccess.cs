@@ -18,5 +18,14 @@ namespace Project.DataAccess
             connection.Execute(sql, drink);
             connection.Close();
         }
+
+        public List<Drink> GetAll()
+        {
+            string sql = $"SELECT Id, Name, AlcoholPercentage, Price FROM {Table}";
+            SqliteConnection connection = new SqliteConnection(_connectionString);
+            List<Drink> drinks = connection.Query<Drink>(sql).ToList();
+            connection.Close();
+            return drinks;
+        }
     }
 }
