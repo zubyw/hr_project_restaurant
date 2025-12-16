@@ -5,6 +5,10 @@ public class Drink
     public double AlcoholPercentage { get; set; }
     public decimal Price { get; set; }
 
+    public Drink() 
+    {
+    }
+
     public Drink(int id, string name, double alcoholPercentage, decimal price)
     {
         Id = id;
