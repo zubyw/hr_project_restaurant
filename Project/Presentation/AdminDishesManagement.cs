@@ -16,6 +16,8 @@ public static class AdminDishesManagement
         {
             "Create new dish",
             "Manage all dishes",
+            "Link drink to main dish",
+            "View linked drinks",
             "Back"
         };
 
@@ -33,8 +35,13 @@ public static class AdminDishesManagement
                 case 1:
                     ManageAllDishes();
                     break;
-
                 case 2:
+                    LinkDrinkToMainDish();
+                    break;
+                case 3:
+                    ViewLinkedDrinks();
+                    break;
+                case 4:
                     Menu.ShowAdminMenu();
                     break;
             }
@@ -494,6 +501,124 @@ public static class AdminDishesManagement
                 Console.ReadKey();
             }
         }
+    }
+
+    
+    private static void LinkDrinkToMainDish()
+    {
+        DishLogic dishLogic = new DishLogic();
+        DrinkLogic drinkLogic = new DrinkLogic();
+
+        List<DishModel> allDishes = dishLogic.GetAllDishes();
+        List<DishModel> dishes = new List<DishModel>();
+
+        foreach (DishModel dish in allDishes)
+        {
+            if (dish.Type == "Main")
+            {
+                dishes.Add(dish);
+            }
+        }
+
+        if (dishes.Count == 0)
+        {
+            Console.Clear();
+            Console.WriteLine("No main dishes without a linked drink.");
+            Console.ReadKey();
+            return;
+        }
+
+        int dishIndex = 0;
+
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine("=== Link drink to main dish ===\n");
+            Console.WriteLine("↑ ↓ Select dish | ENTER = choose | ESC = back\n");
+
+            for (int i = 0; i < dishes.Count; i++)
+            {
+                if (i == dishIndex)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                Console.WriteLine($"{dishes[i].Name,-30} €{dishes[i].Price,6:F2}");
+
+                if (i == dishIndex)
+                    Console.ResetColor();
+            }
+
+            ConsoleKey key = Console.ReadKey(true).Key;
+
+            if (key == ConsoleKey.UpArrow)
+                dishIndex = (dishIndex - 1 + dishes.Count) % dishes.Count;
+            else if (key == ConsoleKey.DownArrow)
+                dishIndex = (dishIndex + 1) % dishes.Count;
+            else if (key == ConsoleKey.Escape)
+                return;
+            else if (key == ConsoleKey.Enter)
+                break;
+        }
+
+        DishModel selectedDish = dishes[dishIndex];
+
+        List<Drink> drinks = drinkLogic.GetAllDrinks();
+        if (drinks.Count == 0)
+        {
+            Console.Clear();
+            Console.WriteLine("No drinks available.");
+            Console.ReadKey();
+            return;
+        }
+
+        int drinkIndex = 0;
+
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine("=== Select drink ===\n");
+            Console.WriteLine("↑ ↓ Select drink | ENTER = link | ESC = back\n");
+
+            for (int i = 0; i < drinks.Count; i++)
+            {
+                if (i == drinkIndex)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                Console.WriteLine(
+                    $"{drinks[i].Name,-25} {drinks[i].AlcoholPercentage,5:F1}%  €{drinks[i].Price,6:F2}"
+                );
+
+                if (i == drinkIndex)
+                    Console.ResetColor();
+            }
+
+            ConsoleKey key = Console.ReadKey(true).Key;
+
+            if (key == ConsoleKey.UpArrow)
+                drinkIndex = (drinkIndex - 1 + drinks.Count) % drinks.Count;
+            else if (key == ConsoleKey.DownArrow)
+                drinkIndex = (drinkIndex + 1) % drinks.Count;
+            else if (key == ConsoleKey.Escape)
+                return;
+            else if (key == ConsoleKey.Enter)
+                break;
+        }
+
+        Drink selectedDrink = drinks[drinkIndex];
+
+        dishLogic.LinkDrinkToMainDish(selectedDish.ID, selectedDrink.Id);
+
+        Console.Clear();
+        Console.WriteLine("Drink linked successfully.\n");
+        Console.WriteLine("| ESC = Go back to menu |\n");
+        Console.WriteLine($"Dish : {selectedDish.Name}");
+        Console.WriteLine($"Drink: {selectedDrink.Name}");
+        Console.ReadKey();
     }
 }
 
