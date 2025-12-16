@@ -372,27 +372,15 @@ namespace Project.Logic
         }
 
         // --- Guest allergies ---
-        public List<AllergenModel> GetGuestAllergies(int reservationId)
+        public string? GetGuestAllergies(int reservationId)
         {
             return _reservationsAccess.GetGuestAllergies(reservationId);
         }
 
+
         public bool SetGuestAllergies(int reservationId, List<int> allergenIds)
         {
-            List<AllergenModel> allergens = new List<AllergenModel>();
-
-            foreach (int id in allergenIds)
-            {
-                AllergenModel allergen = new AllergenModel
-                {
-                    ID = id,
-                    Name = "Allergen " + id,
-                    Description = "Not specified"
-                };
-
-                allergens.Add(allergen);
-            }
-            return _reservationsAccess.SetGuestAllergies(reservationId, allergens);
+            return _reservationsAccess.SetGuestAllergies(reservationId, allergenIds);
         }
     }
 }

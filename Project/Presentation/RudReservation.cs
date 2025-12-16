@@ -662,12 +662,9 @@ private void GuestCountDishSelection(int oldguestcount, int newguestcount, Reser
         {
             string[] allergens =
             {
-                "Gluten",
-                "Lactose",
+                "Dairy",
                 "Nuts",
-                "Eggs",
-                "Fish",
-                "Shellfish"
+                "Gluten"
             };
 
             bool[] selected = new bool[allergens.Length];
