@@ -58,5 +58,13 @@ namespace Project.DataAccess
 
             return count > 0;
         }
+
+        public void Delete(int drinkId)
+        {
+            string sql = $"DELETE FROM {Table} WHERE Id = @Id";
+            SqliteConnection connection = new SqliteConnection(_connectionString);
+            connection.Execute(sql, new { Id = drinkId });
+            connection.Close();
+        }
     }
 }
