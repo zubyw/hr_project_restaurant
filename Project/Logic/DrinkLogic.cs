@@ -9,8 +9,17 @@ namespace Project.Logic
         private DrinkAccess _drinkAccess = new DrinkAccess();
         private DishAccess _dishAccess = new DishAccess();
 
-        public void CreateDrink(string name, double alcoholPercentage, decimal price)
+        public void CreateDrink(string name, decimal price, double alcoholPercentage)
         {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Name cannot be empty.");
+
+            if (price <= 0)
+                throw new ArgumentException("Price must be greater than 0.");
+
+            if (alcoholPercentage < 0 || alcoholPercentage > 100)
+                throw new ArgumentException("Alcohol percentage must be between 0 and 100.");
+
             Drink drink = new Drink(0, name, alcoholPercentage, price);
             _drinkAccess.Write(drink);
         }
@@ -46,12 +55,9 @@ namespace Project.Logic
             DishModel dish = _dishAccess.GetById(dishId);
 
             if (dish == null || dish.DrinkId == null)
-            {
                 return null;
-            }
 
-            DrinkAccess drinkAccess = new DrinkAccess();
-            return drinkAccess.GetById(dish.DrinkId.Value);
+            return _drinkAccess.GetById(dish.DrinkId.Value);
         }
     }
 }
