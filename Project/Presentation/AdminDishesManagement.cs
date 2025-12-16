@@ -620,6 +620,61 @@ public static class AdminDishesManagement
         Console.WriteLine($"Drink: {selectedDrink.Name}");
         Console.ReadKey();
     }
+
+    private static void ViewLinkedDrinks()
+    {
+        DishLogic dishLogic = new DishLogic();
+        DrinkLogic drinkLogic = new DrinkLogic();
+
+        // ALTIJD opnieuw ophalen
+        List<DishModel> dishes = dishLogic.GetAllDishes();
+
+        Console.Clear();
+        Console.WriteLine("=== Main Dishes & Linked Drinks ===\n");
+
+        Console.WriteLine("┌────────────────────────┬────────────────────────────┬───────────┐");
+        Console.WriteLine("│ Dish                   │ Drink                      │ Price     │");
+        Console.WriteLine("├────────────────────────┼────────────────────────────┼───────────┤");
+
+        foreach (DishModel dish in dishes)
+        {
+            if (dish.Type != "Main")
+                continue;
+
+            Drink linkedDrink = drinkLogic.GetDrinkForDish(dish.ID);
+
+            string dishName = dish.Name.Length > 22
+                ? dish.Name.Substring(0, 19) + "..."
+                : dish.Name;
+
+            if (linkedDrink != null)
+            {
+                string drinkName = linkedDrink.Name.Length > 26
+                    ? linkedDrink.Name.Substring(0, 23) + "..."
+                    : linkedDrink.Name;
+
+                Console.WriteLine(
+                    "│ {0,-22} │ {1,-26} │ {2,9:F2} │",
+                    dishName,
+                    drinkName,
+                    linkedDrink.Price
+                );
+            }
+            else
+            {
+                Console.WriteLine(
+                    "│ {0,-22} │ {1,-26} │ {2,9} │",
+                    dishName,
+                    "No drink linked",
+                    "-"
+                );
+            }
+        }
+
+        Console.WriteLine("└────────────────────────┴────────────────────────────┴───────────┘");
+        Console.WriteLine("\nESC = back");
+        Console.ReadKey(true);
+    }
 }
 
     
