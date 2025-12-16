@@ -28,5 +28,16 @@ namespace Project.Logic
         {
             _drinkAccess.Update(drink);
         }
+
+        public bool DeleteDrink(int drinkId)
+        {
+            if (_drinkAccess.IsDrinkLinked(drinkId))
+            {
+                return false;
+            }
+
+            _drinkAccess.Delete(drinkId);
+            return true;
+        }
     }
 }
