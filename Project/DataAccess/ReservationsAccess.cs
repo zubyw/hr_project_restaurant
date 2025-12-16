@@ -307,4 +307,18 @@ public bool CancelReservation(ReservationModel reservation)
         }
         return reservation.GuestAllergies;
     }
+
+
+    public bool SetGuestAllergies(int reservationId, List<AllergenModel> guestAllergies)
+    {
+    string sql = "UPDATE Reservations SET GuestAllergies = @Allergies WHERE ID = @Id";
+    SqliteConnection connection = new SqliteConnection(_connectionString);
+
+    int rowsAffected = connection.Execute(sql, new
+    {
+        Id = reservationId,
+        Allergies = guestAllergies
+    }); 
+    return rowsAffected > 0;
+    }
 }
