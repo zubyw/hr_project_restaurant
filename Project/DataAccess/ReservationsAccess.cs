@@ -293,32 +293,28 @@ public bool CancelReservation(ReservationModel reservation)
         return connection.Query<(string DishName, int Count)>(sql, new { Date = date }).ToList();
     }
 
-    public List<AllergenModel> GetGuestAllergies(int reservationId)
+    public string? GetGuestAllergies(int reservationId)
     {
         string sql = "SELECT GuestAllergies FROM Reservations WHERE ID = @Id";
         SqliteConnection connection = new SqliteConnection(_connectionString);
 
-        ReservationModel reservation =
-            connection.QueryFirstOrDefault<ReservationModel>(sql, new { Id = reservationId });
+        string? allergies =
+            connection.QueryFirstOrDefault<string>(sql, new { Id = reservationId });
 
-        if (reservation == null)
-        {
-            return new List<AllergenModel>();
-        }
-        return reservation.GuestAllergies;
+        return allergies;
     }
 
-
-    public bool SetGuestAllergies(int reservationId, List<AllergenModel> guestAllergies)
+    public bool SetGuestAllergies(int reservationId, List<int> allergenIds)
     {
-    string sql = "UPDATE Reservations SET GuestAllergies = @Allergies WHERE ID = @Id";
-    SqliteConnection connection = new SqliteConnection(_connectionString);
+        string sql = "UPDATE Reservations SET GuestAllergies = @Allergies WHERE ID = @Id";
+        SqliteConnection connection = new SqliteConnection(_connectionString);
 
-    int rowsAffected = connection.Execute(sql, new
-    {
-        Id = reservationId,
-        Allergies = guestAllergies
-    }); 
-    return rowsAffected > 0;
+        string allergies = string.Join(",", allergenIds);
+        int rowsAffected = connection.Execute(sql, new
+        {
+            Id = reservationId,
+            Allergies = allergies
+        });
+        return rowsAffected > 0;
     }
 }
