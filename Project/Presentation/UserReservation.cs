@@ -97,7 +97,7 @@ static class UserReservation
 
                 if (correctTheme is not null)
                 {
-                    selectedDishes = DishSelection.SelectDishesForReservation(intAmountPeople, correctTheme.ID);
+                    selectedDishes = DishSelection.SelectDishesForReservation(intAmountPeople, correctTheme);
 
                     if (selectedDishes.Count == 0)
                     {

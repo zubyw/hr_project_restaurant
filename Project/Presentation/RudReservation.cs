@@ -550,7 +550,7 @@ private void GuestCountDishSelection(int oldguestcount, int newguestcount, Reser
             if (correctTheme is not null)
             {
                 // Show dish selection menu
-                List<DishModel> selectedDishes = DishSelection.SelectDishesForReservation(askForDishesAmount, correctTheme.ID);
+                List<DishModel> selectedDishes = DishSelection.SelectDishesForReservation(askForDishesAmount, correctTheme);
 
                 if (selectedDishes.Count == 0)
                 {

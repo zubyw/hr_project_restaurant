@@ -254,7 +254,7 @@ static class ReservationManagement
                         ThemeModel? theme = _dishLogic.GetCorrectTheme(reservation.StartAt);
                         if (theme is not null)
                         {
-                            List<DishModel> selectedDishes = DishSelection.SelectDishesForReservation(reservation.GuestCount, theme.ID);
+                            List<DishModel> selectedDishes = DishSelection.SelectDishesForReservation(reservation.GuestCount, theme);
                             _dishLogic.ReserveDishes(selectedDishes, reservation, true);
                         }
                     }

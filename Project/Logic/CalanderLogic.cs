@@ -28,7 +28,7 @@ namespace Project.Logic
                     month = today.Month;
                 if (month < 1) month = 12;
             }
-        else if (level == 2)
+        else if (level == 2) // day
         {
             int newDay = day - 1;
 
