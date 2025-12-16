@@ -81,7 +81,7 @@ public static class AdminDrinksManagement
             Console.Clear();
             Console.WriteLine("=== Alcohol percentage ===");
             Console.WriteLine();
-            Console.WriteLine("Use Arrow up  & Arrow Down to change (0.1)");
+            Console.WriteLine("Use Arrow up  & Arrow Down to change (0.1 steps)");
             Console.WriteLine("ENTER to confirm");
             Console.WriteLine();
             Console.WriteLine($"Alcohol: {percentage:F1} %");
@@ -107,5 +107,147 @@ public static class AdminDrinksManagement
         }
 
         return percentage;
+    }
+
+    private static void ManageDrinks()
+    {
+        DrinkLogic logic = new DrinkLogic();
+        List<Drink> drinks = logic.GetAllDrinks();
+
+        if (drinks.Count == 0)
+        {
+            Console.Clear();
+            Console.WriteLine("No drinks found.");
+            Console.ReadKey();
+            return;
+        }
+
+        int index = 0;
+
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine("=== Manage Drinks ===");
+            Console.WriteLine();
+            Console.WriteLine("Use Arrow up & Arrow down to set % with 0.1 | ENTER = details | ESC = back");
+            Console.WriteLine();
+
+            for (int i = 0; i < drinks.Count; i++)
+            {
+                bool selected = i == index;
+
+                if (selected)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                Drink d = drinks[i];
+                Console.WriteLine(
+                    $"{d.Name.PadRight(25)}  {d.AlcoholPercentage,5:F1}%   €{d.Price,6:F2}"
+                );
+
+                if (selected)
+                    Console.ResetColor();
+            }
+
+            ConsoleKey key = Console.ReadKey(true).Key;
+
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    index = (index - 1 + drinks.Count) % drinks.Count;
+                    break;
+
+                case ConsoleKey.DownArrow:
+                    index = (index + 1) % drinks.Count;
+                    break;
+
+                case ConsoleKey.Enter:
+                    ShowDrinkDetails(drinks[index]);
+                    break;
+
+                case ConsoleKey.Escape:
+                    return;
+            }
+        }
+    }
+    
+    private static void ShowDrinkDetails(Drink drink)
+    {
+        string[] options =
+        {
+            "Edit name",
+            "Edit price",
+            "Edit alcohol percentage",
+            "Delete drink",
+            "Back"
+        };
+
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine("=== Drink Details ===");
+            Console.WriteLine();
+            Console.WriteLine($"Name:     {drink.Name}");
+            Console.WriteLine($"Alcohol:  {drink.AlcoholPercentage:F1}%");
+            Console.WriteLine($"Price:    €{drink.Price:F2}");
+            Console.WriteLine();
+
+            int choice = MenuHelper.ShowMenuUpDown(options, "Select an option");
+
+            switch (choice)
+            {
+                case 0:
+                    EditDrinkName(drink);
+                    break;
+
+                case 1:
+                    EditDrinkPrice(drink);
+                    break;
+
+                case 2:
+                    EditDrinkAlcohol(drink);
+                    break;
+
+                case 3:
+                    DeleteDrink(drink);
+                    return;
+
+                case 4:
+                    return;
+            }
+        }
+    }
+
+    private static void EditDrinkName(Drink drink)
+    {
+        Console.Clear();
+        Console.Write("New name: ");
+        string newName = Console.ReadLine() ?? "";
+
+        if (string.IsNullOrWhiteSpace(newName))
+            return;
+
+        drink.Name = newName;
+
+        new DrinkLogic().UpdateDrink(drink);
+    }
+
+    private static void EditDrinkPrice(Drink drink)
+    {
+        Console.Clear();
+        Console.Write("New price (€): ");
+        string input = Console.ReadLine() ?? "";
+
+        if (!decimal.TryParse(
+            input.Replace(',', '.'),
+            System.Globalization.CultureInfo.InvariantCulture,
+            out decimal price))
+            return;
+
+        drink.Price = price;
+
+        new DrinkLogic().UpdateDrink(drink);
     }
 }
