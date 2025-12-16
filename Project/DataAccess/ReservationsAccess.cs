@@ -293,5 +293,18 @@ public bool CancelReservation(ReservationModel reservation)
         return connection.Query<(string DishName, int Count)>(sql, new { Date = date }).ToList();
     }
 
+    public List<AllergenModel> GetGuestAllergies(int reservationId)
+    {
+        string sql = "SELECT GuestAllergies FROM Reservations WHERE ID = @Id";
+        SqliteConnection connection = new SqliteConnection(_connectionString);
 
+        ReservationModel reservation =
+            connection.QueryFirstOrDefault<ReservationModel>(sql, new { Id = reservationId });
+
+        if (reservation == null)
+        {
+            return new List<AllergenModel>();
+        }
+        return reservation.GuestAllergies;
+    }
 }
