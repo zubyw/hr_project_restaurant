@@ -8,20 +8,10 @@ public static class DishSelection
     private static List<int> _activeAllergenFilters = new List<int>();
     
     public static List<DishModel> SelectDishesForReservation(int guestCount, int themeId)
-    {
-        _activeAllergenFilters.Clear();
-        
-        ManageAllergenFilters();
-        
+    {   
         List<DishModel> allSelectedDishes = new List<DishModel>();
         
         var availableDishes = GetDishesByTheme(themeId);
-        availableDishes = ApplyAllergenFilters(availableDishes);
-        
-
-        var starters = availableDishes.Where(d => d.Type == "Starter").ToList();
-        var mains = availableDishes.Where(d => d.Type == "Main").ToList();
-        var desserts = availableDishes.Where(d => d.Type == "Dessert").ToList();
         
         string themeName = GetThemeName(themeId);
         
@@ -30,6 +20,15 @@ public static class DishSelection
 
         for (int guestNumber = 1; guestNumber <= guestCount; guestNumber++)
         {
+            _activeAllergenFilters.Clear();
+            ManageAllergenFilters();
+
+            List<DishModel>filteredDishes = ApplyAllergenFilters(availableDishes);
+        
+
+            var starters = filteredDishes.Where(d => d.Type == "Starter").ToList();
+            var mains = filteredDishes.Where(d => d.Type == "Main").ToList();
+            var desserts = filteredDishes.Where(d => d.Type == "Dessert").ToList();
             Console.Clear();
             DisplayThemeHeader(themeName, guestNumber, guestCount);
 
