@@ -13,6 +13,24 @@ namespace Project.Logic
 
         private ReservationsAccess _reservationsAccess = new ReservationsAccess();
         private DishAccess _dishAccess = new DishAccess();
+        private List<GuestOrder> _guestOrders = new List<GuestOrder>();
+
+        public void AddGuestOrder(DishModel mainDish, Drink? drink)
+        {
+            GuestOrder order = new GuestOrder
+            {
+                MainDish = mainDish,
+                Drink = drink
+            };
+
+            _guestOrders.Add(order);
+        }
+
+        public List<GuestOrder> GetGuestOrders()
+        {
+            return _guestOrders;
+        }
+        
 
         // --- Helpers ---
 
