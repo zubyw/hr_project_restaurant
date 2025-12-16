@@ -18,5 +18,10 @@ namespace Project.Logic
         {
             return _drinkAccess.GetAll();
         }
+
+        public Drink GetDrinkById(int id)
+        {
+            return _drinkAccess.GetById(id);
+        }
     }
 }
