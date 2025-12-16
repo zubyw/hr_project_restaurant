@@ -264,12 +264,10 @@ namespace Project.DataAccess
                 UPDATE Dishes
                 SET DrinkId = @DrinkId
                 WHERE ID = @DishId
-                AND Type = 'Main'
-                AND DrinkId IS NULL";
+                AND Type = 'Main'";
 
-            SqliteConnection connection = new SqliteConnection(_connectionString);
+            using SqliteConnection connection = new SqliteConnection(_connectionString);
             connection.Execute(sql, new { DrinkId = drinkId, DishId = dishId });
-            connection.Close();
         }
     }
 }
