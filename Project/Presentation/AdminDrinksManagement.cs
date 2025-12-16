@@ -81,7 +81,7 @@ public static class AdminDrinksManagement
             Console.Clear();
             Console.WriteLine("=== Alcohol percentage ===");
             Console.WriteLine();
-            Console.WriteLine("Use Arrow up  & Arrow Down to change (0.1 steps)");
+            Console.WriteLine("Use Arrow Up & Arrow Down to set % with 0.1");
             Console.WriteLine("ENTER to confirm");
             Console.WriteLine();
             Console.WriteLine($"Alcohol: {percentage:F1} %");
@@ -249,5 +249,50 @@ public static class AdminDrinksManagement
         drink.Price = price;
 
         new DrinkLogic().UpdateDrink(drink);
+    }
+
+    private static void EditDrinkAlcohol(Drink drink)
+    {
+        double percentage = drink.AlcoholPercentage;
+
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine("Edit alcohol percentage");
+            Console.WriteLine("Use Arrow Up & Arrow Down to set % with 0.1");
+            Console.WriteLine("ENTER to save");
+            Console.WriteLine();
+            Console.WriteLine($"Alcohol: {percentage:F1}%");
+
+            var key = Console.ReadKey(true).Key;
+
+            if (key == ConsoleKey.UpArrow && percentage < 100)
+                percentage = Math.Round(percentage + 0.1, 1);
+            else if (key == ConsoleKey.DownArrow && percentage > 0)
+                percentage = Math.Round(percentage - 0.1, 1);
+            else if (key == ConsoleKey.Enter)
+                break;
+        }
+
+        drink.AlcoholPercentage = percentage;
+        new DrinkLogic().UpdateDrink(drink);
+    }
+
+    private static void DeleteDrink(Drink drink)
+    {
+        Console.Clear();
+        Console.WriteLine($"Delete '{drink.Name}'?");
+        Console.Write("Are you sure? (y/n): ");
+
+        if (Console.ReadLine()?.ToLower() != "y")
+            return;
+
+        bool success = new DrinkLogic().DeleteDrink(drink.Id);
+
+        Console.WriteLine(success
+            ? "Drink deleted."
+            : "Drink is linked to a dish and cannot be deleted.");
+
+        Thread.Sleep(1500);
     }
 }
