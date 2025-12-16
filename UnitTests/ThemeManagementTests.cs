@@ -68,9 +68,9 @@ namespace UnitTests
             Assert.IsFalse(dishes2.Any(d => d.ID == reloadedDish2.ID), "Dish should not be in this list");
             Assert.IsFalse(dishes3.Any(d => d.ID == reloadedDish3.ID), "Dish should not be in this list");
 
-            Assert.IsTrue(dishes.Any(d => d.ID == reloadedDish2.ID), "Dish should be in this list.");
-            Assert.IsTrue(dishes2.Any(d => d.ID == reloadedDish3.ID), "Dish should be in this list.");
-            Assert.IsTrue(dishes3.Any(d => d.ID == reloadedDish.ID), "Dish should be in this list.");
+            Assert.IsTrue(dishes.Any(d => d.ID == reloadedDish2.ID), "Dish that isn't linked should be in this list.");
+            Assert.IsTrue(dishes2.Any(d => d.ID == reloadedDish3.ID), "Dish that isn't linked should be in this list.");
+            Assert.IsTrue(dishes3.Any(d => d.ID == reloadedDish.ID), "Dish that isn't linked should be in this list.");
 
             Assert.IsTrue(dishInTheme.Any(d => d.ID == reloadedDish.ID), "Dish should be in this list.");
             Assert.IsTrue(dishInTheme2.Any(d => d.ID == reloadedDish2.ID), "Dish should be in this list.");
@@ -94,6 +94,47 @@ namespace UnitTests
 
 
 
+        }
+        [TestMethod]
+        [DataRow("Turks", "Turkse maaltijden", "02-2026", "03-2026")]
+        [DataRow("Colombiaans", "Colombiaanse maaltijden", "04-2026", "05-2026")]
+        [DataRow("Grieks", "Griekse maaltijden", "06-2026", "07-2026")]
+        [DataRow("Fries", "Oud Hollandse Frieze gerechten", "08-2026", "09-2026")]
+        
+        public void availableMonthsCheck(string tName, string tDescription, string datum1, string datum2)
+        {
+            //arrange
+            ThemeModel theme = new ThemeModel {Name = tName, Course = tDescription};
+            _themelogic.WriteTheme(theme);
+            ThemeModel? reloadedTheme = _themeAccess.GetByName(tName);
+            List<string> datums = [];
+            datums.Add(DateTime.ParseExact(datum1, "MM-yyyy", null).ToString("yyyy-MM"));
+            datums.Add(DateTime.ParseExact(datum2, "MM-yyyy", null).ToString("yyyy-MM"));
+
+
+            // act
+            _themelogic.LinkMonthsToTheme(datums, reloadedTheme);
+            List<string> availableMonths = _themelogic.GetAvailableMonths();
+            List<string> timeslots = _themeAccess.GetThemeCalendarTakenMonths();
+        
+            List<string> takenMonths = timeslots
+                .Select(ts => DateTime.Parse(ts))
+                .Where(d => d >= DateTime.Today)
+                .OrderBy(d => d)
+                .Select(d => d.ToString("MM-yyyy"))
+                .ToList();
+            
+            // assert
+            // Make sure the dates are not in the availablemonths list
+            Assert.IsFalse(availableMonths.Contains(datum1), $"{datum1} Should not be in this list");
+            Assert.IsFalse(availableMonths.Contains(datum2), $"{datum2} Should not be in this list");
+
+            //make sure that the months are actually linked to the theme
+            Assert.IsTrue(takenMonths.Contains(datum1), $"{datum1} Should be in this list");
+            Assert.IsTrue(takenMonths.Contains(datum2), $"{datum2} Should be in this list");
+
+            // delete
+            _themeAccess.DeleteThemeCompletely(reloadedTheme);       
         }
     }
 }
