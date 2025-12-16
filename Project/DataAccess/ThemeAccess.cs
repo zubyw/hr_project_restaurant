@@ -37,6 +37,12 @@ public class ThemeAccess
 
 
 
+    public ThemeModel? GetByName(string name)
+    {
+        string sql = $"SELECT * FROM {Table} WHERE Name = @Name";
+        using var connection = new SqliteConnection(_connectionString);
+        return connection.QueryFirstOrDefault<ThemeModel>(sql, new { Name = name });
+    }
     public ThemeModel? GetById(int id)
     {
         string sql = $"SELECT * FROM {Table} WHERE ID = @Id";
