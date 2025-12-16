@@ -12,15 +12,13 @@ namespace Project.Logic
     {
         private DishAccess _dishaccess;
         private DishAccess _dishAccess;
-
-
-        private ReservationsAccess _reservationsAccess = new ReservationsAccess();
-
-
         public DishLogic(DishAccess? dishAccess = null)
         {
             _dishaccess = dishAccess ?? new DishAccess();
+            _dishAccess = dishAccess ?? new DishAccess();
         }
+
+        private ReservationsAccess _reservationsAccess = new ReservationsAccess();
 
         public List<int> ReserveDishes(List<DishModel> reservedDishes, ReservationModel reservation, bool emptyPreviousItems = false)
         {
@@ -130,6 +128,7 @@ namespace Project.Logic
         {
             return _dishAccess.GetMainDishesWithoutDrink();
         }
+        
 
     }
 }
