@@ -29,6 +29,16 @@ namespace Project.Logic
             return _drinkAccess.GetAll();
         }
 
+        public Drink? GetLinkedDrinkForDish(int dishId)
+        {
+            DishModel dish = _dishAccess.GetById(dishId);
+
+            if (dish == null || dish.DrinkId == null)
+                return null;
+
+            return _drinkAccess.GetById(dish.DrinkId.Value);
+        }
+
         public Drink GetDrinkById(int id)
         {
             return _drinkAccess.GetById(id);
