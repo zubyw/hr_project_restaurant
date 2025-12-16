@@ -370,6 +370,17 @@ namespace Project.Logic
         {
             return _reservationsAccess.GetDishCountsByDate(date);
         }
+
+        // --- Guest allergies ---
+        public List<AllergenModel> GetGuestAllergies(int reservationId)
+        {
+            return _reservationsAccess.GetGuestAllergies(reservationId);
+        }
+
+        public bool SetGuestAllergies(int reservationId, List<AllergenModel> guestAllergies)
+        {
+            return _reservationsAccess.SetGuestAllergies(reservationId, guestAllergies);
+        }
     }
 }
     
