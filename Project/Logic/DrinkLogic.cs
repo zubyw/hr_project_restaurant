@@ -23,5 +23,10 @@ namespace Project.Logic
         {
             return _drinkAccess.GetById(id);
         }
+
+        public void UpdateDrink(Drink drink)
+        {
+            _drinkAccess.Update(drink);
+        }
     }
 }
