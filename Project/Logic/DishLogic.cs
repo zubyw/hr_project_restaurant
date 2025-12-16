@@ -11,6 +11,8 @@ namespace Project.Logic
     public class DishLogic
     {
         private DishAccess _dishaccess;
+        private DishAccess _dishAccess;
+
 
         private ReservationsAccess _reservationsAccess = new ReservationsAccess();
 
@@ -116,6 +118,17 @@ namespace Project.Logic
         public List<(string DishName, int Count)> GetDishCountsForDate(string date)
         {
             return _reservationsAccess.GetDishCountsByDate(date);
+        }
+
+
+        public void LinkDrinkToMainDish(int dishId, int drinkId)
+        {
+            _dishAccess.LinkDrinkToDish(dishId, drinkId);
+        }
+
+        public List<DishModel> GetMainDishesWithoutDrink()
+        {
+            return _dishAccess.GetMainDishesWithoutDrink();
         }
 
     }

@@ -7,6 +7,7 @@ namespace Project.Logic
     public class DrinkLogic
     {
         private DrinkAccess _drinkAccess = new DrinkAccess();
+        private DishAccess _dishAccess = new DishAccess();
 
         public void CreateDrink(string name, double alcoholPercentage, decimal price)
         {
@@ -38,6 +39,19 @@ namespace Project.Logic
 
             _drinkAccess.Delete(drinkId);
             return true;
+        }
+
+        public Drink GetDrinkForDish(int dishId)
+        {
+            DishModel dish = _dishAccess.GetById(dishId);
+
+            if (dish == null || dish.DrinkId == null)
+            {
+                return null;
+            }
+
+            DrinkAccess drinkAccess = new DrinkAccess();
+            return drinkAccess.GetById(dish.DrinkId.Value);
         }
     }
 }

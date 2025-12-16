@@ -12,6 +12,9 @@ public class DishModel
     public List<int> AllergenIds { get; set; } = new List<int>();
     public List<string> AllergenNames { get; set; } = new List<string>();
 
+    // Drink propperties
+    public int? DrinkId { get; set; }
+
 
     public override string ToString()
     {
