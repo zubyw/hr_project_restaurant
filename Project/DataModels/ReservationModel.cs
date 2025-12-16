@@ -19,5 +19,7 @@ namespace Project.DataModels
         public string GuestEmail { get; set; } = string.Empty;
         public int TableNumber { get; set; }
         public int TableCapacity { get; set; }
+        
+        public List<AllergenModel> GuestAllergies { get; set; } = new List<AllergenModel>();
     }
 }
