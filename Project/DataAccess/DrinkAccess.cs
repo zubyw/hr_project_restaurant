@@ -27,5 +27,14 @@ namespace Project.DataAccess
             connection.Close();
             return drinks;
         }
+
+        public Drink GetById(int id)
+        {
+            string sql = $"SELECT Id, Name, AlcoholPercentage, Price FROM {Table} WHERE Id = @Id";
+            SqliteConnection connection = new SqliteConnection(_connectionString);
+            Drink drink = connection.QueryFirstOrDefault<Drink>(sql, new { Id = id });
+            connection.Close();
+            return drink;
+        }
     }
 }
