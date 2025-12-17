@@ -1,6 +1,8 @@
 using Project.DataModels;
 using Project.DataAccess;
 using Project.Logic;
+using Project.Logic.Themes;
+
 
 public static class DishSelection
 {
@@ -9,73 +11,79 @@ public static class DishSelection
     private static List<int> _activeAllergenFilters = new List<int>();
 
     
-    
     public static List<DishModel> SelectDishesForReservation(int guestCount, int themeId)
     {
-        List<List<Drink>> selectedDrinksPerGuest = new List<List<Drink>>(); // *
+        ThemesLogic themeLogic = new ThemesLogic();
+        ThemeModel theme = themeLogic.GetById(themeId);
+
+        if (theme == null)
+        {
+            Console.WriteLine("Theme not found.");
+            return new List<DishModel>();
+        }
+
+        return SelectDishesForReservation(guestCount, theme);
+    }
+
+    
+    public static List<DishModel> SelectDishesForReservation(int guestCount, ThemeModel theme)
+    {
+        List<List<Drink>> selectedDrinksPerGuest = new List<List<Drink>>();
         ReservationsLogic reservationsLogic = new ReservationsLogic();
 
         List<List<DishModel?>> allSelectedDishesPerGuest = new List<List<DishModel?>>();
         List<Drink?> selectedDrinkPerGuest = new List<Drink?>();
-        
-        
-        
-        _activeAllergenFilters.Clear();
-        ManageAllergenFilters();
-        
-        List<DishModel> allSelectedDishes = new List<DishModel>();
-        
-        var availableDishes = GetDishesByTheme(themeId);
-        availableDishes = ApplyAllergenFilters(availableDishes);
-        
 
-        var starters = availableDishes.Where(d => d.Type == "Starter").ToList();
-        var mains = availableDishes.Where(d => d.Type == "Main").ToList();
-        var desserts = availableDishes.Where(d => d.Type == "Dessert").ToList();
-        
-        string themeName = GetThemeName(themeId);
-        
+        List<DishModel> allSelectedDishes = new List<DishModel>();
+        var availableDishes = GetDishesByTheme(theme.ID);
+
         for (int guestNumber = 1; guestNumber <= guestCount; guestNumber++)
         {
+            _activeAllergenFilters.Clear();
+            ManageAllergenFilters();
+
+            List<DishModel> filteredDishes = ApplyAllergenFilters(availableDishes);
+
+            var starters = filteredDishes.Where(d => d.Type == "Starter").ToList();
+            var mains = filteredDishes.Where(d => d.Type == "Main").ToList();
+            var desserts = filteredDishes.Where(d => d.Type == "Dessert").ToList();
+
             Console.Clear();
-            DisplayThemeHeader(themeName, guestNumber, guestCount);
+            DisplayThemeHeader(theme.Name, guestNumber, guestCount);
 
-            bool IsNotDishSelecting;
-
+            bool isNotDishSelecting;
             List<DishModel?> guestDishes = new List<DishModel?>();
 
-            var selectedStarter = SelectDish(starters, "Starters", guestNumber, out IsNotDishSelecting);
-            if (IsNotDishSelecting) return new List<DishModel>();
-            guestDishes.Add(selectedStarter);
-            if (selectedStarter != null) allSelectedDishes.Add(selectedStarter);
+            var starter = SelectDish(starters, "Starters", guestNumber, out isNotDishSelecting);
+            if (isNotDishSelecting) return new List<DishModel>();
+            guestDishes.Add(starter);
+            if (starter != null) allSelectedDishes.Add(starter);
 
-            var selectedMain = SelectDish(mains, "Main Courses", guestNumber, out IsNotDishSelecting);
-            if (IsNotDishSelecting) return new List<DishModel>();
-            guestDishes.Add(selectedMain);
-            if (selectedMain != null) allSelectedDishes.Add(selectedMain);
+            var main = SelectDish(mains, "Main Courses", guestNumber, out isNotDishSelecting);
+            if (isNotDishSelecting) return new List<DishModel>();
+            guestDishes.Add(main);
+            if (main != null) allSelectedDishes.Add(main);
 
-            Drink? selectedDrink = null;
-            if (selectedMain != null)
-            {
-                selectedDrink = SelectDrinkForMainDish(selectedMain.ID);
-            }
-            selectedDrinkPerGuest.Add(selectedDrink);
+            Drink? drink = null;
+            if (main != null)
+                drink = SelectDrinkForMainDish(main.ID);
 
-            var selectedDessert = SelectDish(desserts, "Desserts", guestNumber, out IsNotDishSelecting);
-            if (IsNotDishSelecting) return new List<DishModel>();
-            guestDishes.Add(selectedDessert);
-            if (selectedDessert != null) allSelectedDishes.Add(selectedDessert);
+            selectedDrinkPerGuest.Add(drink);
+
+            var dessert = SelectDish(desserts, "Desserts", guestNumber, out isNotDishSelecting);
+            if (isNotDishSelecting) return new List<DishModel>();
+            guestDishes.Add(dessert);
+            if (dessert != null) allSelectedDishes.Add(dessert);
 
             allSelectedDishesPerGuest.Add(guestDishes);
         }
-    
+
         if (ShowReservationSummary(allSelectedDishesPerGuest, selectedDrinkPerGuest, guestCount))
-        {
             return allSelectedDishes;
-        }
 
         return new List<DishModel>();
     }
+
     
     private static DishModel? SelectDish(List<DishModel> dishes, string courseType, int guestNumber, out bool IsNotDishSelecting)
     {
@@ -288,13 +296,6 @@ public static class DishSelection
         }
         
         return new List<DishModel>();
-    }
-    
-    private static string GetThemeName(int themeId)
-    {
-        var themeAccess = new ThemeAccess();
-        var theme = themeAccess.GetById(themeId);
-        return theme?.Name ?? "Special Menu";
     }
     
     private static void DisplayThemeHeader(string themeName, int currentGuest, int totalGuests)

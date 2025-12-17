@@ -269,5 +269,20 @@ namespace Project.DataAccess
             using SqliteConnection connection = new SqliteConnection(_connectionString);
             connection.Execute(sql, new { DrinkId = drinkId, DishId = dishId });
         }
+        public List<DishModel> GetAllDishesWithATheme()
+        {
+            string sql = @"
+            SELECT DISTINCT d.ID, d.Name, d.Price, d.Description, d.Type
+            FROM Dishes d
+            JOIN Dishes_Themes dt ON dt.DishId = d.ID
+            ORDER BY d.Type, d.Name;";
+
+            SqliteConnection connection = new SqliteConnection(_connectionString);
+            List<DishModel> list = connection.Query<DishModel>(sql).ToList();
+            connection.Close();
+            return list;
+        }
+
+
     }
 }

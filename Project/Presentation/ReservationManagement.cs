@@ -11,6 +11,8 @@ static class ReservationManagement
     private static ReservationsLogic _reservationsLogic = new ReservationsLogic();
     private static DishLogic _dishLogic = new DishLogic();
 
+    private static RudReservation rruservation = new RudReservation();
+
     public static void Start()
     {
         Console.Clear();
@@ -48,7 +50,7 @@ static class ReservationManagement
                     Console.ForegroundColor = ConsoleColor.White;
                 }
 
-                Console.WriteLine($"│ {r.ID,4} │ {r.TableNumber,2} ({r.TableCapacity}) │ {guestName,-28} │ {r.GuestCount,2}   │ {dateTime,-19} │ {r.Status,-9} │");
+                Console.WriteLine($"│ {r.ID,4} │ {r.TableNumber,2} ({r.TableCapacity,2}) │ {guestName,-28} │ {r.GuestCount,3}   │ {dateTime,-19} │ {r.Status,-9} │");
 
                 if (i == selectedIndex)
                     Console.ResetColor();
@@ -232,7 +234,7 @@ static class ReservationManagement
                         ThemeModel? theme = _dishLogic.GetCorrectTheme(reservation.StartAt);
                         if (theme is not null)
                         {
-                            List<DishModel> selectedDishes = DishSelection.SelectDishesForReservation(reservation.GuestCount, theme.ID);
+                            List<DishModel> selectedDishes = DishSelection.SelectDishesForReservation(reservation.GuestCount, theme);
                             _dishLogic.ReserveDishes(selectedDishes, reservation, true);
                         }
                     }
