@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Project.DataAccess;
+namespace Project.Logic.Themes;
 
 public class ThemesLogic
 {
@@ -187,6 +188,28 @@ public class ThemesLogic
     public void DeleteDishonTheme(DishModel dish, ThemeModel theme)
     {
         access.DeleteDishonTheme(theme, dish);
+    }
+    
+    public List<DishModel> hidefilter(List<DishModel> DishList, List<string> hidden)
+    {
+ 
+        IEnumerable<DishModel> x = DishList;
+        
+        if(hidden.Contains("d")){
+        x = x.Where(x => x.Type != "Dessert");
+        }
+        if(hidden.Contains("s")){
+        x = x.Where(x => x.Type != "Starter");
+        }
+        if(hidden.Contains("m")){
+        x = x.Where(x => x.Type != "Main");
+        }
+        if(hidden.Contains("t")){
+        List<DishModel> dishesinthemes = _dishaccess.GetAllDishesWithATheme();
+        var themeIds = dishesinthemes.Select(t => t.ID).ToHashSet();
+        x = x.Where(d => !themeIds.Contains(d.ID));
+        }
+        return x.ToList();
     }
 
 }

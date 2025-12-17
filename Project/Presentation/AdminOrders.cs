@@ -11,8 +11,7 @@ static class DishOrderOverview
         Console.Clear();
         Console.WriteLine("=== Dish Orders Overview ===\n");
 
-        DateTime date = MenuHelper.SelectDateArrowsLeftRight(true);
-        string input = date.ToString("dd-MM-yyyy");
+        string input = CalanderInput.Calander();
 
         List<(string DishName, int Count)> dishCounts = _dishLogic.GetDishCountsForDate(input);
 

@@ -1,70 +1,89 @@
 using Project.DataModels;
 using Project.DataAccess;
+using Project.Logic;
+using Project.Logic.Themes;
+
 
 public static class DishSelection
 {
     private static DishAccess _dishAccess = new DishAccess();
     private static AllergenAccess _allergenAccess = new AllergenAccess();
     private static List<int> _activeAllergenFilters = new List<int>();
+
     
     public static List<DishModel> SelectDishesForReservation(int guestCount, int themeId)
     {
-        _activeAllergenFilters.Clear();
-        
-        ManageAllergenFilters();
-        
-        List<DishModel> allSelectedDishes = new List<DishModel>();
-        
-        var availableDishes = GetDishesByTheme(themeId);
-        availableDishes = ApplyAllergenFilters(availableDishes);
-        
+        ThemesLogic themeLogic = new ThemesLogic();
+        ThemeModel theme = themeLogic.GetById(themeId);
 
-        var starters = availableDishes.Where(d => d.Type == "Starter").ToList();
-        var mains = availableDishes.Where(d => d.Type == "Main").ToList();
-        var desserts = availableDishes.Where(d => d.Type == "Dessert").ToList();
-        
-        string themeName = GetThemeName(themeId);
-        
+        if (theme == null)
+        {
+            Console.WriteLine("Theme not found.");
+            return new List<DishModel>();
+        }
+
+        return SelectDishesForReservation(guestCount, theme);
+    }
+
+    
+    public static List<DishModel> SelectDishesForReservation(int guestCount, ThemeModel theme)
+    {
+        List<List<Drink>> selectedDrinksPerGuest = new List<List<Drink>>();
+        ReservationsLogic reservationsLogic = new ReservationsLogic();
 
         List<List<DishModel?>> allSelectedDishesPerGuest = new List<List<DishModel?>>();
+        List<Drink?> selectedDrinkPerGuest = new List<Drink?>();
+
+        List<DishModel> allSelectedDishes = new List<DishModel>();
+        var availableDishes = GetDishesByTheme(theme.ID);
 
         for (int guestNumber = 1; guestNumber <= guestCount; guestNumber++)
         {
+            _activeAllergenFilters.Clear();
+            ManageAllergenFilters();
+
+            List<DishModel> filteredDishes = ApplyAllergenFilters(availableDishes);
+
+            var starters = filteredDishes.Where(d => d.Type == "Starter").ToList();
+            var mains = filteredDishes.Where(d => d.Type == "Main").ToList();
+            var desserts = filteredDishes.Where(d => d.Type == "Dessert").ToList();
+
             Console.Clear();
-            DisplayThemeHeader(themeName, guestNumber, guestCount);
+            DisplayThemeHeader(theme.Name, guestNumber, guestCount);
 
-            bool IsNotDishSelecting;
-
+            bool isNotDishSelecting;
             List<DishModel?> guestDishes = new List<DishModel?>();
 
-            var selectedStarter = SelectDish(starters, "Starters", guestNumber, out IsNotDishSelecting);
-            if (IsNotDishSelecting) return new List<DishModel>();
-            guestDishes.Add(selectedStarter);
-            if (selectedStarter != null) allSelectedDishes.Add(selectedStarter);
+            var starter = SelectDish(starters, "Starters", guestNumber, out isNotDishSelecting);
+            if (isNotDishSelecting) return new List<DishModel>();
+            guestDishes.Add(starter);
+            if (starter != null) allSelectedDishes.Add(starter);
 
-            var selectedMain = SelectDish(mains, "Main Courses", guestNumber, out IsNotDishSelecting);
-            if (IsNotDishSelecting) return new List<DishModel>();
-            guestDishes.Add(selectedMain);
-            if (selectedMain != null) allSelectedDishes.Add(selectedMain);
+            var main = SelectDish(mains, "Main Courses", guestNumber, out isNotDishSelecting);
+            if (isNotDishSelecting) return new List<DishModel>();
+            guestDishes.Add(main);
+            if (main != null) allSelectedDishes.Add(main);
 
-            var selectedDessert = SelectDish(desserts, "Desserts", guestNumber, out IsNotDishSelecting);
-            if (IsNotDishSelecting) return new List<DishModel>();
-            guestDishes.Add(selectedDessert);
-            if (selectedDessert != null) allSelectedDishes.Add(selectedDessert);
-            
+            Drink? drink = null;
+            if (main != null)
+                drink = SelectDrinkForMainDish(main.ID);
+
+            selectedDrinkPerGuest.Add(drink);
+
+            var dessert = SelectDish(desserts, "Desserts", guestNumber, out isNotDishSelecting);
+            if (isNotDishSelecting) return new List<DishModel>();
+            guestDishes.Add(dessert);
+            if (dessert != null) allSelectedDishes.Add(dessert);
 
             allSelectedDishesPerGuest.Add(guestDishes);
         }
-    
 
-        
-        if (ShowReservationSummary(allSelectedDishesPerGuest, guestCount))
-        {
+        if (ShowReservationSummary(allSelectedDishesPerGuest, selectedDrinkPerGuest, guestCount))
             return allSelectedDishes;
-        }
-        
+
         return new List<DishModel>();
     }
+
     
     private static DishModel? SelectDish(List<DishModel> dishes, string courseType, int guestNumber, out bool IsNotDishSelecting)
     {
@@ -176,60 +195,94 @@ public static class DishSelection
     }
 
     
-    private static bool ShowReservationSummary(List<List<DishModel?>> allSelectedDishesPerGuest, int guestCount)
-{
-    Console.Clear();
-    
-    // Header
-    Console.WriteLine("╔════════════════════════════════════════════════════════════════════════════╗");
-    Console.WriteLine("║    RESERVATION SUMMARY - PLEASE CONFIRM".PadRight(77) + "║");
-    Console.WriteLine("╚════════════════════════════════════════════════════════════════════════════╝");
-    Console.WriteLine();
-
-    decimal totalPrice = 0;
-    
-
-    for (int guestNumber = 1; guestNumber <= guestCount; guestNumber++)
-    {
-
-        Console.WriteLine($"Guest #{guestNumber}:");
-
-        var guestDishes = allSelectedDishesPerGuest[guestNumber - 1];
-
-        var starter = guestDishes.Count > 0 ? guestDishes[0] : null;
-        var main    = guestDishes.Count > 1 ? guestDishes[1] : null;
-        var dessert = guestDishes.Count > 2 ? guestDishes[2] : null;
-
-        Console.WriteLine($"    Starter:  {(starter != null ? starter.Name.PadRight(30) + $" €{starter.Price:F2}" : "Non Chosen")}");
-        Console.WriteLine($"    Main:     {(main != null ? main.Name.PadRight(30) + $" €{main.Price:F2}" : "Non Chosen")}");
-        Console.WriteLine($"    Dessert:  {(dessert != null ? dessert.Name.PadRight(30) + $" €{dessert.Price:F2}" : "Non Chosen")}");
-        Console.WriteLine();
-
-        if (starter != null) totalPrice += starter.Price;
-        if (main != null) totalPrice += main.Price;
-        if (dessert != null) totalPrice += dessert.Price;
-    }
-
-    Console.WriteLine("─────────────────────────────────────────────────────────────────────────────");
-    Console.WriteLine($"Total Price: €{totalPrice:F2}");
-    Console.WriteLine("─────────────────────────────────────────────────────────────────────────────");
-    Console.WriteLine();
-
-    Console.Write("Confirm this reservation? (Y/N): ");
-    var response = Console.ReadLine()?.Trim().ToUpper();
-
-    if (response == "Y")
+    private static bool ShowReservationSummary(List<List<DishModel?>> allSelectedDishesPerGuest, List<Drink?> selectedDrinkPerGuest, int guestCount)
     {
         Console.Clear();
+
+        Console.WriteLine("╔════════════════════════════════════════════════════════════════════════════╗");
+        Console.WriteLine("║    RESERVATION SUMMARY - PLEASE CONFIRM".PadRight(77) + "║");
+        Console.WriteLine("╚════════════════════════════════════════════════════════════════════════════╝");
         Console.WriteLine();
-        Console.WriteLine("Your reservation with menu selection has been saved!");
+
+        decimal totalPrice = 0;
+
+        for (int guestNumber = 1; guestNumber <= guestCount; guestNumber++)
+        {
+            Console.WriteLine($"Guest #{guestNumber}:");
+
+            var guestDishes = allSelectedDishesPerGuest[guestNumber - 1];
+            Drink? drink = selectedDrinkPerGuest[guestNumber - 1];
+
+            var starter = guestDishes.Count > 0 ? guestDishes[0] : null;
+            var main    = guestDishes.Count > 1 ? guestDishes[1] : null;
+            var dessert = guestDishes.Count > 2 ? guestDishes[2] : null;
+
+            if (starter != null)
+            {
+                Console.WriteLine($"    Starter:  {starter.Name.PadRight(30)} €{starter.Price:F2}");
+                totalPrice += starter.Price;
+            }
+            else
+            {
+                Console.WriteLine("    Starter:  Non Chosen");
+            }
+
+            if (main != null)
+            {
+                Console.WriteLine($"    Main:     {main.Name.PadRight(30)} €{main.Price:F2}");
+                totalPrice += main.Price;
+            }
+            else
+            {
+                Console.WriteLine("    Main:     Non Chosen");
+            }
+
+            if (dessert != null)
+            {
+                Console.WriteLine($"    Dessert:  {dessert.Name.PadRight(30)} €{dessert.Price:F2}");
+                totalPrice += dessert.Price;
+            }
+            else
+            {
+                Console.WriteLine("    Dessert:  Non Chosen");
+            }
+
+            if (drink != null)
+            {
+                Console.WriteLine($"    Drink:    {drink.Name.PadRight(30)} €{drink.Price:F2}");
+                totalPrice += drink.Price;
+            }
+            else
+            {
+                Console.WriteLine("    Drink:    No Drink");
+            }
+
+            Console.WriteLine();
+        }
+
+        
+
+        Console.WriteLine("─────────────────────────────────────────────────────────────────────────────");
+        Console.WriteLine($"Total Price: €{totalPrice:F2}");
+        Console.WriteLine("─────────────────────────────────────────────────────────────────────────────");
         Console.WriteLine();
-        Thread.Sleep(3000);
-        return true;
+
+        Console.Write("Confirm this reservation? (Y/N): ");
+        var response = Console.ReadLine()?.Trim().ToUpper();
+
+        if (response == "Y")
+        {
+            Console.Clear();
+            Console.WriteLine();
+            Console.WriteLine("Your reservation with menu selection has been saved!");
+            Console.WriteLine();
+            Thread.Sleep(3000);
+            return true;
+        }
+
+        return false;
     }
 
-    return false;
-}
 
     
     private static List<DishModel> GetDishesByTheme(int themeId)
@@ -243,13 +296,6 @@ public static class DishSelection
         }
         
         return new List<DishModel>();
-    }
-    
-    private static string GetThemeName(int themeId)
-    {
-        var themeAccess = new ThemeAccess();
-        var theme = themeAccess.GetById(themeId);
-        return theme?.Name ?? "Special Menu";
     }
     
     private static void DisplayThemeHeader(string themeName, int currentGuest, int totalGuests)
@@ -340,5 +386,105 @@ public static class DishSelection
                     return;
             }
         }
+    }
+
+    private static Drink? ShowDrinkForMainDish(int dishId)
+    {
+        DrinkLogic drinkLogic = new DrinkLogic();
+        Drink drink = drinkLogic.GetDrinkForDish(dishId);
+
+        if (drink == null)
+        {
+            Console.WriteLine("No drink is linked to this dish.");
+            Thread.Sleep(1200);
+            return null;
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("This main dish comes with:");
+        Console.WriteLine($"{drink.Name} ({drink.AlcoholPercentage}%) - €{drink.Price:F2}");
+        Console.Write("Do you want this drink? (y/n): ");
+
+        string choice = Console.ReadLine();
+        choice = choice == null ? "" : choice.ToLower();
+
+        if (choice == "y")
+        {
+            Console.WriteLine("Drink added.");
+            Thread.Sleep(1000);
+            return drink;
+        }
+
+        Console.WriteLine("Drink skipped.");
+        Thread.Sleep(1000);
+        return null;
+    }
+
+    private static Drink? SelectDrinkForMainDish(int dishId)
+    {
+        DrinkLogic drinkLogic = new DrinkLogic();
+
+        List<Drink> drinks = drinkLogic.GetAllDrinks();
+        Drink? recommended = drinkLogic.GetDrinkForDish(dishId);
+
+        if (drinks.Count == 0)
+            return null;
+
+        int index = 0;
+        bool selecting = true;
+
+        while (selecting)
+        {
+            Console.Clear();
+            Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
+            Console.WriteLine("║  SELECT DRINK (optional)                                  ║");
+            Console.WriteLine("╠════════════════════════════════════════════════════════════╣");
+            Console.WriteLine("║  ↑↓ Navigate | ENTER Select | ESC Skip                    ║");
+            Console.WriteLine("╚════════════════════════════════════════════════════════════╝");
+            Console.WriteLine();
+
+            for (int i = 0; i <= drinks.Count; i++)
+            {
+                bool selected = i == index;
+
+                if (selected)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                if (i < drinks.Count)
+                {
+                    Drink d = drinks[i];
+                    string marker = recommended != null && d.Id == recommended.Id ? " (recommended)" : "";
+                    Console.WriteLine($"  {d.Name.PadRight(25)} €{d.Price:F2}{marker}");
+                }
+                else
+                {
+                    Console.WriteLine("  No drink");
+                }
+
+                if (selected)
+                    Console.ResetColor();
+            }
+
+            var key = Console.ReadKey(true).Key;
+
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    index = (index - 1 + drinks.Count + 1) % (drinks.Count + 1);
+                    break;
+                case ConsoleKey.DownArrow:
+                    index = (index + 1) % (drinks.Count + 1);
+                    break;
+                case ConsoleKey.Enter:
+                    return index < drinks.Count ? drinks[index] : null;
+                case ConsoleKey.Escape:
+                    return null;
+            }
+        }
+
+        return null;
     }
 }

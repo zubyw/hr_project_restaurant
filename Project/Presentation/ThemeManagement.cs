@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Project.Presentation;
+using Project.Logic.Themes;
+
 
 public static class ThemeManagement
 {
@@ -290,14 +292,52 @@ public static class ThemeManagement
         }
     }
 
-
     private static DishModel? ChooseDishes(List<DishModel> dishes)
     {
-        int index = 0;
-
-        while (true)
+        bool choice = false;
+        int selected = 0;
+        DisplayDishes(dishes, selected);
+        List<string> hidden = [];
+        List<DishModel> visible = logic.hidefilter(dishes, hidden);
+        while (!choice)
         {
-            Console.Clear();
+            ConsoleKey key = Console.ReadKey(true).Key;
+            if (key == ConsoleKey.Enter) {
+            choice = true;
+        }
+        else
+        {
+                if (key == ConsoleKey.DownArrow)
+                    {
+                        selected = (selected + 1) % visible.Count;
+                    }
+                    else if (key == ConsoleKey.UpArrow)
+                    {
+                        selected = (selected - 1 + visible.Count) % visible.Count;
+                    }
+                    else if (key == ConsoleKey.Escape)
+                    {
+                        return null;
+                    }
+                    else if (key == ConsoleKey.D || key == ConsoleKey.S || key == ConsoleKey.M || key == ConsoleKey.T){
+                        selected = 0;
+                        string input = key.ToString().ToLower();
+                        if (hidden.Contains(input)) hidden.Remove(input);
+                        else hidden.Add(input);
+                        visible = logic.hidefilter(dishes, hidden);
+                    }
+                DisplayDishes(visible, selected);
+            }
+        
+        }
+        List<DishModel> endlist = logic.hidefilter(dishes, hidden);
+        DishModel selectedDish = endlist[selected];
+        return selectedDish;
+    }
+
+    private static void DisplayDishes(List<DishModel> dishes, int index)
+    {
+         Console.Clear();
             Console.WriteLine();
 
             Console.WriteLine("┌────────────────────────┬───────────────┬───────────┐");
@@ -329,27 +369,7 @@ public static class ThemeManagement
             Console.WriteLine("└────────────────────────┴───────────────┴───────────┘");
 
             Console.WriteLine("\n ↑↓ Select dish | ESC = done/back");
-
-            ConsoleKey key = Console.ReadKey(true).Key;
-
-            if (key == ConsoleKey.DownArrow)
-            {
-                index = (index + 1) % dishes.Count;
-            }
-            else if (key == ConsoleKey.UpArrow)
-            {
-                index = (index - 1 + dishes.Count) % dishes.Count;
-            }
-            else if (key == ConsoleKey.Enter)
-            {
-                DishModel selectedDish = dishes[index];
-                return selectedDish;
-            }
-            else if (key == ConsoleKey.Escape)
-            {
-                return null;
-            }
-        }
+            Console.WriteLine("\nPress D, S, M, or T to hide/show Desserts, Starters, Mains, or dishes already linked to a theme.");
     }
 
     private static void AddDishesToTheme(ThemeModel theme)
