@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Project.DataAccess;
-namespace Project.Logic.Themes;
+namespace Project.Logic;
 
 public class ThemesLogic
 {

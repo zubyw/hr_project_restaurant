@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Project.Presentation;
-using Project.Logic.Themes;
-
-
+using Project.Logic;
 public static class ThemeManagement
 {
     private static readonly ThemesLogic logic = new ThemesLogic();
