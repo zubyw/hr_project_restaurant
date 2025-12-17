@@ -64,4 +64,52 @@ public class DrinkLogicTests
 
         Assert.AreEqual(4.20m, drink.Price);
     }
+
+    [TestMethod]
+    public void GetById()
+    {
+        drinkLogic.CreateDrink("Jack Daniels", 7.00m, 40.0);
+
+        List<Drink> drinks = drinkLogic.GetAllDrinks();
+        Drink drink = null;
+
+        foreach (Drink d in drinks)
+        {
+            if (d.Name == "Jack Daniels")
+                drink = d;
+        }
+
+        Drink result = drinkLogic.GetDrinkById(drink.Id);
+
+        Assert.AreEqual(drink.Id, result.Id);
+    }
+
+    [TestMethod]
+    public void DeleteDrink()
+    {
+        drinkLogic.CreateDrink("Grolsch", 4.60m, 5.0);
+
+        List<Drink> drinks = drinkLogic.GetAllDrinks();
+        Drink drink = null;
+
+        foreach (Drink d in drinks)
+        {
+            if (d.Name == "Grolsch")
+                drink = d;
+        }
+
+        bool deleted = drinkLogic.DeleteDrink(drink.Id);
+
+        List<Drink> afterDelete = drinkLogic.GetAllDrinks();
+        bool stillExists = false;
+
+        foreach (Drink d in afterDelete)
+        {
+            if (d.Name == "Grolsch")
+                stillExists = true;
+        }
+
+        Assert.IsTrue(deleted);
+        Assert.IsFalse(stillExists);
+    }
 }
