@@ -46,6 +46,20 @@ namespace Project.Logic
 
         public void UpdateDrink(Drink drink)
         {
+            if (drink == null)
+                throw new ArgumentNullException(nameof(drink));
+
+            if (string.IsNullOrWhiteSpace(drink.Name))
+                throw new ArgumentException("Name cannot be empty.");
+
+            if (drink.Price < 0)
+                throw new ArgumentException("Price cannot be negative.");
+
+            if (drink.Price == 0)
+                throw new ArgumentException("Price must be greater than 0.");
+
+            if (drink.AlcoholPercentage < 0 || drink.AlcoholPercentage > 100)
+                throw new ArgumentException("Alcohol percentage must be between 0 and 100.");
             _drinkAccess.Update(drink);
         }
 
