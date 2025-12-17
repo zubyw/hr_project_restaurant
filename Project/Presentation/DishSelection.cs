@@ -7,31 +7,27 @@ public static class DishSelection
     private static AllergenAccess _allergenAccess = new AllergenAccess();
     private static List<int> _activeAllergenFilters = new List<int>();
     
-    public static List<DishModel> SelectDishesForReservation(int guestCount, int themeId)
-    {
-        _activeAllergenFilters.Clear();
-        
-        ManageAllergenFilters();
-        
+    public static List<DishModel> SelectDishesForReservation(int guestCount, ThemeModel theme)
+    {   
         List<DishModel> allSelectedDishes = new List<DishModel>();
         
-        var availableDishes = GetDishesByTheme(themeId);
-        availableDishes = ApplyAllergenFilters(availableDishes);
+        var availableDishes = GetDishesByTheme(theme.ID);
         
-
-        var starters = availableDishes.Where(d => d.Type == "Starter").ToList();
-        var mains = availableDishes.Where(d => d.Type == "Main").ToList();
-        var desserts = availableDishes.Where(d => d.Type == "Dessert").ToList();
-        
-        string themeName = GetThemeName(themeId);
-        
-
         List<List<DishModel?>> allSelectedDishesPerGuest = new List<List<DishModel?>>();
 
         for (int guestNumber = 1; guestNumber <= guestCount; guestNumber++)
         {
+            _activeAllergenFilters.Clear();
+            ManageAllergenFilters();
+
+            List<DishModel>filteredDishes = ApplyAllergenFilters(availableDishes);
+        
+
+            var starters = filteredDishes.Where(d => d.Type == "Starter").ToList();
+            var mains = filteredDishes.Where(d => d.Type == "Main").ToList();
+            var desserts = filteredDishes.Where(d => d.Type == "Dessert").ToList();
             Console.Clear();
-            DisplayThemeHeader(themeName, guestNumber, guestCount);
+            DisplayThemeHeader(theme.Name, guestNumber, guestCount);
 
             bool IsNotDishSelecting;
 
@@ -243,13 +239,6 @@ public static class DishSelection
         }
         
         return new List<DishModel>();
-    }
-    
-    private static string GetThemeName(int themeId)
-    {
-        var themeAccess = new ThemeAccess();
-        var theme = themeAccess.GetById(themeId);
-        return theme?.Name ?? "Special Menu";
     }
     
     private static void DisplayThemeHeader(string themeName, int currentGuest, int totalGuests)

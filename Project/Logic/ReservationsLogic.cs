@@ -192,7 +192,6 @@ namespace Project.Logic
             return true;
         }
 
-        // Cancel reservation (only for your own reservation)
         public bool CancelReservation(int reservationId)
         {
             ReservationModel? reservation = GetOwnedReservation(reservationId);
@@ -207,9 +206,6 @@ namespace Project.Logic
             return true;
         }
 
-        // --- Guest simple API ---
-
-        // Get guest's reservations (simplified version)
         public List<ReservationModel> GetReservationsByUserIdForGuest(int userId)
         {
             return _reservationsAccess.GetReservationsByUserIdSimple(userId);
