@@ -47,4 +47,21 @@ public class DrinkLogicTests
 
         Assert.AreEqual(40.0, drink.AlcoholPercentage);
     }
+
+    [TestMethod]
+    public void SavePrice()
+    {
+        drinkLogic.CreateDrink("Amstel", 4.20m, 5.0);
+
+        List<Drink> drinks = drinkLogic.GetAllDrinks();
+        Drink drink = null;
+
+        foreach (Drink d in drinks)
+        {
+            if (d.Name == "Amstel")
+                drink = d;
+        }
+
+        Assert.AreEqual(4.20m, drink.Price);
+    }
 }
