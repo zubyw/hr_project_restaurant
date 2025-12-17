@@ -46,7 +46,7 @@ namespace Project.Presentation
 
                 for (int i = 0; i < reservations.Count; i++)
                 {
-                    var r = reservations[i];
+                    ReservationModel r = reservations[i];
                     string dateTime = DateTime.ParseExact(r.StartAt, "dd-MM-yyyy HH:mm", null).ToString();
                     bool isSelected = (i == selectedIndex);
 
@@ -67,7 +67,7 @@ namespace Project.Presentation
                 Console.WriteLine("↑/↓ to navigate, Enter to select, Esc to go back");
 
                 // Handle input
-                var key = Console.ReadKey(true);
+                ConsoleKeyInfo key = Console.ReadKey(true);
 
                 switch (key.Key)
                 {
@@ -101,6 +101,19 @@ namespace Project.Presentation
                 Start();
             }
 
+            // If reservation is within 24 hours, show message and return
+            if (!_reservationsLogic.CanModifyOrCancel(selectedReservation))
+            {
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("Reservations within 24 hours cannot be modified or canceled.");
+                Console.ResetColor();
+                Console.WriteLine("Press any key to return...");
+                Console.ReadKey();
+                Start();
+                return;
+            }
+
             // Manage that reservation
             string[] manageOptions = { "Update reservation", "Cancel reservation", "Back" };
             int manageIndex = 0;
@@ -132,7 +145,7 @@ namespace Project.Presentation
                         Console.ResetColor();
                 }
 
-                var key = Console.ReadKey(true);
+                ConsoleKeyInfo key = Console.ReadKey(true);
 
                 switch (key.Key)
                 {
@@ -230,7 +243,7 @@ namespace Project.Presentation
                 Console.WriteLine();
                 Console.WriteLine("↑/↓ to navigate, Enter to edit");
 
-                var key = Console.ReadKey(true);
+                ConsoleKeyInfo key = Console.ReadKey(true);
 
                 switch (key.Key)
                 {
@@ -267,13 +280,20 @@ namespace Project.Presentation
         }
         private void Delete(ReservationModel reservation)
         {
-            _reservationsLogic.UpdateReservationStatus(reservation);
+            bool success = _reservationsLogic.CancelReservation(reservation.ID);
+            if (!success)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Failed to cancel reservation.");
+                Thread.Sleep(1500);
+                return;
+            }
             if (_reservationsLogic.ReservationContainsDishes(reservation))
             {
                 _dishLogic.DeleteDishesFromReservation(reservation);
             }
             Console.WriteLine();
-            Console.WriteLine("Reservation Canceled");
+            Console.WriteLine("Reservation successfully canceled.");
             Thread.Sleep(1500);
             Start();
         }
@@ -325,7 +345,7 @@ namespace Project.Presentation
                 }
 
                 // Handle key input
-                var key = Console.ReadKey(true);
+                ConsoleKeyInfo key = Console.ReadKey(true);
 
                 switch (key.Key)
                 {
@@ -361,42 +381,42 @@ namespace Project.Presentation
         }
 
 
-private void GuestCountDishSelection(int oldguestcount, int newguestcount, ReservationModel reservation, string inputstring = "Make a dish selection? (Y/N)")
-{
-    while (true)
-    {
-        Console.WriteLine($"{inputstring}");
-        string? MakesDishSelection = Console.ReadLine()?.Trim().ToUpper();
-        if (string.IsNullOrEmpty(MakesDishSelection))
+        private void GuestCountDishSelection(int oldguestcount, int newguestcount, ReservationModel reservation, string inputstring = "Make a dish selection? (Y/N)")
         {
-            Console.WriteLine("All fields are required!");
-            Console.WriteLine("Press any key to try again...");
-            Console.ReadKey();
-            continue;
-        }
-        if (MakesDishSelection == "Y")
-        {
-            DishSelectionStep(newguestcount, oldguestcount, reservation);
-            reservation.GuestCount = newguestcount;
-            _reservationsLogic.UpdateGuestCountForReservation(reservation, newguestcount); // <-- hier
-            break;
-        }
-        else if (MakesDishSelection == "N")
-        {
-            reservation.GuestCount = newguestcount;
-            _reservationsLogic.UpdateGuestCountForReservation(reservation, newguestcount); // <-- hier
-            if (oldguestcount > newguestcount)
+            while (true)
             {
-                _dishLogic.DeleteDishesFromReservation(reservation);
+                Console.WriteLine($"{inputstring}");
+                string? MakesDishSelection = Console.ReadLine()?.Trim().ToUpper();
+                if (string.IsNullOrEmpty(MakesDishSelection))
+                {
+                    Console.WriteLine("All fields are required!");
+                    Console.WriteLine("Press any key to try again...");
+                    Console.ReadKey();
+                    continue;
+                }
+                if (MakesDishSelection == "Y")
+                {
+                    DishSelectionStep(newguestcount, oldguestcount, reservation);
+                    reservation.GuestCount = newguestcount;
+                    _reservationsLogic.UpdateGuestCountForReservation(reservation, newguestcount); // <-- hier
+                    break;
+                }
+                else if (MakesDishSelection == "N")
+                {
+                    reservation.GuestCount = newguestcount;
+                    _reservationsLogic.UpdateGuestCountForReservation(reservation, newguestcount); // <-- hier
+                    if (oldguestcount > newguestcount)
+                    {
+                        _dishLogic.DeleteDishesFromReservation(reservation);
+                    }
+                    break;
+                }
+                else
+                {
+                    continue;
+                }
             }
-            break;
         }
-        else
-        {
-            continue;
-        }
-    }
-}
 
 
         private void EditDishSelection(ReservationModel reservation)
@@ -451,7 +471,7 @@ private void GuestCountDishSelection(int oldguestcount, int newguestcount, Reser
                 }
 
                 // Handle key input
-                var key = Console.ReadKey(true);
+                ConsoleKeyInfo key = Console.ReadKey(true);
 
                 switch (key.Key)
                 {
@@ -502,7 +522,7 @@ private void GuestCountDishSelection(int oldguestcount, int newguestcount, Reser
 
         private bool EditTableSelection(ReservationModel reservation)
         {
-            
+
             TableAcces tableAccess = new TableAcces();
             List<TableModel> allTables = tableAccess.GetAllTables();
             List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(reservation.StartAt, reservation.GuestCount);
@@ -536,7 +556,7 @@ private void GuestCountDishSelection(int oldguestcount, int newguestcount, Reser
 
         private void DishSelectionStep(int newguestcount, int oldguestcount, ReservationModel reservation)
         {
-            var dishLogic = new DishLogic();
+            DishLogic dishLogic = new DishLogic();
             ThemeModel? correctTheme = dishLogic.GetCorrectTheme(reservation.StartAt);
             int askForDishesAmount = 0;
             if (_reservationsLogic.ReservationContainsDishes(reservation))
