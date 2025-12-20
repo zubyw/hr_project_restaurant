@@ -25,8 +25,8 @@ namespace UnitTests
             _dishAccess.Write(dish2);
 
             List<DishModel> insertedDishes = _dishAccess.GetDishByType("Main")
-                                                        .OrderByDescending(d => d.ID)
-                                                        .Take(2).ToList();
+            .OrderByDescending(d => d.ID)
+            .Take(2).ToList();
 
             // ARRANGE: Maak gebruiker aan
             UserModel user = new UserModel
