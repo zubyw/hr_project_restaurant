@@ -34,13 +34,13 @@ namespace Project.Presentation
 
                 Console.WriteLine();
                 DisplayLegend();
-                Console.WriteLine("Use ↑/↓ to move, Enter to select, Esc to cancel");
+                Console.WriteLine("Use ←/→ to move, Enter to select, Esc to cancel");
 
                 var key = Console.ReadKey(true).Key;
 
-                if (key == ConsoleKey.UpArrow)
+                if (key == ConsoleKey.LeftArrow)
                     selectedIndex = FindPreviousSelectable(allTables, selectedIndex);
-                else if (key == ConsoleKey.DownArrow)
+                else if (key == ConsoleKey.RightArrow)
                     selectedIndex = FindNextSelectable(allTables, selectedIndex);
                 else if (key == ConsoleKey.Enter)
                 {
@@ -117,8 +117,16 @@ namespace Project.Presentation
             }
             else
             {
-                if (isSelected) Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.Write("[>]  ");
+                if (isSelected) 
+                {
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write("[>]  ");
+                }
+                else
+                {
+                    // Regular available table
+                    Console.Write("[ ]  ");
+                }
             }
 
             Console.ResetColor();
