@@ -15,15 +15,22 @@ namespace Project.Presentation
         // Starts the reservation menu
         public void Start()
         {
+            if (Menu.CurrentUser == null)
+            {
+                Console.WriteLine("No user logged in. Returning to main menu...");
+                Thread.Sleep(1000);
+                Menu.Start();
+                return;
+            }
             // needed for ownership checks in logic
-            ReservationsLogic.CurrentUserId = UserLogin.activeUser.ID;
+            ReservationsLogic.CurrentUserId = Menu.CurrentUser.ID;
 
             Console.Clear();
             Console.WriteLine("=== My Reservations ===");
             Console.WriteLine();
 
             // Load all reservations for the logged-in user
-            List<ReservationModel> reservations = _reservationsLogic.GetReservationsByUserIdForGuest(UserLogin.activeUser.ID);
+            List<ReservationModel> reservations = _reservationsLogic.GetReservationsByUserIdForGuest(Menu.CurrentUser.ID);
 
             // If none, go back to where the function was caled 
             if (reservations.Count == 0)

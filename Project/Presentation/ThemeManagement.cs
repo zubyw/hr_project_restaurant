@@ -294,8 +294,8 @@ public static class ThemeManagement
     {
         bool choice = false;
         int selected = 0;
-        DisplayDishes(dishes, selected);
         List<string> hidden = [];
+        DisplayDishes(dishes, selected, hidden);
         List<DishModel> visible = logic.hidefilter(dishes, hidden);
         while (!choice)
         {
@@ -324,7 +324,7 @@ public static class ThemeManagement
                         else hidden.Add(input);
                         visible = logic.hidefilter(dishes, hidden);
                     }
-                DisplayDishes(visible, selected);
+                DisplayDishes(visible, selected, hidden);
             }
         
         }
@@ -333,41 +333,56 @@ public static class ThemeManagement
         return selectedDish;
     }
 
-    private static void DisplayDishes(List<DishModel> dishes, int index)
+    private static void DisplayDishes(List<DishModel> dishes, int index, List<string> hidden)
     {
-         Console.Clear();
-            Console.WriteLine();
+        Console.Clear();
+        Console.WriteLine();
 
-            Console.WriteLine("┌────────────────────────┬───────────────┬───────────┐");
-            Console.WriteLine("│ Name                   │ Type          │ Price     │");
-            Console.WriteLine("├────────────────────────┼───────────────┼───────────┤");
+        // Header
+        Console.WriteLine("┌────────────────────────┬───────────────┬───────────┬───────────────────────────────┐");
+        Console.WriteLine("│ Name                   │ Type          │ Price     │ Linked to Themes              │");
+        Console.WriteLine("├────────────────────────┼───────────────┼───────────┼───────────────────────────────┤");
 
-            for (int i = 0; i < dishes.Count; i++)
+        // Cache all themes for each dish to avoid repeated DB queries
+        var dishThemes = dishes.ToDictionary(
+            d => d.ID,
+            d => logic.themesLinkedToDish(d) // your method
+        );
+
+        for (int i = 0; i < dishes.Count; i++)
+        {
+            var dish = dishes[i];
+
+            string name = dish.Name.Length > 20 ? dish.Name[..17] + "..." : dish.Name;
+            string type = dish.Type.Length > 12 ? dish.Type[..9] + "..." : dish.Type;
+
+            var themes = dishThemes[dish.ID];
+            string themeNames = string.Join(", ", themes.Select(t => t.Name));
+
+            if (themeNames.Length > 27) themeNames = themeNames[..24] + "...";
+
+            bool selected = (i == index);
+
+            // Highlight selected row
+            if (selected)
             {
-                var dish = dishes[i];
-
-                string name = dish.Name.Length > 20 ? dish.Name[..17] + "..." : dish.Name;
-                string type = dish.Type.Length > 12 ? dish.Type[..9] + "..." : dish.Type;
-
-                bool selected = (i == index);
-
-                if (selected)
-                {
-                    Console.BackgroundColor = ConsoleColor.DarkCyan;
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-
-                Console.WriteLine("│ {0,-22} │ {1,-13} │ {2,9:F2} │",
-                    name, type, dish.Price);
-
-                if (selected)
-                    Console.ResetColor();
+                Console.BackgroundColor = ConsoleColor.DarkCyan;
+                Console.ForegroundColor = ConsoleColor.White;
             }
 
-            Console.WriteLine("└────────────────────────┴───────────────┴───────────┘");
+            Console.WriteLine("│ {0,-22} │ {1,-13} │ {2,9:F2} │ {3,-29} │",
+                name, type, dish.Price, themeNames);
 
-            Console.WriteLine("\n ↑↓ Select dish | ESC = done/back");
-            Console.WriteLine("\nPress D, S, M, or T to hide/show Desserts, Starters, Mains, or dishes already linked to a theme.");
+            if (selected)
+                Console.ResetColor();
+        }
+
+        
+        Console.WriteLine("└────────────────────────┴───────────────┴───────────┴───────────────────────────────┘");
+
+        Console.WriteLine("\n ↑↓ Select dish | ESC = done/back");
+        Console.WriteLine("Press D, S, M, or T to hide/show Desserts, Starters, Mains, or dishes already linked to a theme.");
+        Console.WriteLine(logic.DisplayHiddenStatus(hidden));
     }
 
     private static void AddDishesToTheme(ThemeModel theme)

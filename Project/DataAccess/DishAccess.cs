@@ -283,6 +283,21 @@ namespace Project.DataAccess
             return list;
         }
 
+        public List<ThemeModel> getAllThemesLinkedToDish(DishModel dish)
+        {
+            string sql = @"
+            SELECT t.ID AS ID, t.Name AS Name, t.Course AS Course
+            FROM Themes t
+            JOIN Dishes_Themes dt ON dt.ThemeId = t.ID
+            WHERE dt.DishId = @DishId;";
+
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                List<ThemeModel> list = connection.Query<ThemeModel>(sql, new { DishId = dish.ID }).ToList();
+                return list;
+            }
+        }
+
 
     }
 }
