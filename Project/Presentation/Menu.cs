@@ -121,7 +121,7 @@ static class Menu
     // Customer menu with limited access
     static public void ShowCustomerMenu()
     {
-        string[] options = new string[] { "Make a Reservation", "View My Reservations", "View Menu", "Update Profile", "Logout" };
+        string[] options = new string[] { "Make a Reservation", "View My Reservations", "View Menu", "Logout" };
         int selectedIndex = 0;
 
         ConsoleKey key;
@@ -172,10 +172,6 @@ static class Menu
                             ShowMainMenu();
                             break;
                         case 3:
-                            Console.ReadKey();
-                            ShowMainMenu();
-                            break;
-                        case 4:
                             Console.WriteLine("Logging out...");
                             CurrentUser = null;
                             Start(); // Go back to login/register menu

@@ -1,4 +1,4 @@
-public class DishModel
+public class DishModel : IIdentifier
 {
 
     public int ID { get; set; }

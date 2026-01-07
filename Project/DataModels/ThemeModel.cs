@@ -1,4 +1,4 @@
-public class ThemeModel
+public class ThemeModel : IIdentifier
 {
 
     public int ID { get; set; }

@@ -2,7 +2,7 @@ using System;
 
 namespace Project.DataModels
 {
-    public class ReservationModel
+    public class ReservationModel : IIdentifier
     {
         public int ID { get; set; }
         public int UserId { get; set; }

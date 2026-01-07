@@ -12,11 +12,11 @@ public sealed class Test1
     public void LoginValidCredentials(string m, string p)
     {
         // arrange
-        AccountsLogic l = new();
-        AccountsAccess access = new();
+        UsersLogic l = new();
+        UsersAccess access = new();
 
         // act 
-        AccountModel result = l.CheckLogin(m, p);
+        UserModel result = l.CheckLogin(m, p);
 
         // assert
         Assert.IsNotNull(result);
@@ -33,10 +33,10 @@ public sealed class Test1
     public void LoginInvalidCredentials(string m, string p)
     {
         // arrange
-        AccountsLogic l = new();
+        UsersLogic l = new();
 
         // act 
-        AccountModel result = l.CheckLogin(m, p);
+        UserModel result = l.CheckLogin(m, p);
 
         // assert
         Assert.IsNull(result);

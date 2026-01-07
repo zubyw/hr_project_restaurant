@@ -1,4 +1,4 @@
-public class UserModel
+public class UserModel : IIdentifier
 {
     public int ID { get; set; }
     public string FirstName { get; set; } = string.Empty;

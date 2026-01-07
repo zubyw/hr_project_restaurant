@@ -1,6 +1,6 @@
-public class Drink
+public class Drink : IIdentifier
 {
-    public int Id { get; set; }
+    public int ID { get; set; }
     public string Name { get; set; }
     public double AlcoholPercentage { get; set; }
     public decimal Price { get; set; }
@@ -11,7 +11,7 @@ public class Drink
 
     public Drink(int id, string name, double alcoholPercentage, decimal price)
     {
-        Id = id;
+        ID = id;
         Name = name;
         AlcoholPercentage = alcoholPercentage;
         Price = price;

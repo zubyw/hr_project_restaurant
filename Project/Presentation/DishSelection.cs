@@ -454,7 +454,7 @@ public static class DishSelection
                 if (i < drinks.Count)
                 {
                     Drink d = drinks[i];
-                    string marker = recommended != null && d.Id == recommended.Id ? " (recommended)" : "";
+                    string marker = recommended != null && d.ID == recommended.ID ? " (recommended)" : "";
                     Console.WriteLine($"  {d.Name.PadRight(25)} €{d.Price:F2}{marker}");
                 }
                 else

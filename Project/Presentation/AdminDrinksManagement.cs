@@ -287,7 +287,7 @@ public static class AdminDrinksManagement
         if (Console.ReadLine()?.ToLower() != "y")
             return;
 
-        bool success = new DrinkLogic().DeleteDrink(drink.Id);
+        bool success = new DrinkLogic().DeleteDrink(drink.ID);
 
         Console.WriteLine(success
             ? "Drink deleted."

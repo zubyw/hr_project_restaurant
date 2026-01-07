@@ -611,7 +611,7 @@ public static class AdminDishesManagement
 
         Drink selectedDrink = drinks[drinkIndex];
 
-        dishLogic.LinkDrinkToMainDish(selectedDish.ID, selectedDrink.Id);
+        dishLogic.LinkDrinkToMainDish(selectedDish.ID, selectedDrink.ID);
 
         Console.Clear();
         Console.WriteLine("Drink linked successfully.\n");
