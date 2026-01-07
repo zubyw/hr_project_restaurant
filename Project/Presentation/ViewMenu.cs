@@ -25,8 +25,8 @@ namespace Project.Presentation
 
             int currentIndex = 0;
             int startTop = Console.CursorTop;
-
-            while (true)
+            bool lookingTroughMonths = true;
+            while (lookingTroughMonths)
             {
                 Console.SetCursorPosition(0, startTop);
                 Console.Clear();
@@ -36,15 +36,12 @@ namespace Project.Presentation
                 string leftArrow = currentIndex > 0 ? "< " : "  ";
                 string rightArrow = currentIndex < monthKeys.Count - 1 ? " >" : "  ";
 
-                Console.WriteLine($"Date : {leftArrow}{currentMonth}{rightArrow}");
-                Console.WriteLine();
-
                 int themeId = themes[currentMonth];
                 var theme = _themeLogic.GetById(themeId);
 
                 if (theme != null)
                 {
-                    DisplayThemeMenu(theme);
+                    DisplayThemeMenu(theme, currentMonth, leftArrow, rightArrow);
                 }
                 else
                 {
@@ -64,18 +61,22 @@ namespace Project.Presentation
                         break;
 
                     case ConsoleKey.Escape:
+                        lookingTroughMonths = false;
                         return;
                 }
             }
         }
 
-        private static void DisplayThemeMenu(ThemeModel theme)
+        private static void DisplayThemeMenu(ThemeModel theme, string currentMonth, string leftArrow, string rightArrow)
         {
             List<DishModel> dishes = _dishLogic.GetDishesByTheme(theme.ID);
 
             var starters = dishes.Where(d => d.Type == "Starter").ToList();
             var mains = dishes.Where(d => d.Type == "Main").ToList();
             var desserts = dishes.Where(d => d.Type == "Dessert").ToList();
+
+            Console.WriteLine("Use ←/→ to switch months");
+            Console.WriteLine($"Date : {leftArrow}{currentMonth}{rightArrow}");
 
             Console.WriteLine("╔════════════════════════════════════════════════════════════════════════════╗");
             Console.WriteLine($"║  {theme.Name.ToUpper()}".PadRight(77) + "║");

@@ -1,148 +1,122 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Project.DataModels;
+using Project.Logic;
 
 namespace Project.Presentation
 {
     public static class FloorPlanView
     {
-        public static void ShowReadOnlyFloorPlan(int guestCount)
-        {
-            Console.Clear();
-            Console.WriteLine();
-            ColorConsole.WriteTitle("╔═══════════════════════════════════════════════╗");
-            ColorConsole.WriteTitle("║         RESTAURANT FLOOR PLAN                 ║");
-            ColorConsole.WriteTitle("╚═══════════════════════════════════════════════╝");
-            Console.WriteLine();
-            Console.WriteLine($"  Party Size: {guestCount} guests");
-            Console.WriteLine();
-
-        }
-
         public static TableModel? SelectTableFromFloorPlan(List<TableModel> allTables, List<int> reservedTableIds, int guestCount)
         {
-            int selectedIndex = FindFirstSelectableTableIndex(allTables, reservedTableIds, guestCount);
+            TableModel[][] floorPlan = FloorPlanLogic.BuildFloorPlan(allTables);
 
-            bool chosen = false;
+            int row = 0;
+            int col = 0;
 
-            while (!chosen)
+            if (!IsSelectable(floorPlan[row][col], reservedTableIds, guestCount))
             {
-                ShowReadOnlyFloorPlan(guestCount);               
-                Console.WriteLine();
+                (row, col) = FindFirstSelectable(
+                    floorPlan, reservedTableIds, guestCount);
+            }
 
-                DisplayFloorPlan(allTables, reservedTableIds, guestCount, selectedIndex);
+            while (true)
+            {
+                ShowReadOnlyFloorPlan(guestCount);
+
+                DisplayFloorPlan(floorPlan, reservedTableIds, guestCount, row, col);
 
                 Console.WriteLine();
-                DisplayLegend();
-                Console.WriteLine("Use ←/→ to move, Enter to select, Esc to cancel");
+                Console.WriteLine("[(2p)  ] Available | [(4p) X] Reserved | [(6p) -] Wrong size | [(2p) >] Selected");
+                Console.WriteLine("Use ←/→/↑/↓ to move, Enter to select, Esc to cancel");
 
                 var key = Console.ReadKey(true).Key;
 
-                if (key == ConsoleKey.LeftArrow)
-                    selectedIndex = FindPreviousSelectable(allTables, selectedIndex);
-                else if (key == ConsoleKey.RightArrow)
-                    selectedIndex = FindNextSelectable(allTables, selectedIndex);
-                else if (key == ConsoleKey.Enter)
-                {
-                    var table = allTables[selectedIndex];
-                    if (!reservedTableIds.Contains(table.ID) && IsRightSize(table, guestCount))
-                        chosen = true;
-                }
-                else if (key == ConsoleKey.Escape)
+                if (key == ConsoleKey.Escape)
                     return null;
+
+                var result = FloorPlanLogic.HandleKey(key, floorPlan, reservedTableIds, guestCount, row, col);
+
+                row = result.newRow;
+                col = result.newCol;
+
+                if (result.selected != null)
+                    return result.selected;
             }
-
-            return allTables[selectedIndex];
         }
 
-
-        private static int FindFirstSelectableTableIndex(List<TableModel> allTables, List<int> reservedTableIds, int guestCount)
+        private static (int row, int col) FindFirstSelectable(TableModel[][] floorPlan, List<int> reservedTableIds, int guestCount)
         {
-            for (int i = 0; i < allTables.Count; i++)
-            {
-                if (IsRightSize(allTables[i], guestCount) && !reservedTableIds.Contains(allTables[i].ID))
-                {
-                    return i;
-                }
-            }
-            return 0;
+            for (int r = 0; r < floorPlan.Length; r++)
+                for (int c = 0; c < floorPlan[r].Length; c++)
+                    if (IsSelectable(floorPlan[r][c], reservedTableIds, guestCount)) return (r, c);
+
+            return (0, 0);
         }
 
-        private static int FindPreviousSelectable(List<TableModel> allTables, int currentIndex)
+        private static bool IsSelectable(
+            TableModel table,
+            List<int> reservedTableIds,
+            int guestCount)
         {
-            currentIndex--;
-            if (currentIndex < 0) currentIndex = allTables.Count - 1;
-            return currentIndex;
+            return IsRightSize(table, guestCount) &&
+                   !reservedTableIds.Contains(table.ID);
         }
 
-        private static int FindNextSelectable(List<TableModel> allTables, int currentIndex)
+        private static void ShowReadOnlyFloorPlan(int guestCount)
         {
-            currentIndex++;
-            if (currentIndex >= allTables.Count) currentIndex = 0;
-            return currentIndex;
-        }
-
-        private static void DisplayFloorPlan(List<TableModel> allTables, List<int> reservedTableIds, int guestCount, int selectedIndex)
-        {
-            PrintRow(allTables, reservedTableIds, 2, guestCount, selectedIndex);
-            PrintRow(allTables, reservedTableIds, 4, guestCount, selectedIndex);
-            PrintRow(allTables, reservedTableIds, 6, guestCount, selectedIndex);
-        }
-
-        private static void PrintRow(List<TableModel> allTables, List<int> reservedTableIds, int size, int guestCount, int selectedIndex)
-        {
-            Console.Write("");
-            for (int i = 0; i < allTables.Count; i++)
-            {
-                var table = allTables[i];
-                if (table.TableCapacity != size) continue;
-
-                bool isSelected = i == selectedIndex;
-                PrintTableSymbol(table, reservedTableIds, guestCount, isSelected);
-            }
+            Console.Clear();
+            Console.WriteLine($"Party Size: {guestCount}");
             Console.WriteLine();
+        }
+
+        private static void DisplayFloorPlan(TableModel[][] floorPlan, List<int> reservedTableIds, int guestCount, int selectedRow,int selectedCol)
+        {
+            for (int r = 0; r < floorPlan.Length; r++)
+            {
+                for (int c = 0; c < floorPlan[r].Length; c++)
+                {
+                    bool isSelected = r == selectedRow && c == selectedCol;
+                    PrintTableSymbol(floorPlan[r][c], reservedTableIds, guestCount, isSelected);
+                }
+                Console.WriteLine();
+            }
         }
 
         private static void PrintTableSymbol(TableModel table, List<int> reservedTableIds, int guestCount, bool isSelected)
         {
+            string capacity = $"{table.TableCapacity}p";
+            string status;
+
             if (!IsRightSize(table, guestCount))
             {
+                status = "-";
                 if (isSelected) Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write("[-]  ");
             }
             else if (reservedTableIds.Contains(table.ID))
             {
+                status = "X";
                 if (isSelected) Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write("[X]  ");
+            }
+            else if (isSelected)
+            {
+                status = ">";
+                Console.ForegroundColor = ConsoleColor.Cyan;
             }
             else
             {
-                if (isSelected) 
-                {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.Write("[>]  ");
-                }
-                else
-                {
-                    // Regular available table
-                    Console.Write("[ ]  ");
-                }
+                status = " ";
             }
 
+            Console.Write($"[({capacity}) {status}]  ");
             Console.ResetColor();
         }
-
-
         private static bool IsRightSize(TableModel table, int guestCount)
         {
             if (guestCount <= 2) return table.TableCapacity == 2;
             if (guestCount <= 4) return table.TableCapacity == 4;
             return table.TableCapacity == 6;
-        }
-
-        private static void DisplayLegend()
-        {
-            Console.WriteLine("[ ] Available  [X] Reserved  [-] Wrong size  [>] Selected");
         }
     }
 }
