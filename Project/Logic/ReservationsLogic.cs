@@ -12,27 +12,6 @@ namespace Project.Logic
         public static int? CurrentUserId { get; set; }
 
         private ReservationsAccess _reservationsAccess = new ReservationsAccess();
-        private DishAccess _dishAccess = new DishAccess();
-        private List<GuestOrder> _guestOrders = new List<GuestOrder>();
-
-        public void AddGuestOrder(DishModel mainDish, Drink? drink)
-        {
-            GuestOrder order = new GuestOrder
-            {
-                MainDish = mainDish,
-                Drink = drink
-            };
-
-            _guestOrders.Add(order);
-        }
-
-        public List<GuestOrder> GetGuestOrders()
-        {
-            return _guestOrders;
-        }
-        
-
-        // --- Helpers ---
 
         // Returns reservation only if it exists and belongs to CurrentUser; otherwise null
         private ReservationModel? GetOwnedReservation(int reservationId)
@@ -47,10 +26,6 @@ namespace Project.Logic
         }
 
         // Public check for presentation layer (optional to use there)
-        public bool ReservationExistsForCurrentUser(int reservationId)
-        {
-            return GetOwnedReservation(reservationId) != null;
-        }
 
         // Check whether reservation can be modified or canceled (must be >=24 hours from now)
         public bool CanModifyOrCancel(ReservationModel reservation)
@@ -77,18 +52,6 @@ namespace Project.Logic
                 .ToList();
         }
 
-        // Get reservations by specific date
-        public List<ReservationModel> GetReservationsByDate(string date)
-        {
-            return _reservationsAccess.GetByDate(date);
-        }
-
-        // Get reservations between two dates
-        public List<ReservationModel> GetReservationsByDateRange(string startDate, string endDate)
-        {
-            return _reservationsAccess.GetByDateRange(startDate, endDate);
-        }
-
         // Get all reservations from one user
         public List<ReservationModel> GetReservationsByUserId(int userId)
         {
@@ -111,101 +74,6 @@ namespace Project.Logic
             reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
             _reservationsAccess.Write(reservation);
-            return true;
-        }
-
-        // Update the status of a reservation (admin/staff or when reservation is updated use)
-        public bool UpdateReservationStatus(ReservationModel reservation, string newStatus = "Canceled")
-        {
-            if (reservation == null) return false;
-
-            reservation.Status = newStatus;
-            reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
-            _reservationsAccess.Update(reservation);
-            return true;
-        }
-
-        // Delete a reservation (admin/staff path; no ownership check here by design)
-        public bool DeleteReservation(int reservationId)
-        {
-            _reservationsAccess.DeleteById(reservationId);
-            return true;
-        }
-
-        // Format helper: only date (dd-MM-yyyy)
-        public static string FormatDateForDatabase(DateTime date)
-        {
-            return date.ToString("dd-MM-yyyy");
-        }
-
-        // Format helper: date and time (dd-MM-yyyy HH:mm:ss)
-        public static string FormatDateTimeForDatabase(DateTime dateTime)
-        {
-            return dateTime.ToString("dd-MM-yyyy HH:mm:ss");
-        }
-
-        // Check if date format is valid
-        public static bool IsValidDateFormat(string dateString)
-        {
-            return DateTime.TryParseExact(
-                dateString,
-                "dd-MM-yyyy",
-                null,
-                System.Globalization.DateTimeStyles.None,
-                out _);
-        }
-
-        // --- Guest-facing changes (ownership enforced) ---
-
-        // Change reservation time (only for your own reservation)
-        public bool ChangeReservationTime(int reservationId, DateTime newTime)
-        {
-            if (newTime <= DateTime.Now)
-                return false;
-
-            ReservationModel? reservation = GetOwnedReservation(reservationId);
-            if (reservation == null)
-                return false;
-            if (!CanModifyOrCancel(reservation))
-                return false;
-            reservation.StartAt = newTime.ToString("dd-MM-yyyy HH:mm:ss");
-            reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
-
-            _reservationsAccess.Update(reservation);
-            return true;
-        }
-
-        // Change number of guests (only for your own reservation)
-        public bool ChangeReservationPersons(int reservationId, int newGuestCount)
-        {
-            if (newGuestCount < 1 || newGuestCount > 6)
-                return false;
-
-            ReservationModel? reservation = GetOwnedReservation(reservationId);
-            if (reservation == null)
-                return false;
-            if (!CanModifyOrCancel(reservation))
-                return false;
-            // If current table fits new guest count
-            if (reservation.TableCapacity >= newGuestCount)
-            {
-                reservation.GuestCount = newGuestCount;
-                reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
-                _reservationsAccess.UpdateGuestCount(reservation);
-                return true;
-            }
-
-            // Otherwise find another free table
-            List<TableModel> availableTables = _reservationsAccess.GetFreeTables(reservation);
-            if (availableTables.Count == 0)
-                return false;
-
-            TableModel newTable = availableTables[0];
-            reservation.TableId = newTable.ID;
-            reservation.GuestCount = newGuestCount;
-            reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
-
-            _reservationsAccess.UpdateReservationTable(reservation);
             return true;
         }
 
@@ -247,50 +115,6 @@ namespace Project.Logic
             return final;
         }
 
-        // Update guest reservation (only if it's your own)
-        public void UpdateReservationForGuest(int id, int guestCount, string startAt)
-        {
-            if (guestCount < 1 || guestCount > 6)
-                return;
-
-            if (string.IsNullOrEmpty(startAt))
-                return;
-
-            ReservationModel? reservation = GetOwnedReservation(id);
-            if (reservation == null)
-                return;
-
-            if (!CanModifyOrCancel(reservation))
-                return;
-
-            _reservationsAccess.UpdateReservationSimple(id, guestCount, startAt);
-        }
-
-        // Delete guest reservation (only own)
-        public void DeleteReservationForGuest(int id)
-        {
-            ReservationModel? reservation = GetOwnedReservation(id);
-            if (reservation == null)
-                return;
-
-            if (!CanModifyOrCancel(reservation))
-                return;
-
-            _reservationsAccess.DeleteReservationSimple(id);
-        }
-
-        // Check if given time is valid (restaurant opens after 17:00)
-        public bool IsValidReservationDateTime(string input)
-        {
-            DateTime dateTime;
-            if (!DateTime.TryParse(input, out dateTime))
-                return false;
-
-            int hour = dateTime.Hour;
-            return hour >= 17;
-        }
-
-        // Simple console selection for arrival time (presentation can call if needed)
         public string SelectArrivalTime()
         {
             List<string> timeSlots = new List<string>();
@@ -352,24 +176,6 @@ namespace Project.Logic
             return _reservationsAccess.DoesReservationHaveDishes(reservation);
         }
 
-        public void UpdateGuestCountForReservation(ReservationModel reservation, int newGuestCount)
-        {
-            reservation.GuestCount = newGuestCount;
-            reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
-
-            _reservationsAccess.UpdateReservationGuestCount(reservation);
-        }
-
-
-
-        public void DeleteDishesFromReservation(ReservationModel reservation)
-        {
-            if (ReservationContainsDishes(reservation))
-            {
-                _dishAccess.DeleteDishesOnReservation(reservation);
-            }
-        }
-
         public int GetAllowedGuestCountAtUpdate(ReservationModel reservation)
         {
             switch (reservation.GuestCount)
@@ -393,19 +199,7 @@ namespace Project.Logic
         {
             return _reservationsAccess.GetReservationByIdSimple(reservation.ID);
         }
-
-        public void UpdateTableForReservation(ReservationModel reservation)
-        {
-            _reservationsAccess.UpdateReservationTable(reservation);
-        }
-
-
-        public void UpdateDateTimeForReservation(ReservationModel reservation)
-        {
-            _reservationsAccess.UpdateReservationDateTime(reservation);
-        }
-
-
+    
         public bool IsReservationCanceled(ReservationModel reservation)
         {
             string reservationStatus = _reservationsAccess.GetReservationStatus(reservation);
@@ -421,6 +215,13 @@ namespace Project.Logic
         {
             return _reservationsAccess.GetDishCountsByDate(date);
         }
+        public void UpdateReservation(ReservationModel reservation)
+        {
+            reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
+
+            _reservationsAccess.Update(reservation);
+        }
+
     }
 }
     

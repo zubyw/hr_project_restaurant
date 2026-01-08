@@ -406,13 +406,13 @@ namespace Project.Presentation
                 {
                     DishSelectionStep(newguestcount, oldguestcount, reservation);
                     reservation.GuestCount = newguestcount;
-                    _reservationsLogic.UpdateGuestCountForReservation(reservation, newguestcount);
+                    _reservationsLogic.UpdateReservation(reservation);
                     choosingToMakeDishSelection = false;
                 }
                 else if (MakesDishSelection == "N")
                 {
                     reservation.GuestCount = newguestcount;
-                    _reservationsLogic.UpdateGuestCountForReservation(reservation, newguestcount);
+                    _reservationsLogic.UpdateReservation(reservation);
                     if (oldguestcount > newguestcount)
                     {
                         _dishLogic.DeleteDishesFromReservation(reservation);
@@ -554,7 +554,7 @@ namespace Project.Presentation
                 return false;
             }
             reservation.TableId = AvailableTable.ID;
-            _reservationsLogic.UpdateTableForReservation(reservation);
+            _reservationsLogic.UpdateReservation(reservation);
             Console.Clear();
             Console.WriteLine();
             Console.WriteLine($"Changed seating to table {AvailableTable.ID}");
@@ -648,7 +648,7 @@ namespace Project.Presentation
             }
 
             // Once a table is selected
-            _reservationsLogic.UpdateDateTimeForReservation(reservation);
+            _reservationsLogic.UpdateReservation(reservation);
             Console.Clear();
             Console.WriteLine($"\nDate/time updated to {reservation.StartAt}");
             Thread.Sleep(1500);

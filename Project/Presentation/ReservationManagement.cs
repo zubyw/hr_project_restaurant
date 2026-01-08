@@ -146,7 +146,7 @@ static class ReservationManagement
         if (selectedTable != null && !reservedTableIds.Contains(selectedTable.ID))
         {
             reservation.TableId = selectedTable.ID;
-            _reservationsLogic.UpdateTableForReservation(reservation);
+            _reservationsLogic.UpdateReservation(reservation);
             Console.WriteLine($"Table changed to {selectedTable.ID}. Press any key to continue...");
             Console.ReadKey();
         }
@@ -164,7 +164,8 @@ static class ReservationManagement
         Console.Write("Enter new guest count (1-6): ");
         if (int.TryParse(Console.ReadLine(), out int newCount) && newCount >= 1 && newCount <= 6)
         {
-            _reservationsLogic.UpdateGuestCountForReservation(reservation, newCount);
+            reservation.GuestCount = newCount;
+            _reservationsLogic.UpdateReservation(reservation);
             reservation.GuestCount = newCount;
             Console.WriteLine("Guest count updated. Please select a new table to fit the guest count...");
             Console.ReadKey();
@@ -187,7 +188,8 @@ static class ReservationManagement
 
         if (DateTime.TryParseExact(input, "dd-MM-yyyy HH:mm", null, DateTimeStyles.None, out DateTime newTime))
         {
-            _reservationsLogic.ChangeReservationTime(reservation.ID, newTime);
+            reservation.StartAt = newTime.ToString("dd-MM-yyyy HH:mm");
+            _reservationsLogic.UpdateReservation(reservation);
             Console.WriteLine("Reservation time updated. Press any key to continue...");
             Console.ReadKey();
         }
