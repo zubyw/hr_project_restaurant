@@ -302,7 +302,6 @@ namespace Project.Presentation
             Console.WriteLine();
             Console.WriteLine("Reservation successfully canceled.");
             Thread.Sleep(1500);
-            Start();
         }
 
         private void EditGuestCount(ReservationModel reservation)
@@ -321,10 +320,7 @@ namespace Project.Presentation
                 return;
             }
 
-            string[] manageOptions = {
-        $"Change guest count to {availableGuestCount}",
-        "Back"
-    };
+            string[] manageOptions = { $"Change guest count to {availableGuestCount}", "Back"};
 
             int manageIndex = 0;
             bool managing = true;
@@ -519,7 +515,6 @@ namespace Project.Presentation
                                 break;
 
                             case 2: // Back
-                                Update(reservation);
                                 managing = false;
                                 break;
                         }
