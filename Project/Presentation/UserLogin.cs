@@ -1,7 +1,6 @@
 static class UserLogin
 {
-    static public UserModel activeUser { get; set; }
-    static private UsersLogic usersLogic = new UsersLogic();
+    private static UsersLogic usersLogic = new UsersLogic();
 
 
     public static void Start()
@@ -33,7 +32,6 @@ static class UserLogin
             
             // Small delay to show the welcome message
             Thread.Sleep(1500);
-            activeUser = usersLogic.GetUserByEmail(email);
             Menu.ShowMainMenu();
         }
         else

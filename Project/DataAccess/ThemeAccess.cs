@@ -1,12 +1,11 @@
 using Microsoft.Data.Sqlite;
 using Dapper;
 
-public class ThemeAccess
+public class ThemeAccess : BaseAccess<ThemeModel>
 {
-    private readonly string _connectionString = "Data Source=DataSources/project.db";
-    private readonly string Table = "Themes";
+    protected new string Table = "Themes";
 
-    public void Write(ThemeModel theme)
+    public override void Write(ThemeModel theme)
     {
         string sql = $"INSERT INTO {Table} (Name, Course) VALUES (@Name, @Course)";
         using var connection = new SqliteConnection(_connectionString);
@@ -50,20 +49,13 @@ public class ThemeAccess
         return connection.QueryFirstOrDefault<ThemeModel>(sql, new { Id = id });
     }
 
-    public void Update(ThemeModel theme)
+    public override void Update(ThemeModel theme)
     {
         string sql = $"UPDATE {Table} SET Name = @Name, Course = @Course WHERE ID = @ID";
         using var connection = new SqliteConnection(_connectionString);
         connection.Execute(sql, theme);
     }
 
-    public void Delete(ThemeModel theme)
-    {
-        string sql = $"DELETE FROM {Table} WHERE ID = @Id";
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Execute(sql, new { Id = theme.ID });
-    }
-    
     public int? GetActiveThemeID()
     {
         using var connection = new SqliteConnection(_connectionString);

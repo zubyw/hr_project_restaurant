@@ -82,38 +82,31 @@ static class Menu
     static public void ShowAdminMenu()
     {
         string[] options = new string[] { "Manage Reservations", "Dish Orders", "Manage Themes", "Manage Dishes", "Manage Drinks", "Logout" };
-        while (true)
+        bool inMenu = true;
+        while (inMenu)
         {
             int index = MenuHelper.ShowMenuUpDown(options, "=== Kevin's Fine Dining - Admin Panel ===");
-
-            try
+            switch (index)
             {
-                switch (index)
-                {
-                    case 0:
-                        ReservationManagement.Start();
-                        break;
-                    case 1:
-                        DishOrderOverview.Start();
-                        break;
-                    case 2:
-                        ThemeManagement.Start();
-                        break;
-                    case 3:
-                        AdminDishesManagement.Start();
-                        break;
-                    case 4:
-                        AdminDrinksManagement.Start();
-                        break;
-                    case 5:
-                        Start();
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error: " + ex.Message);
-                Console.ReadKey();
+                case 0:
+                    ReservationManagement.Start();
+                    break;
+                case 1:
+                    DishOrderOverview.Start();
+                    break;
+                case 2:
+                    ThemeManagement.Start();
+                    break;
+                case 3:
+                    AdminDishesManagement.Start();
+                    break;
+                case 4:
+                    AdminDrinksManagement.Start();
+                    break;
+                case 5:
+                    inMenu = false;
+                    Start();
+                    break;
             }
         }
     }
@@ -121,70 +114,42 @@ static class Menu
     // Customer menu with limited access
     static public void ShowCustomerMenu()
     {
-        string[] options = new string[] { "Make a Reservation", "View My Reservations", "View Menu", "Update Profile", "Logout" };
-        int selectedIndex = 0;
+        string[] options = new string[] { "Make a Reservation", "View My Reservations", "View Menu", "Logout" };
+        bool inMenu = true;
 
-        ConsoleKey key;
-        do
+        while (inMenu)
         {
-            Console.Clear();
-            Console.WriteLine($"\n=== Welcome {CurrentUser?.FirstName} {CurrentUser?.LastName} ===");
+            int selectedIndex = MenuHelper.ShowMenuUpDown(
+                options, 
+                $"=== Welcome {CurrentUser?.FirstName} {CurrentUser?.LastName} ==="
+            );
 
-            // Display options
-            for (int i = 0; i < options.Length; i++)
+            switch (selectedIndex)
             {
-                if (i == selectedIndex)
-                {
-                    Console.BackgroundColor = ConsoleColor.DarkCyan;
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-                Console.WriteLine($"  {options[i]}");
-                Console.ResetColor();
-            }
-
-            key = Console.ReadKey(true).Key;
-
-            // Handle arrow keys
-            switch (key)
-            {
-                case ConsoleKey.UpArrow:
-                    selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
+                case 0:
+                    UserReservation.Start();
                     break;
-                case ConsoleKey.DownArrow:
-                    selectedIndex = (selectedIndex + 1) % options.Length;
-                    break;
-                case ConsoleKey.Enter:
-                    switch (selectedIndex)
+                case 1:
+                    if (CurrentUser != null)
                     {
-                        case 0:
-                            UserReservation.Start();
-                            break;
-                        case 1:
-                            if (CurrentUser != null)
-                            {
-                                RudReservation rud = new RudReservation();
-                                rud.Start();
-                                ShowMainMenu();
-                            }
-                            break;
-                        case 2:
-                            ViewMenu.Start();
-                            ShowMainMenu();
-                            break;
-                        case 3:
-                            Console.ReadKey();
-                            ShowMainMenu();
-                            break;
-                        case 4:
-                            Console.WriteLine("Logging out...");
-                            CurrentUser = null;
-                            Start(); // Go back to login/register menu
-                            break;
+                        RudReservation rud = new RudReservation();
+                        rud.Start();
                     }
                     break;
+                case 2:
+                    ViewMenu.Start();
+                    break;
+                case 3:
+                    Console.WriteLine("Logging out...");
+                    CurrentUser = null;
+                    inMenu = false;
+                    Start();
+                    break;
             }
-        } while (key != ConsoleKey.Enter);
+        }
     }
+
+
 
     // Helper method to check if current user is admin
     private static bool IsCurrentUserAdmin()

@@ -4,10 +4,25 @@ using Project.DataModels;
 
 namespace Project.DataAccess
 {
-    public class AllergenAccess
+    public class AllergenAccess : BaseAccess<AllergenModel>
     {
-        private readonly string _connectionString = "Data Source=DataSources/project.db";
-        private readonly string Table = "Allergens";
+        protected new string Table = "Allergens";
+
+
+        public override void Write(AllergenModel allergen)
+        {
+            string sql = $"INSERT INTO {Table} (Name, Description) VALUES (@Name, @Description)";
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Execute(sql, allergen);
+        }
+
+        public override void Update(AllergenModel allergen)
+        {
+            string sql = $"UPDATE {Table} SET Name = @Name, Description = @Description WHERE ID = @ID";
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Execute(sql, allergen);
+        }
+
 
         public List<AllergenModel> GetAll()
         {

@@ -17,12 +17,17 @@ public static class CalanderInput
 
     static string RunCalander(DateTime today, ref int year, ref int month, ref int day, ref int level)
     {
-        Console.Clear();
-        Console.WriteLine("Use arrows and ENTER to confirm date\n");
+        string leftArrowYear = year > today.Year ? "< " : "  ";
+        string leftArrowMonth = (month == today.Month) &&  (year == today.Year) ? "  " : "< ";
+        string leftArrowDay = (day == today.Day) && (year == today.Year) && (month == today.Month) ? "  " : "< ";
+        string rightArrow = " >";
 
-        Console.WriteLine((level == 0 ? "> " : "  ") + $"Year:  {year}");
-        Console.WriteLine((level == 1 ? "> " : "  ") + $"Month: {month}");
-        Console.WriteLine((level == 2 ? "> " : "  ") + $"Day:   {day}");
+        Console.Clear();
+        Console.WriteLine("Use arrows ←/→ to decrease/increase | ↑/↓ for changing between Year/Month/Day \nENTER to confirm date\n");
+
+        Console.WriteLine((level == 0 ? leftArrowYear : " ") + $"Year:  {year}" + (level == 0 ? rightArrow : " "));
+        Console.WriteLine((level == 1 ? leftArrowMonth : " ") + $"Month:  {month}" + (level == 1 ? rightArrow : " "));
+        Console.WriteLine((level == 2 ? leftArrowDay : " ") + $"Day:  {day}" + (level == 2 ? rightArrow : " "));
 
         var key = Console.ReadKey(true).Key;
 

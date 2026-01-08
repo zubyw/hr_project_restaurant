@@ -15,15 +15,22 @@ namespace Project.Presentation
         // Starts the reservation menu
         public void Start()
         {
+            if (Menu.CurrentUser == null)
+            {
+                Console.WriteLine("No user logged in. Returning to main menu...");
+                Thread.Sleep(1000);
+                Menu.Start();
+                return;
+            }
             // needed for ownership checks in logic
-            ReservationsLogic.CurrentUserId = UserLogin.activeUser.ID;
+            ReservationsLogic.CurrentUserId = Menu.CurrentUser.ID;
 
             Console.Clear();
             Console.WriteLine("=== My Reservations ===");
             Console.WriteLine();
 
             // Load all reservations for the logged-in user
-            List<ReservationModel> reservations = _reservationsLogic.GetReservationsByUserIdForGuest(UserLogin.activeUser.ID);
+            List<ReservationModel> reservations = _reservationsLogic.GetReservationsByUserIdForGuest(Menu.CurrentUser.ID);
 
             // If none, go back to where the function was caled 
             if (reservations.Count == 0)
@@ -304,7 +311,7 @@ namespace Project.Presentation
             Console.WriteLine("\n=== Update Guestcount ===");
             Console.WriteLine($"\nCurrent guest count: {reservation.GuestCount}");
 
-            int availableGuestCount = _reservationsLogic.GetAvailableGuestCount(reservation);
+            int availableGuestCount = _reservationsLogic.GetAllowedGuestCountAtUpdate(reservation);
 
             if (availableGuestCount == 0)
             {
@@ -383,7 +390,8 @@ namespace Project.Presentation
 
         private void GuestCountDishSelection(int oldguestcount, int newguestcount, ReservationModel reservation, string inputstring = "Make a dish selection? (Y/N)")
         {
-            while (true)
+            bool choosingToMakeDishSelection = true;
+            while (choosingToMakeDishSelection)
             {
                 Console.WriteLine($"{inputstring}");
                 string? MakesDishSelection = Console.ReadLine()?.Trim().ToUpper();
@@ -398,22 +406,22 @@ namespace Project.Presentation
                 {
                     DishSelectionStep(newguestcount, oldguestcount, reservation);
                     reservation.GuestCount = newguestcount;
-                    _reservationsLogic.UpdateGuestCountForReservation(reservation, newguestcount); // <-- hier
-                    break;
+                    _reservationsLogic.UpdateReservation(reservation);
+                    choosingToMakeDishSelection = false;
                 }
                 else if (MakesDishSelection == "N")
                 {
                     reservation.GuestCount = newguestcount;
-                    _reservationsLogic.UpdateGuestCountForReservation(reservation, newguestcount); // <-- hier
+                    _reservationsLogic.UpdateReservation(reservation);
                     if (oldguestcount > newguestcount)
                     {
                         _dishLogic.DeleteDishesFromReservation(reservation);
                     }
-                    break;
+                    choosingToMakeDishSelection = false;
                 }
                 else
                 {
-                    continue;
+                    Console.WriteLine("Plese enter Y or N");
                 }
             }
         }
@@ -526,6 +534,7 @@ namespace Project.Presentation
             TableAcces tableAccess = new TableAcces();
             List<TableModel> allTables = tableAccess.GetAllTables();
             List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(reservation.StartAt, reservation.GuestCount);
+            reservedTableIds.Remove(reservation.TableId);
 
             // Show floor plan and let user select a table
             TableModel? AvailableTable = FloorPlanView.SelectTableFromFloorPlan(allTables, reservedTableIds, reservation.GuestCount);
@@ -545,7 +554,7 @@ namespace Project.Presentation
                 return false;
             }
             reservation.TableId = AvailableTable.ID;
-            _reservationsLogic.UpdateTableForReservation(reservation);
+            _reservationsLogic.UpdateReservation(reservation);
             Console.Clear();
             Console.WriteLine();
             Console.WriteLine($"Changed seating to table {AvailableTable.ID}");
@@ -639,7 +648,7 @@ namespace Project.Presentation
             }
 
             // Once a table is selected
-            _reservationsLogic.UpdateDateTimeForReservation(reservation);
+            _reservationsLogic.UpdateReservation(reservation);
             Console.Clear();
             Console.WriteLine($"\nDate/time updated to {reservation.StartAt}");
             Thread.Sleep(1500);

@@ -212,4 +212,40 @@ public class ThemesLogic
         return x.ToList();
     }
 
+    public List<ThemeModel> themesLinkedToDish(DishModel dish)
+    {
+        return _dishaccess.getAllThemesLinkedToDish(dish);
+    }
+    public string DisplayHiddenStatus(List<string> hidden)
+    {
+        if (hidden == null || hidden.Count == 0)
+        {
+            return "\nHIDDEN: None";
+        }
+
+        var hiddenItems = new List<string>();
+
+        foreach (var h in hidden)
+        {
+            switch (h)
+            {
+                case "d":
+                    hiddenItems.Add("Desserts");
+                    break;
+                case "s":
+                    hiddenItems.Add("Starters");
+                    break;
+                case "m":
+                    hiddenItems.Add("Mains");
+                    break;
+                case "t":
+                    hiddenItems.Add("Dishes in themes");
+                    break;
+            }
+        }
+
+        return $"\nHIDDEN: {string.Join(", ", hiddenItems)}";
+    }
+
+
 }

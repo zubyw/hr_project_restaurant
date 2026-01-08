@@ -24,8 +24,11 @@ namespace Project.Logic
                 if (year == today.Year && month == today.Month) return;
 
                 month--;
-                if (year == today.Year && month < today.Month)
+                if (year == today.Year && month <= today.Month)
+                {
                     month = today.Month;
+                    day = today.Day;
+                }
                 if (month < 1) month = 12;
             }
         else if (level == 2) // day
@@ -59,7 +62,6 @@ namespace Project.Logic
 
                 if (year == today.Year && month < today.Month)
                     month = today.Month;
-
                 if (year == today.Year && month == today.Month)
                     day = today.Day;
                 else

@@ -1,12 +1,11 @@
 using Microsoft.Data.Sqlite;
 using Dapper;
 
-public class UsersAccess
+public class UsersAccess : BaseAccess<UserModel>
 {
-    private readonly string _connectionString = "Data Source=DataSources/project.db";
-    private readonly string Table = "Users";
+    protected new string Table = "Users";
 
-    public void Write(UserModel user)
+    public override void Write(UserModel user)
     {
         string sql = $"INSERT INTO {Table} (FirstName, LastName, PhoneNumber, EmailAddress, Password, Roles) VALUES (@FirstName, @LastName, @PhoneNumber, @EmailAddress, @Password, @Roles)";
         using var connection = new SqliteConnection(_connectionString);
@@ -41,18 +40,11 @@ public class UsersAccess
         return connection.Query<UserModel>(sql, new { Role = $"%{role}%" }).ToList();
     }
 
-    public void Update(UserModel user)
+    public override void Update(UserModel user)
     {
         string sql = $"UPDATE {Table} SET FirstName = @FirstName, LastName = @LastName, PhoneNumber = @PhoneNumber, EmailAddress = @EmailAddress, Password = @Password, Roles = @Roles WHERE ID = @ID";
         using var connection = new SqliteConnection(_connectionString);
         connection.Execute(sql, user);
-    }
-
-    public void Delete(UserModel user)
-    {
-        string sql = $"DELETE FROM {Table} WHERE ID = @ID";
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Execute(sql, new { ID = user.ID });
     }
 
     public void DeleteById(int id)

@@ -19,6 +19,8 @@ public class TableAcces
 
     public List<int> GetNonAvailableOnDate(string reservationDate, int tablesize)
     {
+        if (reservationDate.Length > 10)
+        reservationDate = reservationDate.Substring(0, 10);
         string reservedTablesSql = @"
         SELECT t.ID
         FROM Reservations r

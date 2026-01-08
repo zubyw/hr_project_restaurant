@@ -6,12 +6,11 @@ using System.Linq;
 
 namespace Project.DataAccess
 {
-    public class DrinkAccess
+    public class DrinkAccess : BaseAccess<Drink>
     {
-        private readonly string _connectionString = "Data Source=DataSources/project.db";
-        private readonly string Table = "Drink";
+        protected new  string Table = "Drink";
 
-        public void Write(Drink drink)
+        public override void Write(Drink drink)
         {
             string sql = $"INSERT INTO {Table} (Name, AlcoholPercentage, Price) VALUES (@Name, @AlcoholPercentage, @Price)";
             SqliteConnection connection = new SqliteConnection(_connectionString);
@@ -37,7 +36,7 @@ namespace Project.DataAccess
             return drink;
         }
 
-        public void Update(Drink drink)
+        public override void Update(Drink drink)
         {
             string sql = $"UPDATE {Table} SET Name = @Name, AlcoholPercentage = @AlcoholPercentage, Price = @Price WHERE Id = @Id";
             SqliteConnection connection = new SqliteConnection(_connectionString);
@@ -59,11 +58,11 @@ namespace Project.DataAccess
             return count > 0;
         }
 
-        public void Delete(int drinkId)
+        public override void Delete(Drink drink)
         {
             string sql = $"DELETE FROM {Table} WHERE Id = @Id";
             SqliteConnection connection = new SqliteConnection(_connectionString);
-            connection.Execute(sql, new { Id = drinkId });
+            connection.Execute(sql, new { Id = drink.ID });
             connection.Close();
         }
     }

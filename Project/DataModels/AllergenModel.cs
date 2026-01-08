@@ -1,6 +1,8 @@
+using System.Data.Common;
+
 namespace Project.DataModels
 {
-    public class AllergenModel
+    public class AllergenModel : IIdentifier
     {
         public int ID { get; set; }
         public required string Name { get; set; }
