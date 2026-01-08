@@ -63,14 +63,14 @@ namespace Project.Logic
             _drinkAccess.Update(drink);
         }
 
-        public bool DeleteDrink(int drinkId)
+        public bool DeleteDrink(Drink drink)
         {
-            if (_drinkAccess.IsDrinkLinked(drinkId))
+            if (_drinkAccess.IsDrinkLinked(drink.ID))
             {
                 return false;
             }
 
-            _drinkAccess.Delete(drinkId);
+            _drinkAccess.Delete(drink);
             return true;
         }
 

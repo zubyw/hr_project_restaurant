@@ -23,7 +23,7 @@ public static class CalanderInput
         string rightArrow = " >";
 
         Console.Clear();
-        Console.WriteLine("Use arrows ←/→ to add/remove 1, ↑/↓ for changing between Year/Month/Day \nENTER to confirm date\n");
+        Console.WriteLine("Use arrows ←/→ to decrease/increase | ↑/↓ for changing between Year/Month/Day \nENTER to confirm date\n");
 
         Console.WriteLine((level == 0 ? leftArrowYear : " ") + $"Year:  {year}" + (level == 0 ? rightArrow : " "));
         Console.WriteLine((level == 1 ? leftArrowMonth : " ") + $"Month:  {month}" + (level == 1 ? rightArrow : " "));

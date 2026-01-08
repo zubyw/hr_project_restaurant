@@ -2,12 +2,12 @@ using Microsoft.Data.Sqlite;
 using Project.DataModels;
 using Dapper;
 
-public class ReservationsAccess
+public class ReservationsAccess : BaseAccess<ReservationModel>
 {
-    private readonly string _connectionString = "Data Source=DataSources/project.db;Foreign Keys=False";
-    private readonly string Table = "Reservations";
+    protected override string _connectionString { get; } = "Data Source=DataSources/project.db;Foreign Keys=False";
+    protected new string Table = "Reservations";
 
-    public void Write(ReservationModel reservation)
+    public override void Write(ReservationModel reservation)
     {
         string sql = $"INSERT INTO {Table} (UserId, TableId, GuestCount, StartAt, Status, CanModifyUntil, CreatedAt, UpdatedAt) VALUES (@UserId, @TableId, @GuestCount, @StartAt, @Status, @CanModifyUntil, @CreatedAt, @UpdatedAt)";
         using var connection = new SqliteConnection(_connectionString);
@@ -84,18 +84,11 @@ public class ReservationsAccess
         return connection.Query<ReservationModel>(sql, new { UserId = userId }).ToList();
     }
 
-    public void Update(ReservationModel reservation)
+    public override void Update(ReservationModel reservation)
     {
         string sql = $"UPDATE {Table} SET UserId = @UserId, TableId = @TableId, GuestCount = @GuestCount, StartAt = @StartAt, Status = @Status, UpdatedAt = @UpdatedAt WHERE ID = @ID";
         using var connection = new SqliteConnection(_connectionString);
         connection.Execute(sql, reservation);
-    }
-
-    public void Delete(ReservationModel reservation)
-    {
-        string sql = $"DELETE FROM {Table} WHERE ID = @ID";
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Execute(sql, new { ID = reservation.ID });
     }
 
     public void DeleteById(int id)

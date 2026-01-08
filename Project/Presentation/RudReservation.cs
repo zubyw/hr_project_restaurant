@@ -311,7 +311,7 @@ namespace Project.Presentation
             Console.WriteLine("\n=== Update Guestcount ===");
             Console.WriteLine($"\nCurrent guest count: {reservation.GuestCount}");
 
-            int availableGuestCount = _reservationsLogic.GetAvailableGuestCount(reservation);
+            int availableGuestCount = _reservationsLogic.GetAllowedGuestCountAtUpdate(reservation);
 
             if (availableGuestCount == 0)
             {
@@ -390,7 +390,8 @@ namespace Project.Presentation
 
         private void GuestCountDishSelection(int oldguestcount, int newguestcount, ReservationModel reservation, string inputstring = "Make a dish selection? (Y/N)")
         {
-            while (true)
+            bool choosingToMakeDishSelection = true;
+            while (choosingToMakeDishSelection)
             {
                 Console.WriteLine($"{inputstring}");
                 string? MakesDishSelection = Console.ReadLine()?.Trim().ToUpper();
@@ -405,22 +406,22 @@ namespace Project.Presentation
                 {
                     DishSelectionStep(newguestcount, oldguestcount, reservation);
                     reservation.GuestCount = newguestcount;
-                    _reservationsLogic.UpdateGuestCountForReservation(reservation, newguestcount); // <-- hier
-                    break;
+                    _reservationsLogic.UpdateGuestCountForReservation(reservation, newguestcount);
+                    choosingToMakeDishSelection = false;
                 }
                 else if (MakesDishSelection == "N")
                 {
                     reservation.GuestCount = newguestcount;
-                    _reservationsLogic.UpdateGuestCountForReservation(reservation, newguestcount); // <-- hier
+                    _reservationsLogic.UpdateGuestCountForReservation(reservation, newguestcount);
                     if (oldguestcount > newguestcount)
                     {
                         _dishLogic.DeleteDishesFromReservation(reservation);
                     }
-                    break;
+                    choosingToMakeDishSelection = false;
                 }
                 else
                 {
-                    continue;
+                    Console.WriteLine("Plese enter Y or N");
                 }
             }
         }
@@ -533,6 +534,7 @@ namespace Project.Presentation
             TableAcces tableAccess = new TableAcces();
             List<TableModel> allTables = tableAccess.GetAllTables();
             List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(reservation.StartAt, reservation.GuestCount);
+            reservedTableIds.Remove(reservation.TableId);
 
             // Show floor plan and let user select a table
             TableModel? AvailableTable = FloorPlanView.SelectTableFromFloorPlan(allTables, reservedTableIds, reservation.GuestCount);

@@ -67,7 +67,14 @@ namespace Project.Logic
         // Get all reservations from database
         public List<ReservationModel> GetAllReservations()
         {
-            return _reservationsAccess.GetAll();
+            List<ReservationModel> res = _reservationsAccess.GetAll();
+
+            string nowSortable = ToSortableString(DateTime.Now.ToString("dd-MM-yyyy HH:mm"));
+
+            return res
+                .Where(r => string.Compare(ToSortableString(r.StartAt), nowSortable) >= 0)
+                .OrderBy(r => ToSortableString(r.StartAt))
+                .ToList();
         }
 
         // Get reservations by specific date
@@ -87,14 +94,6 @@ namespace Project.Logic
         {
             return _reservationsAccess.GetByUserId(userId);
         }
-
-        // Get one reservation by ID (raw; no ownership check)
-        public ReservationModel? GetReservationById(int id)
-        {
-            return _reservationsAccess.GetById(id);
-        }
-
-        // --- Create/Update/Delete ---
 
         // Create a new reservation (only if between 1 and 6 guests)
         public bool CreateReservation(int userId, int tableId, int guestCount, string startAt, string status = "Open")
@@ -226,7 +225,26 @@ namespace Project.Logic
 
         public List<ReservationModel> GetReservationsByUserIdForGuest(int userId)
         {
-            return _reservationsAccess.GetReservationsByUserIdSimple(userId);
+            List<ReservationModel> res =  _reservationsAccess.GetReservationsByUserIdSimple(userId);
+            string nowSortable = ToSortableString(DateTime.Now.ToString("dd-MM-yyyy HH:mm"));
+
+            return res
+                .Where(r => string.Compare(ToSortableString(r.StartAt), nowSortable) >= 0)
+                .OrderBy(r => ToSortableString(r.StartAt))
+                .ToList();
+        }
+
+        private static string ToSortableString(string startAt)
+        {
+            // only works for datetime string in format -> dd-MM-yyyy HH:MM.
+            string year  = startAt.Substring(6, 4);
+            string month = startAt.Substring(3, 2);
+            string day   = startAt.Substring(0, 2);
+            string hour  = startAt.Substring(11, 2);
+            string minute= startAt.Substring(14, 2);
+
+            string final = year + month + day + hour + minute;
+            return final;
         }
 
         // Update guest reservation (only if it's your own)
@@ -352,7 +370,7 @@ namespace Project.Logic
             }
         }
 
-        public int GetAvailableGuestCount(ReservationModel reservation)
+        public int GetAllowedGuestCountAtUpdate(ReservationModel reservation)
         {
             switch (reservation.GuestCount)
             {

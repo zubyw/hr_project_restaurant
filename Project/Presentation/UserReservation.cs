@@ -2,7 +2,7 @@ using System;
 using Project.DataModels;
 using Project.Logic;
 using Project.Presentation;
-using System.Globalization; // <- toegevoegd voor DateTime parsing
+using System.Globalization;
 
 static class UserReservation
 {
@@ -11,175 +11,172 @@ static class UserReservation
 
     public static void Start()
     {
-        try
+        Console.Clear();
+        Console.WriteLine("\n===Reservations===\n");
+
+        int intAmountPeople = GetAmountOfPeople();
+        if (intAmountPeople == -1) return;
+
+        string reservationDate = GetReservationDate();
+        if (reservationDate == null) return;
+
+        string arrivalTime = GetReservationTime();
+
+        string completeStartDate = reservationDate + " " + arrivalTime;
+
+        TableModel? selectedTable = SelectTable(reservationDate, intAmountPeople);
+        if (selectedTable == null) return;
+
+        bool? makeDishSelection = AskForDishSelection();
+        if (makeDishSelection == null) return;
+
+        int userId = _usersLogic.GetIdByEmail(Menu.CurrentUser.EmailAddress);
+
+        bool reservationCreated = CreateReservation(userId, selectedTable.ID, intAmountPeople, completeStartDate);
+        if (!reservationCreated)
         {
-            Console.Clear();
-            Console.WriteLine("\n===Reservations===");
-            Console.WriteLine();
-            Console.WriteLine("Amount of people: (1-6)");
-            string? AmountPeople = Console.ReadLine();
-            if (string.IsNullOrEmpty(AmountPeople))
-            {
-                Console.WriteLine("All fields are required!");
-                Console.WriteLine("Press any key to try again...");
-                Console.ReadKey();
-                Start();
-                return;
-            }
-            if (!UserMakeReservationLogic.CheckAmountPeople(AmountPeople))
-            {
-                Console.WriteLine("Given amount of people incorrect (1-6)");
-                Console.WriteLine("Press any key to try again...");
-                Console.ReadKey();
-                Start();
-                return;
-            }
-
-            Console.Clear();
-            Console.WriteLine("\n===Reservations===");
-            Console.WriteLine();
-            string? ReservationDate = CalanderInput.Calander();
-
-            Console.WriteLine("Select Arrival Time:");
-            string ArrivalTime = _reservationsLogic.SelectArrivalTime();
-            Console.WriteLine($"You selected: {ArrivalTime}");
-
-            int.TryParse(AmountPeople, out int intAmountPeople);
-
-            // Get all tables and reserved tables for floor plan
-            TableAcces tableAccess = new TableAcces();
-            List<TableModel> allTables = tableAccess.GetAllTables();
-            List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(ReservationDate, intAmountPeople);
-
-            // Show floor plan and let user select a table
-            TableModel? AvailableTable = FloorPlanView.SelectTableFromFloorPlan(allTables, reservedTableIds, intAmountPeople);
-
-            if (AvailableTable == null)
-            {
-                Console.WriteLine("Table selection cancelled.");
-                Console.WriteLine("Press any key to return...");
-                Console.ReadKey();
-                Start();
-                return;
-            }
-
-            // Combine date en tijd in dd-MM-yyyy HH:mm formaat
-            string CompleteStartDate = ReservationDate + " " + ArrivalTime;
-
-            if (Menu.CurrentUser == null)
-            {
-                Console.WriteLine("User not logged in. Please login first.");
-                Console.WriteLine("Press any key to continue...");
-                Console.ReadKey();
-                Menu.Start();
-                return;
-            }
-
-            Console.WriteLine("Make a dish selection? (Y/N)");
-            string? MakesDishSelection = Console.ReadLine()?.Trim().ToUpper();
-
-            if (string.IsNullOrEmpty(MakesDishSelection))
-            {
-                Console.WriteLine("All fields are required!");
-                Console.WriteLine("Press any key to try again...");
-                Console.ReadKey();
-                Start();
-                return;
-            }
-
-            if (MakesDishSelection == "Y")
-            {
-                // ===== DISH SELECTION STEP =====
-                var dishLogic = new DishLogic();
-                ThemeModel? correctTheme = dishLogic.GetCorrectTheme(CompleteStartDate);
-
-                List<DishModel> selectedDishes = new List<DishModel>();
-
-                if (correctTheme is not null)
-                {
-                    selectedDishes = DishSelection.SelectDishesForReservation(intAmountPeople, correctTheme);
-
-                    if (selectedDishes.Count == 0)
-                    {
-                        ColorConsole.WriteWarning("Dish selection cancelled. Returning to main menu...");
-                        Thread.Sleep(1500);
-                        Menu.ShowMainMenu();
-                        return;
-                    }
-                }
-                else
-                {
-                    ColorConsole.WriteWarning("No theme available for the current month. Proceeding without dish selection...");
-                    Thread.Sleep(2000);
-                }
-
-                int userid = _usersLogic.GetIdByEmail(Menu.CurrentUser.EmailAddress);
-
-                if (_reservationsLogic.CreateReservation(userid, AvailableTable.ID, intAmountPeople, CompleteStartDate))
-                {
-                    var userReservations = _reservationsLogic.GetReservationsByUserId(userid);
-                    var newReservation = userReservations.OrderByDescending(r => r.ID).FirstOrDefault();
-
-                    if (newReservation != null && selectedDishes.Count > 0)
-                    {
-                        try
-                        {
-                            dishLogic.ReserveDishes(selectedDishes, newReservation);
-                        }
-                        catch (Exception ex)
-                        {
-                            ColorConsole.WriteError($"Warning: Could not save dish selections: {ex.Message}");
-                            Thread.Sleep(2000);
-                        }
-                    }
-
-                    Thread.Sleep(500);
-                    Menu.ShowMainMenu();
-                    return;
-                }
-                else
-                {
-                    Console.WriteLine("An unexpected error occurred creating the reservation");
-                    Console.WriteLine("Press any key to try again...");
-                    Console.ReadKey();
-                    Menu.ShowMainMenu();
-                    return;
-                }
-            }
-            else if (MakesDishSelection == "N")
-            {
-                int userid = _usersLogic.GetIdByEmail(Menu.CurrentUser.EmailAddress);
-                if (_reservationsLogic.CreateReservation(userid, AvailableTable.ID, intAmountPeople, CompleteStartDate))
-                {
-                    Console.WriteLine("Your reservation has been saved!");
-                    Thread.Sleep(3000);
-                    Menu.ShowMainMenu();
-                    return;
-                }
-                else
-                {
-                    Console.WriteLine("An unexpected error occurred creating the reservation");
-                    Console.WriteLine("Press any key to try again...");
-                    Console.ReadKey();
-                    Menu.ShowMainMenu();
-                    return;
-                }
-            }
-            else
-            {
-                Console.WriteLine("Invalid input! Please enter Y or N.");
-                Console.WriteLine("Press any key to try again...");
-                Console.ReadKey();
-                Start();
-                return;
-            }
+            ShowRetryMessage("An unexpected error occurred creating the reservation");
+            return;
         }
-        catch (Exception ex)
+
+        if (makeDishSelection.Value)
         {
-            Console.WriteLine($"An unexpected error occurred: {ex.Message}");
-            Console.WriteLine("Press any key to try again...");
-            Console.ReadKey();
+            HandleDishSelection(intAmountPeople, completeStartDate, userId);
+        }
+        else
+        {
+            Console.WriteLine("Your reservation has been saved!");
+            Thread.Sleep(2000);
             Menu.ShowMainMenu();
         }
+    }
+
+    private static int GetAmountOfPeople()
+    {
+        Console.WriteLine("Amount of people: (1-6)");
+        string? amountPeople = Console.ReadLine();
+
+        if (string.IsNullOrEmpty(amountPeople))
+        {
+            ShowRetryMessage("All fields are required!");
+            return -1;
+        }
+
+        if (!UserMakeReservationLogic.CheckAmountPeople(amountPeople))
+        {
+            ShowRetryMessage("Given amount of people incorrect (1-6)");
+            return -1;
+        }
+
+        int.TryParse(amountPeople, out int intAmountPeople);
+        return intAmountPeople;
+    }
+
+    private static string GetReservationDate()
+    {
+        Console.Clear();
+        Console.WriteLine("\n===Reservations===\n");
+        string? reservationDate = CalanderInput.Calander();
+
+        if (string.IsNullOrEmpty(reservationDate))
+        {
+            ShowRetryMessage("Reservation date is required!");
+            return null;
+        }
+
+        return reservationDate;
+    }
+
+    private static string GetReservationTime()
+    {
+        Console.WriteLine("Select Arrival Time:");
+        string arrivalTime = _reservationsLogic.SelectArrivalTime();
+        Console.WriteLine($"You selected: {arrivalTime}");
+        return arrivalTime;
+    }
+
+    private static TableModel? SelectTable(string reservationDate, int intAmountPeople)
+    {
+        TableAcces tableAccess = new TableAcces();
+        List<TableModel> allTables = tableAccess.GetAllTables();
+        List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(reservationDate, intAmountPeople);
+
+        TableModel? selectedTable = FloorPlanView.SelectTableFromFloorPlan(allTables, reservedTableIds, intAmountPeople);
+
+        if (selectedTable == null)
+        {
+            Console.WriteLine("Table selection cancelled.");
+            Console.WriteLine("Press any key to return...");
+            Console.ReadKey();
+        }
+
+        return selectedTable;
+    }
+
+    private static bool? AskForDishSelection()
+    {
+        Console.WriteLine("Make a dish selection? (Y/N)");
+        string? input = Console.ReadLine()?.Trim().ToUpper();
+
+        if (string.IsNullOrEmpty(input))
+        {
+            ShowRetryMessage("All fields are required!");
+            return null;
+        }
+
+        if (input == "Y") return true;
+        if (input == "N") return false;
+
+        ShowRetryMessage("Invalid input! Please enter Y or N.");
+        return null;
+    }
+
+    private static bool CreateReservation(int userId, int tableId, int amountPeople, string completeStartDate)
+    {
+        return _reservationsLogic.CreateReservation(userId, tableId, amountPeople, completeStartDate);
+    }
+
+    private static void HandleDishSelection(int amountPeople, string completeStartDate, int userId)
+    {
+        var dishLogic = new DishLogic();
+        ThemeModel? correctTheme = dishLogic.GetCorrectTheme(completeStartDate);
+
+        if (correctTheme == null)
+        {
+            ColorConsole.WriteWarning("No theme available for the current month. Proceeding without dish selection...");
+            Thread.Sleep(2000);
+            Menu.ShowMainMenu();
+            return;
+        }
+
+        List<DishModel> selectedDishes = DishSelection.SelectDishesForReservation(amountPeople, correctTheme);
+
+        if (selectedDishes.Count == 0)
+        {
+            ColorConsole.WriteWarning("Dish selection cancelled. Returning to main menu...");
+            Thread.Sleep(1500);
+            Menu.ShowMainMenu();
+            return;
+        }
+
+        var userReservations = _reservationsLogic.GetReservationsByUserId(userId); // all reservations by user
+        var newReservation = userReservations.OrderByDescending(r => r.ID).FirstOrDefault();// latest reservation made by user
+
+        if (newReservation != null)
+        {
+            dishLogic.ReserveDishes(selectedDishes, newReservation);
+        }
+
+        Console.WriteLine("Your reservation and dish selection have been saved!");
+        Thread.Sleep(2000);
+        Menu.ShowMainMenu();
+    }
+
+    private static void ShowRetryMessage(string message)
+    {
+        Console.WriteLine(message);
+        Console.WriteLine("Press any key to try again...");
+        Console.ReadKey();
+        Start();
     }
 }

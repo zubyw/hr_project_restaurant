@@ -20,8 +20,9 @@ namespace Project.Presentation
                 (row, col) = FindFirstSelectable(
                     floorPlan, reservedTableIds, guestCount);
             }
-
-            while (true)
+            bool selecting = true;
+            TableModel? selectedTable = null;
+            while (selecting)
             {
                 ShowReadOnlyFloorPlan(guestCount);
 
@@ -34,16 +35,22 @@ namespace Project.Presentation
                 var key = Console.ReadKey(true).Key;
 
                 if (key == ConsoleKey.Escape)
-                    return null;
-
+                {
+                    selecting = false;
+                    selectedTable = null;
+                }
                 var result = FloorPlanLogic.HandleKey(key, floorPlan, reservedTableIds, guestCount, row, col);
 
                 row = result.newRow;
                 col = result.newCol;
 
                 if (result.selected != null)
-                    return result.selected;
+                {
+                    selecting = false;
+                    selectedTable = result.selected;
+                }
             }
+            return selectedTable;
         }
 
         private static (int row, int col) FindFirstSelectable(TableModel[][] floorPlan, List<int> reservedTableIds, int guestCount)

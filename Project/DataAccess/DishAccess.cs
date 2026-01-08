@@ -4,13 +4,12 @@ using Project.DataModels;
 
 namespace Project.DataAccess
 {
-    public class DishAccess
+    public class DishAccess : BaseAccess<DishModel>
     {
-        private readonly string _connectionString = "Data Source=DataSources/project.db";
-        private readonly string Table = "Dishes";
+        protected new string Table = "Dishes";
         private readonly AllergenAccess _allergenAccess = new AllergenAccess();
 
-        public void Write(DishModel dish)
+        public override void Write(DishModel dish)
         {
             string sql = $"INSERT INTO {Table} (Name, Price, Description, Type) VALUES (@Name, @Price, @Description, @Type)";
             using var connection = new SqliteConnection(_connectionString);
@@ -46,18 +45,11 @@ namespace Project.DataAccess
             }
         }
 
-        public void Update(DishModel dish)
+        public override void Update(DishModel dish)
         {
             string sql = $"UPDATE {Table} SET Name = @Name, Price = @Price, Description = @Description, Type = @Type WHERE ID = @ID";
             using var connection = new SqliteConnection(_connectionString);
             connection.Execute(sql, dish);
-        }
-
-        public void Delete(DishModel dish)
-        {
-            string sql = $"DELETE FROM {Table} WHERE ID = @Id";
-            using var connection = new SqliteConnection(_connectionString);
-            connection.Execute(sql, new { Id = dish.ID });
         }
 
         public List<DishModel> GetDishByType(string type)

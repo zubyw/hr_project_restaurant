@@ -316,75 +316,75 @@ public static class DishSelection
     }
 
     private static void ManageAllergenFilters()
+{
+    List<AllergenModel> allergens = _allergenAccess.GetAll();
+    List<bool> selectedStates = new List<bool>();
+    
+    for (int i = 0; i < allergens.Count; i++)
     {
-        List<AllergenModel> allergens = _allergenAccess.GetAll();
-        List<bool> selectedStates = new List<bool>();
-        
+        selectedStates.Add(_activeAllergenFilters.Contains(allergens[i].ID));
+    }
+
+    int currentIndex = 0;
+    bool selecting = true;
+
+    while (selecting)
+    {
+        Console.Clear();
+        Console.WriteLine("=== Select allergens to avoid ===\n");
+
         for (int i = 0; i < allergens.Count; i++)
         {
-            selectedStates.Add(_activeAllergenFilters.Contains(allergens[i].ID));
+            bool isSelected = i == currentIndex;
+            bool isChecked = selectedStates[i];
+
+            if (isSelected)
+            {
+                Console.BackgroundColor = ConsoleColor.DarkCyan;
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+
+            string checkbox = isChecked ? "[X]" : "[ ]";
+            Console.WriteLine($"{checkbox} {allergens[i].Name}");
+
+            if (isSelected)
+            {
+                Console.ResetColor();
+            }
         }
 
-        int currentIndex = 0;
+        Console.WriteLine();
+        Console.WriteLine("Press SPACE to select | ENTER to continue");
 
-        while (true)
+        var key = Console.ReadKey(true).Key;
+
+        switch (key)
         {
-            Console.Clear();
-            Console.WriteLine("=== Select allergens to avoid ===");
-            Console.WriteLine();
+            case ConsoleKey.UpArrow:
+                currentIndex = (currentIndex - 1 + allergens.Count) % allergens.Count;
+                break;
 
-            for (int i = 0; i < allergens.Count; i++)
-            {
-                bool isSelected = i == currentIndex;
-                bool isChecked = selectedStates[i];
+            case ConsoleKey.DownArrow:
+                currentIndex = (currentIndex + 1) % allergens.Count;
+                break;
 
-                if (isSelected)
+            case ConsoleKey.Spacebar:
+                selectedStates[currentIndex] = !selectedStates[currentIndex];
+                break;
+
+            case ConsoleKey.Enter:
+                _activeAllergenFilters.Clear();
+                for (int i = 0; i < allergens.Count; i++)
                 {
-                    Console.BackgroundColor = ConsoleColor.DarkCyan;
-                    Console.ForegroundColor = ConsoleColor.White;
+                    if (selectedStates[i])
+                        _activeAllergenFilters.Add(allergens[i].ID);
                 }
-
-                string checkbox = isChecked ? "[X]" : "[ ]";
-                Console.WriteLine($"{checkbox} {allergens[i].Name}");
-
-                if (isSelected)
-                {
-                    Console.ResetColor();
-                }
-            }
-
-            Console.WriteLine();
-            Console.WriteLine("Press SPACE to select | ENTER to continue");
-
-            var key = Console.ReadKey(true).Key;
-
-            switch (key)
-            {
-                case ConsoleKey.UpArrow:
-                    currentIndex = (currentIndex - 1 + allergens.Count) % allergens.Count;
-                    break;
-
-                case ConsoleKey.DownArrow:
-                    currentIndex = (currentIndex + 1) % allergens.Count;
-                    break;
-
-                case ConsoleKey.Spacebar:
-                    selectedStates[currentIndex] = !selectedStates[currentIndex];
-                    break;
-
-                case ConsoleKey.Enter:
-                    _activeAllergenFilters.Clear();
-                    for (int i = 0; i < allergens.Count; i++)
-                    {
-                        if (selectedStates[i])
-                        {
-                            _activeAllergenFilters.Add(allergens[i].ID);
-                        }
-                    }
-                    return;
-            }
+                selecting = false;
+                break;
         }
     }
+}
+
 
     private static Drink? ShowDrinkForMainDish(int dishId)
     {

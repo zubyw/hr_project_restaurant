@@ -25,38 +25,6 @@ public class UsersLogic
         return true;
     }
 
-    public UserModel? GetUserByEmail(string emailAddress)
-    {
-        return _usersAccess.GetByEmail(emailAddress);
-    }
-
-    public UserModel? GetUserById(int id)
-    {
-        return _usersAccess.GetById(id);
-    }
-
-    public List<UserModel> GetAllUsers()
-    {
-        return _usersAccess.GetAll();
-    }
-
-    public List<UserModel> GetUsersByRole(string role)
-    {
-        return _usersAccess.GetByRole(role);
-    }
-
-    public bool UpdateUser(UserModel user)
-    {
-        _usersAccess.Update(user);
-        return true;
-    }
-
-    public bool DeleteUser(int userId)
-    {
-        _usersAccess.DeleteById(userId);
-        return true;
-    }
-
     public bool IsValidEmail(string email)
     {
         return email.Contains("@") && email.Contains(".");

@@ -20,12 +20,10 @@ public static class AdminDishesManagement
             "View linked drinks",
             "Back"
         };
-
-        while (true)
-    {
-        int index = MenuHelper.ShowMenuUpDown(options, "=== Admin: Dishes Management ===");
-        try
+        bool choosing = true;
+        while (choosing)
         {
+        int index = MenuHelper.ShowMenuUpDown(options, "=== Admin: Dishes Management ===");
             switch (index)
             {
                 case 0:
@@ -35,23 +33,22 @@ public static class AdminDishesManagement
                 case 1:
                     ManageAllDishes();
                     break;
+
                 case 2:
                     LinkDrinkToMainDish();
                     break;
                 case 3:
+
                     ViewLinkedDrinks();
                     break;
+
                 case 4:
+                    choosing = false;
                     Menu.ShowAdminMenu();
                     break;
             }
+        
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Error: " + ex.Message);
-            Console.ReadKey();
-        }
-    }
     }
 
     private static void Add()
@@ -125,10 +122,10 @@ public static class AdminDishesManagement
         {
             selectedStates.Add(false);
         }
-
+        List<int> selectedIds = new List<int>();
         int currentIndex = 0;
-
-        while (true)
+        bool selecting = true;
+        while (selecting)
         {
             Console.Clear();
             Console.WriteLine("=== Select allergens ===");
@@ -174,7 +171,6 @@ public static class AdminDishesManagement
                     break;
 
                 case ConsoleKey.Enter:
-                    List<int> selectedIds = new List<int>();
                     for (int i = 0; i < allergens.Count; i++)
                     {
                         if (selectedStates[i])
@@ -182,9 +178,11 @@ public static class AdminDishesManagement
                             selectedIds.Add(allergens[i].ID);
                         }
                     }
-                    return selectedIds;
+                    selecting = false;
+                    break;
             }
         }
+        return selectedIds;
     }
 
     private static void ManageAllDishes()
@@ -199,8 +197,8 @@ public static class AdminDishesManagement
         }
 
         int index = 0;
-
-        while (true)
+        bool managing = true;
+        while (managing)
         {
             Console.Clear();
             Console.WriteLine("=== All Dishes ===\n");
@@ -249,12 +247,15 @@ public static class AdminDishesManagement
             {
                 DishModel selectedDish = dishes[index];
                 ManageDish(selectedDish);
+                index = 0;
+                dishes = _logic.GetAllDishes();
             }
             else if (key == ConsoleKey.Escape)
             {
-                Start();
+                managing = false;
             }
         }
+        Start();
     }
 
     private static void ManageDish(DishModel dish)
@@ -265,32 +266,27 @@ public static class AdminDishesManagement
             "Delete dish",
             "Back"
         };
-
-        while (true)
-    {
-        int index = MenuHelper.ShowMenuUpDown(options, "=== Admin: Manage dish ===");
-        try
+        bool managingDish = true;
+        while (managingDish)
         {
+            int index = MenuHelper.ShowMenuUpDown(options, "=== Admin: Manage dish ===");
+        
             switch (index)
             {
                 case 0:
                     EditDish(dish);
-                    return;
+                    break;
 
                 case 1:
                     Delete(dish);
+                    managingDish = false;
                     break;
 
                 case 2:
-                    return;
+                    managingDish = false;
+                    break;
             }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Error: " + ex.Message);
-            Console.ReadKey();
-        }
-    }
     }
 
 
@@ -305,9 +301,9 @@ public static class AdminDishesManagement
             "Edit Allergens",
             "Back"
         };
-
-        while (true)
-    {
+        bool editingDish = true;
+        while (editingDish)
+        {
         int index = MenuHelper.ShowMenuUpDown(options, $"=== Admin: Manage dish ===\n\n{dish.ToString()}");
         try
         {
@@ -375,6 +371,7 @@ public static class AdminDishesManagement
                     ManageAllergens(dish);
                     break;
                 case 5:
+                    editingDish = false;
                     return;
             }
         }
@@ -400,8 +397,8 @@ public static class AdminDishesManagement
         }
 
         int currentIndex = 0;
-
-        while (true)
+        bool managingAllergens = true;
+        while (managingAllergens)
         {
             Console.Clear();
             Console.WriteLine();
@@ -460,10 +457,12 @@ public static class AdminDishesManagement
                     
                     Console.WriteLine("\nAllergens updated successfully!");
                     Thread.Sleep(1500);
-                    return;
+                    managingAllergens = false;
+                    break;
 
                 case ConsoleKey.Escape:
-                    return;
+                    managingAllergens = false;
+                    break;
             }
         }
     }
@@ -475,12 +474,10 @@ public static class AdminDishesManagement
                 "Yes",
                 "No"
             };
-
-            while (true)
+            bool deleting = true;
+            while (deleting)
         {
             int index = MenuHelper.ShowMenuUpDown(options, $"=== Admin: delete dish ===\n\n{dish.ToString()}\n\nDelete dish?");
-            try
-            {
                 switch (index)
                 {
                     case 0: // remove dish from: Dishes, Dishes_Themes, Reservation_Dishes
@@ -490,80 +487,42 @@ public static class AdminDishesManagement
                         Console.WriteLine($"Dish: {dish.Name} deleted");
                         Thread.Sleep(1500);
                         ManageAllDishes();
-                        return;
+                        deleting = false;
+                        break;
                     case 1:
-                        return;
+                        deleting = false;
+                        break;
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error: " + ex.Message);
-                Console.ReadKey();
-            }
         }
     }
 
     
     private static void LinkDrinkToMainDish()
+{
+    DishLogic dishLogic = new DishLogic();
+    DrinkLogic drinkLogic = new DrinkLogic();
+
+    bool linking = true;
+
+    while (linking)
     {
-        DishLogic dishLogic = new DishLogic();
-        DrinkLogic drinkLogic = new DrinkLogic();
-
-        List<DishModel> allDishes = dishLogic.GetAllDishes();
-        List<DishModel> dishes = new List<DishModel>();
-
-        foreach (DishModel dish in allDishes)
-        {
-            if (dish.Type == "Main")
-            {
-                dishes.Add(dish);
-            }
-        }
+        List<DishModel> dishes = dishLogic.GetAllDishes()
+            .Where(d => d.Type == "Main")
+            .ToList();
 
         if (dishes.Count == 0)
         {
             Console.Clear();
-            Console.WriteLine("No main dishes without a linked drink.");
+            Console.WriteLine("No main dishes available.");
             Console.ReadKey();
             return;
         }
-
-        int dishIndex = 0;
-
-        while (true)
-        {
-            Console.Clear();
-            Console.WriteLine("=== Link drink to main dish ===\n");
-            Console.WriteLine("↑ ↓ Select dish | ENTER = choose | ESC = back\n");
-
-            for (int i = 0; i < dishes.Count; i++)
-            {
-                if (i == dishIndex)
-                {
-                    Console.BackgroundColor = ConsoleColor.DarkCyan;
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-
-                Console.WriteLine($"{dishes[i].Name,-30} €{dishes[i].Price,6:F2}");
-
-                if (i == dishIndex)
-                    Console.ResetColor();
-            }
-
-            ConsoleKey key = Console.ReadKey(true).Key;
-
-            if (key == ConsoleKey.UpArrow)
-                dishIndex = (dishIndex - 1 + dishes.Count) % dishes.Count;
-            else if (key == ConsoleKey.DownArrow)
-                dishIndex = (dishIndex + 1) % dishes.Count;
-            else if (key == ConsoleKey.Escape)
-                return;
-            else if (key == ConsoleKey.Enter)
-                break;
-        }
-
+// selecting dish
+        string[] dishOptions = dishes.Select(d => $"{d.Name,-30} €{d.Price,6:F2}").ToArray();
+        int dishIndex = MenuHelper.ShowMenuUpDown(dishOptions, "=== Link drink to main dish ===");
         DishModel selectedDish = dishes[dishIndex];
 
+        // Get drinks
         List<Drink> drinks = drinkLogic.GetAllDrinks();
         if (drinks.Count == 0)
         {
@@ -573,53 +532,28 @@ public static class AdminDishesManagement
             return;
         }
 
-        int drinkIndex = 0;
-
-        while (true)
-        {
-            Console.Clear();
-            Console.WriteLine("=== Select drink ===\n");
-            Console.WriteLine("↑ ↓ Select drink | ENTER = link | ESC = back\n");
-
-            for (int i = 0; i < drinks.Count; i++)
-            {
-                if (i == drinkIndex)
-                {
-                    Console.BackgroundColor = ConsoleColor.DarkCyan;
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-
-                Console.WriteLine(
-                    $"{drinks[i].Name,-25} {drinks[i].AlcoholPercentage,5:F1}%  €{drinks[i].Price,6:F2}"
-                );
-
-                if (i == drinkIndex)
-                    Console.ResetColor();
-            }
-
-            ConsoleKey key = Console.ReadKey(true).Key;
-
-            if (key == ConsoleKey.UpArrow)
-                drinkIndex = (drinkIndex - 1 + drinks.Count) % drinks.Count;
-            else if (key == ConsoleKey.DownArrow)
-                drinkIndex = (drinkIndex + 1) % drinks.Count;
-            else if (key == ConsoleKey.Escape)
-                return;
-            else if (key == ConsoleKey.Enter)
-                break;
-        }
-
+// selecting drink
+        string[] drinkOptions = drinks
+            .Select(d => $"{d.Name,-25} {d.AlcoholPercentage,5:F1}%  €{d.Price,6:F2}")
+            .ToArray();
+        int drinkIndex = MenuHelper.ShowMenuUpDown(drinkOptions, "=== Select drink ===");
         Drink selectedDrink = drinks[drinkIndex];
 
+        // Link drink to dish
         dishLogic.LinkDrinkToMainDish(selectedDish.ID, selectedDrink.ID);
 
         Console.Clear();
-        Console.WriteLine("Drink linked successfully.\n");
-        Console.WriteLine("| ESC = Go back to menu |\n");
+        Console.WriteLine("Drink linked successfully!\n");
         Console.WriteLine($"Dish : {selectedDish.Name}");
         Console.WriteLine($"Drink: {selectedDrink.Name}");
-        Console.ReadKey();
+        Console.WriteLine("\nPress any key to link another drink or ESC to return...");
+
+        var key = Console.ReadKey(true).Key;
+        if (key == ConsoleKey.Escape)
+            linking = false;
     }
+}
+
 
     private static void ViewLinkedDrinks()
     {
