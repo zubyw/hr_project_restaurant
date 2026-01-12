@@ -6,7 +6,7 @@ namespace Project.DataAccess
 {
     public class DishAccess : BaseAccess<DishModel>
     {
-        protected new string Table = "Dishes";
+        protected override string Table { get; } = "Dishes";
         private readonly AllergenAccess _allergenAccess = new AllergenAccess();
 
         public override void Write(DishModel dish)

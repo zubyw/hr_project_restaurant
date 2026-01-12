@@ -95,21 +95,22 @@ static class UserReservation
         return arrivalTime;
     }
 
-    private static TableModel? SelectTable(string reservationDate, int intAmountPeople)
+    private static TableModel? SelectTable(string reservationDate, int AmountPeople)
     {
-        TableAcces tableAccess = new TableAcces();
+        TableAccess tableAccess = new TableAccess();
         List<TableModel> allTables = tableAccess.GetAllTables();
-        List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(reservationDate, intAmountPeople);
+        List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(reservationDate, AmountPeople);
 
-        TableModel? selectedTable = FloorPlanView.SelectTableFromFloorPlan(allTables, reservedTableIds, intAmountPeople);
-
-        if (selectedTable == null)
+        TableModel? selectedTable = FloorPlanView.SelectTableFromFloorPlan(allTables, reservedTableIds, AmountPeople);
+        if (selectedTable is null)
         {
-            Console.WriteLine("Table selection cancelled.");
-            Console.WriteLine("Press any key to return...");
-            Console.ReadKey();
+            Console.Clear();
+            Console.WriteLine($"Party Size: {AmountPeople}");
+            Console.WriteLine();
+            Console.WriteLine("No tables available for that size this day.");
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey(true);
         }
-
         return selectedTable;
     }
 

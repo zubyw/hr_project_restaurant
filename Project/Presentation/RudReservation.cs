@@ -526,7 +526,7 @@ namespace Project.Presentation
         private bool EditTableSelection(ReservationModel reservation)
         {
 
-            TableAcces tableAccess = new TableAcces();
+            TableAccess tableAccess = new TableAccess();
             List<TableModel> allTables = tableAccess.GetAllTables();
             List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(reservation.StartAt, reservation.GuestCount);
             reservedTableIds.Remove(reservation.TableId);
@@ -536,6 +536,7 @@ namespace Project.Presentation
             if (AvailableTable == null)
             {
                 Console.WriteLine("Table selection cancelled.");
+                Console.WriteLine("Not able to find an other table to select.");
                 Console.WriteLine("Press any key to return...");
                 Console.ReadKey();
                 return false;

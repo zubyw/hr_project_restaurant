@@ -12,6 +12,11 @@ namespace Project.Presentation
         {
             TableModel[][] floorPlan = FloorPlanLogic.BuildFloorPlan(allTables);
 
+            if (!FloorPlanLogic.HasAnySelectableTable(floorPlan, reservedTableIds, guestCount))
+            {
+                return null;
+            }
+
             int row = 0;
             int col = 0;
 

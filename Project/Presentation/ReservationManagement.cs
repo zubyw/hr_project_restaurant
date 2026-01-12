@@ -49,6 +49,22 @@ static class ReservationManagement
                         Console.BackgroundColor = ConsoleColor.DarkCyan;
                         Console.ForegroundColor = ConsoleColor.White;
                     }
+                    reservation = _reservationsLogic.ReloadReservation(reservation);
+                    break;
+                case ConsoleKey.Escape:
+                    managing = false;
+                    break;
+            }
+        }
+    }
+
+    private static void EditTableSelection(ReservationModel reservation)
+    {
+        TableAccess tableAccess = new TableAccess();
+        List<TableModel> allTables = tableAccess.GetAllTables();
+        List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(reservation.StartAt, reservation.GuestCount)
+                                              .Where(id => id != reservation.TableId)
+                                              .ToList();
 
                     Console.WriteLine($"│ {r.ID,4} │ {r.TableNumber,2} ({r.TableCapacity,2}) │ {guestName,-28} │ {r.GuestCount,3}   │ {dateTime,-19} │ {r.Status,-9} │");
 

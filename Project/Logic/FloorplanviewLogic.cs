@@ -65,5 +65,14 @@ namespace Project.Logic
                 new[] { t[4], t[13], t[2], t[12] }
             };
         }
+        public static bool HasAnySelectableTable(TableModel[][] floorPlan, List<int> reservedTableIds, int guestCount)
+        {
+            for (int r = 0; r < floorPlan.Length; r++)
+                for (int c = 0; c < floorPlan[r].Length; c++)
+                    if (IsSelectable(floorPlan[r][c], reservedTableIds, guestCount))
+                        return true;
+
+            return false;
+        }
     }
 }
