@@ -526,7 +526,7 @@ namespace Project.Presentation
         private bool EditTableSelection(ReservationModel reservation)
         {
 
-            TableAcces tableAccess = new TableAcces();
+            TableAccess tableAccess = new TableAccess();
             List<TableModel> allTables = tableAccess.GetAllTables();
             List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(reservation.StartAt, reservation.GuestCount);
             reservedTableIds.Remove(reservation.TableId);

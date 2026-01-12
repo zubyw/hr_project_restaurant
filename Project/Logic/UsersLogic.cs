@@ -37,7 +37,7 @@ public class UsersLogic
 
     public UserModel? CheckLogin(string email, string password)
     {
-        var user = _usersAccess.GetByEmail(email);
+        UserModel user = _usersAccess.GetByEmail(email);
         if (user != null && user.Password == password)
         {
             return user;

@@ -1,7 +1,7 @@
 using Microsoft.Data.Sqlite;
 using Dapper;
 
-public class TableAcces
+public class TableAccess
 {
     private static readonly string _connectionString = "Data Source=DataSources/project.db";
 

@@ -4,7 +4,7 @@ public static class UserMakeReservationLogic
     public static int MaxPeople { get; } = 6;
     public static string DateFormat { get; } = "dd-MM-yyyy"; // Europees formaat
 
-    public static TableAcces _TableAcces = new TableAcces();
+    public static TableAccess _TableAcces = new TableAccess();
 
     public static bool CheckValidDate(string date)
     {
