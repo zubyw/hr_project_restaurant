@@ -61,7 +61,7 @@ public sealed class LoginTest
         };
         _userLogic.CreateUser(TestUser);
         // act 
-        UserModel result = _userLogic.CheckLogin(m, p);
+        UserModel? result = _userLogic.CheckLogin(m, p);
 
         // assert
         Assert.IsNull(result);

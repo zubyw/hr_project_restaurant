@@ -10,6 +10,16 @@ public class UsersLogic
         {
             return false; // User already exists
         }
+        
+        if (!CheckName(newUser.FirstName) || !CheckName(newUser.LastName))
+        {
+            return false; 
+        }
+
+        if (!IsValidEmail(newUser.EmailAddress) || !IsValidPhoneNumber(newUser.PhoneNumber))
+        {
+            return false; // Invalid email or phone number
+        }
 
         _usersAccess.Write(newUser);
         return true;
@@ -34,6 +44,16 @@ public class UsersLogic
         }
         return null;
     }
+
+    public bool CheckValidPassword(string password)
+    {
+        if (password.Length < 6)
+        {
+            return false;
+        }
+        return true;
+    }
+
     public int GetIdByEmail(string email)
     {
         int id = _usersAccess.GetIdByEmail(email);
@@ -43,4 +63,14 @@ public class UsersLogic
         }
         return 0;
     }
+
+    public bool CheckName(string name)
+    {
+        if (name.Length <= 1)
+        {
+            return false;
+        }
+        return true;
+    
+    } 
 }
