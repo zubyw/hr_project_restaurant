@@ -2,24 +2,24 @@ public class UsersLogic
 {
     private UsersAccess _usersAccess = new UsersAccess();
 
-    public bool CreateUser(string firstName, string lastName, string phoneNumber, string emailAddress, string password, string roles)
+    public bool CreateUser(UserModel newUser)
     {
         // Check if user already exists
-        var existingUser = _usersAccess.GetByEmail(emailAddress);
+        var existingUser = _usersAccess.GetByEmail(newUser.EmailAddress);
         if (existingUser != null)
         {
             return false; // User already exists
         }
-
-        var newUser = new UserModel
+        
+        if (!CheckName(newUser.FirstName) || !CheckName(newUser.LastName))
         {
-            FirstName = firstName,
-            LastName = lastName,
-            PhoneNumber = phoneNumber,
-            EmailAddress = emailAddress,
-            Password = password,
-            Roles = roles
-        };
+            return false; 
+        }
+
+        if (!IsValidEmail(newUser.EmailAddress) || !IsValidPhoneNumber(newUser.PhoneNumber))
+        {
+            return false; // Invalid email or phone number
+        }
 
         _usersAccess.Write(newUser);
         return true;
@@ -44,6 +44,16 @@ public class UsersLogic
         }
         return null;
     }
+
+    public bool CheckValidPassword(string password)
+    {
+        if (password.Length < 6)
+        {
+            return false;
+        }
+        return true;
+    }
+
     public int GetIdByEmail(string email)
     {
         int id = _usersAccess.GetIdByEmail(email);
@@ -53,4 +63,14 @@ public class UsersLogic
         }
         return 0;
     }
+
+    public bool CheckName(string name)
+    {
+        if (name.Length <= 1)
+        {
+            return false;
+        }
+        return true;
+    
+    } 
 }
