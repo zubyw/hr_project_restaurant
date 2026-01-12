@@ -128,6 +128,12 @@ namespace Project.Logic
         {
             return _dishAccess.GetMainDishesWithoutDrink();
         }
+
+        public DishModel GetById(int id)
+        {
+            return _dishAccess.GetById(id);
+        }
+
         
 
     }

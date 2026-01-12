@@ -4,6 +4,7 @@ using Project.Logic;
 
 public static class DishSelection
 {
+    
     private static DishAccess _dishAccess = new DishAccess();
     private static AllergenAccess _allergenAccess = new AllergenAccess();
     private static List<int> _activeAllergenFilters = new List<int>();
@@ -419,70 +420,81 @@ public static class DishSelection
     }
 
     private static Drink? SelectDrinkForMainDish(int dishId)
+{
+    DrinkLogic drinkLogic = new DrinkLogic();
+    DishLogic dishLogic = new DishLogic();
+
+    List<Drink> drinks = drinkLogic.GetAllDrinks();
+    if (drinks.Count == 0)
+        return null;
+
+    Drink? recommended = drinks[0];
+
+    DishModel dish = dishLogic.GetById(dishId);
+    string dishName = dish?.Name ?? "this dish";
+
+    int index = 0; // start direct op recommended
+
+    while (true)
     {
-        DrinkLogic drinkLogic = new DrinkLogic();
+        Console.Clear();
+        Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
+        Console.WriteLine(
+            $"║ Our wine steward recommends this drink with {dishName.PadRight(17)}║"
+        );
+        Console.WriteLine("╠════════════════════════════════════════════════════════════╣");
+        Console.WriteLine("║ ↑↓ Navigate | ENTER Select | ESC Skip                     ║");
+        Console.WriteLine("╚════════════════════════════════════════════════════════════╝");
+        Console.WriteLine();
 
-        List<Drink> drinks = drinkLogic.GetAllDrinks();
-        Drink? recommended = drinkLogic.GetDrinkForDish(dishId);
-
-        if (drinks.Count == 0)
-            return null;
-
-        int index = 0;
-        bool selecting = true;
-
-        while (selecting)
+        for (int i = 0; i <= drinks.Count; i++)
         {
-            Console.Clear();
-            Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
-            Console.WriteLine("║  SELECT DRINK (optional)                                  ║");
-            Console.WriteLine("╠════════════════════════════════════════════════════════════╣");
-            Console.WriteLine("║  ↑↓ Navigate | ENTER Select | ESC Skip                    ║");
-            Console.WriteLine("╚════════════════════════════════════════════════════════════╝");
-            Console.WriteLine();
+            bool selected = i == index;
 
-            for (int i = 0; i <= drinks.Count; i++)
+            if (selected)
             {
-                bool selected = i == index;
-
-                if (selected)
-                {
-                    Console.BackgroundColor = ConsoleColor.DarkCyan;
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-
-                if (i < drinks.Count)
-                {
-                    Drink d = drinks[i];
-                    string marker = recommended != null && d.ID == recommended.ID ? " (recommended)" : "";
-                    Console.WriteLine($"  {d.Name.PadRight(25)} €{d.Price:F2}{marker}");
-                }
-                else
-                {
-                    Console.WriteLine("  No drink");
-                }
-
-                if (selected)
-                    Console.ResetColor();
+                Console.BackgroundColor = ConsoleColor.DarkCyan;
+                Console.ForegroundColor = ConsoleColor.White;
             }
 
-            var key = Console.ReadKey(true).Key;
-
-            switch (key)
+            if (i < drinks.Count)
             {
-                case ConsoleKey.UpArrow:
-                    index = (index - 1 + drinks.Count + 1) % (drinks.Count + 1);
-                    break;
-                case ConsoleKey.DownArrow:
-                    index = (index + 1) % (drinks.Count + 1);
-                    break;
-                case ConsoleKey.Enter:
-                    return index < drinks.Count ? drinks[index] : null;
-                case ConsoleKey.Escape:
-                    return null;
+                Drink d = drinks[i];
+                bool isRecommended = d.ID == recommended.ID;
+                string marker = isRecommended ? " ★ recommended" : "";
+
+                Console.WriteLine(
+                    $"  {d.Name.PadRight(25)} €{d.Price:F2}{marker}"
+                );
             }
+            else
+            {
+                Console.WriteLine("  No drink");
+            }
+
+            if (selected)
+                Console.ResetColor();
         }
 
-        return null;
+        var key = Console.ReadKey(true).Key;
+
+        switch (key)
+        {
+            case ConsoleKey.UpArrow:
+                index = (index - 1 + drinks.Count + 1) % (drinks.Count + 1);
+                break;
+
+            case ConsoleKey.DownArrow:
+                index = (index + 1) % (drinks.Count + 1);
+                break;
+
+            case ConsoleKey.Enter:
+                return index < drinks.Count ? drinks[index] : null;
+
+            case ConsoleKey.Escape:
+                return null;
+        }
     }
+}
+
 }
