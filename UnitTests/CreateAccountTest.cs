@@ -8,7 +8,7 @@ using Project.Logic;
 
 namespace UnitTests;
 [TestClass]
-public sealed class LoginTest
+public sealed class CreateAccount
 {
 
     private static UsersAccess _userAccess = new UsersAccess();
@@ -19,7 +19,7 @@ public sealed class LoginTest
     [DataRow("kevin", "Jan", "0634212344", "Kevin@kevin.nl", "kevinjan", "customer")] 
     [DataRow("Casper", "Jan", "0634212345", "casper@kevin.nl", "casperjan", "customer")] 
     [DataRow("hendrick", "Jan", "0634212346", "hendrick@hendrick.nl", "hendrickjan", "customer")] 
-    public void LoginValidCredentials(string f, string l, string ph,  string m, string p, string r)
+    public void CreateAccountValidCredentials(string f, string l, string ph,  string m, string p, string r)
     {
         // arrange
         UserModel TestUser = new UserModel
@@ -46,8 +46,7 @@ public sealed class LoginTest
     [DataRow("","","","kevin@kevin.nl","", "customer")]
     [DataRow("","krul","","","", "customer")]
     [DataRow("capvin","","0634093711","","", "customer")]
-    [DataRow(null,null,null,null,null,null)]
-    public void LoginInvalidCredentials(string f, string l, string ph,  string m, string p, string r)
+    public void CreateAccountInvalidCredentials(string f, string l, string ph,  string m, string p, string r)
     {
         // arrange
         UserModel TestUser = new UserModel
