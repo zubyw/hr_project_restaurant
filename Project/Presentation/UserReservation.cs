@@ -97,7 +97,7 @@ static class UserReservation
 
     private static TableModel? SelectTable(string reservationDate, int AmountPeople)
     {
-        TableAcces tableAccess = new TableAcces();
+        TableAccess tableAccess = new TableAccess();
         List<TableModel> allTables = tableAccess.GetAllTables();
         List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(reservationDate, AmountPeople);
 

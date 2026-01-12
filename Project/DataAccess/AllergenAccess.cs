@@ -6,7 +6,7 @@ namespace Project.DataAccess
 {
     public class AllergenAccess : BaseAccess<AllergenModel>
     {
-        protected new string Table = "Allergens";
+        protected override string Table { get; } = "Allergens";
 
 
         public override void Write(AllergenModel allergen)

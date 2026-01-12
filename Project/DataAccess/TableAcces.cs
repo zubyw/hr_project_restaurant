@@ -1,7 +1,7 @@
 using Microsoft.Data.Sqlite;
 using Dapper;
 
-public class TableAcces
+public class TableAccess
 {
     private static readonly string _connectionString = "Data Source=DataSources/project.db";
 
@@ -20,17 +20,18 @@ public class TableAcces
     public List<int> GetNonAvailableOnDate(string reservationDate, int tablesize)
     {
         if (reservationDate.Length > 10)
-        reservationDate = reservationDate.Substring(0, 10);
-        string reservedTablesSql = @"
-        SELECT t.ID
-        FROM Reservations r
-        JOIN [Table] t ON r.TableId = t.ID
-        WHERE substr(r.StartAt, 1, 10) = @ReservationDate
-        AND r.Status != 'Cancelled'
-        AND r.Status != 'geannuleerd'";
+            reservationDate = reservationDate.Substring(0, 10);
+
+        string sql = @"
+            SELECT t.ID
+            FROM Reservations r
+            JOIN ""Table"" AS t ON r.TableId = t.ID
+            WHERE substr(r.StartAt, 1, 10) = @ReservationDate
+            AND r.Status NOT IN ('Cancelled', 'geannuleerd');
+        ";
+
         using var connection = new SqliteConnection(_connectionString);
-        List<int> reservedTableIds = connection.Query<int>(reservedTablesSql, new { ReservationDate = reservationDate }).ToList();
-        return reservedTableIds;
+        return connection.Query<int>(sql, new { ReservationDate = reservationDate }).ToList();
     }
 }
         

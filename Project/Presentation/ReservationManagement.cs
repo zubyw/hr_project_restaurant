@@ -135,7 +135,7 @@ static class ReservationManagement
 
     private static void EditTableSelection(ReservationModel reservation)
     {
-        TableAcces tableAccess = new TableAcces();
+        TableAccess tableAccess = new TableAccess();
         List<TableModel> allTables = tableAccess.GetAllTables();
         List<int> reservedTableIds = tableAccess.GetNonAvailableOnDate(reservation.StartAt, reservation.GuestCount)
                                               .Where(id => id != reservation.TableId)
