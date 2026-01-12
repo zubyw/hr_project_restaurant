@@ -8,7 +8,7 @@ namespace Project.DataAccess
 {
     public class DrinkAccess : BaseAccess<Drink>
     {
-        protected new  string Table = "Drink";
+        protected override string Table { get; } = "Drink";
 
         public override void Write(Drink drink)
         {

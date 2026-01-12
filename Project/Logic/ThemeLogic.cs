@@ -246,6 +246,4 @@ public class ThemesLogic
 
         return $"\nHIDDEN: {string.Join(", ", hiddenItems)}";
     }
-
-
 }

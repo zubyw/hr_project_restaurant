@@ -3,7 +3,7 @@ using Dapper;
 
 public class UsersAccess : BaseAccess<UserModel>
 {
-    protected new string Table = "Users";
+    protected override string Table { get; } = "Users";
 
     public override void Write(UserModel user)
     {

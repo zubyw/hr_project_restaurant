@@ -3,7 +3,7 @@ using Dapper;
 
 public class ThemeAccess : BaseAccess<ThemeModel>
 {
-    protected new string Table = "Themes";
+    protected override string Table { get; } = "Themes";
 
     public override void Write(ThemeModel theme)
     {

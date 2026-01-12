@@ -5,7 +5,7 @@ using Dapper;
 public class ReservationsAccess : BaseAccess<ReservationModel>
 {
     protected override string _connectionString { get; } = "Data Source=DataSources/project.db;Foreign Keys=False";
-    protected new string Table = "Reservations";
+    protected override string Table { get; } = "Reservations";
 
     public override void Write(ReservationModel reservation)
     {
