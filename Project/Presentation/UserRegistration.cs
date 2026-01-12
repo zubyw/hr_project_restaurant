@@ -69,7 +69,17 @@ static class UserRegistration
         string defaultRole = "customer";
 
         // Create user account in Users table
-        bool userCreated = _usersLogic.CreateUser(firstName, lastName, phoneNumber, emailAddress, password, defaultRole);
+        UserModel newUser = new UserModel
+        {
+            FirstName = firstName,
+            LastName = lastName,
+            PhoneNumber = phoneNumber,
+            EmailAddress = emailAddress,
+            Password = password,
+            Roles = defaultRole
+        };
+
+        bool userCreated = _usersLogic.CreateUser(newUser);
 
         if (userCreated)
         {
