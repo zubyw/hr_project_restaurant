@@ -33,8 +33,18 @@ static class UserReservation
 
         int userId = _usersLogic.GetIdByEmail(Menu.CurrentUser.EmailAddress);
 
-        bool reservationCreated = CreateReservation(userId, selectedTable.ID, intAmountPeople, completeStartDate);
-        if (!reservationCreated)
+        ReservationModel reservation = new ReservationModel();
+        reservation.UserId = userId;
+        reservation.TableId = selectedTable.ID;
+        reservation.GuestCount = intAmountPeople;
+        reservation.StartAt = completeStartDate;
+        reservation.Status = "Open";
+        reservation.CreatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
+        reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
+
+        bool reservationSuccess = _reservationsLogic.CreateReservation(reservation);
+
+        if (!reservationSuccess)
         {
             ShowRetryMessage("An unexpected error occurred creating the reservation");
             return;
@@ -131,20 +141,6 @@ static class UserReservation
 
         ShowRetryMessage("Invalid input! Please enter Y or N.");
         return null;
-    }
-
-    private static bool CreateReservation(int userId, int tableId, int amountPeople, string completeStartDate, string status = "Open")
-    {
-        ReservationModel reservation = new ReservationModel();
-            reservation.UserId = userId;
-            reservation.TableId = tableId;
-            reservation.GuestCount = amountPeople;
-            reservation.StartAt = completeStartDate;
-            reservation.Status = status;
-            reservation.CreatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
-            reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
-        
-        return _reservationsLogic.CreateReservation(reservation);
     }
 
     private static void HandleDishSelection(int amountPeople, string completeStartDate, int userId)
