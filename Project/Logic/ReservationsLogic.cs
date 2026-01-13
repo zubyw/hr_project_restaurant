@@ -63,6 +63,7 @@ namespace Project.Logic
         {
             if (reservation.GuestCount < 1 || reservation.GuestCount > 6)
                 return false;
+            if(!CorrectTableSize(reservation)) return false;
 
             _reservationsAccess.Write(reservation);
             return true;
@@ -213,7 +214,22 @@ namespace Project.Logic
             _reservationsAccess.Update(reservation);
         }
 
-        
+        public bool CorrectTableSize(ReservationModel reservation)
+        {
+            if (reservation.TableId == 1 || reservation.TableId == 2 || reservation.TableId == 3 || reservation.TableId == 4)
+            {
+                if(reservation.GuestCount == 1 || reservation.GuestCount == 2) return true;
+            }
+            if (reservation.TableId == 5 || reservation.TableId == 6 || reservation.TableId == 7 || reservation.TableId == 8 || reservation.TableId == 9 || reservation.TableId == 10)
+            {
+                if(reservation.GuestCount == 3 || reservation.GuestCount == 4) return true;
+            }
+            if (reservation.TableId == 11 || reservation.TableId == 12 || reservation.TableId == 13 || reservation.TableId == 14)
+            {
+                if(reservation.GuestCount == 5 || reservation.GuestCount == 6) return true;
+            }
+            return false;
+        }
 
     }
 }

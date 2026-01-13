@@ -97,15 +97,13 @@ namespace UnitTests
             };
             // Act
             
-            _reservationslogic.CreateReservation(reservering);
-            List<ReservationModel> reservations = _reservationslogic.GetReservationsByUserId(newestUser.ID);
+            bool failed = _reservationslogic.CreateReservation(reservering);
 
 
             // assert
-            Assert.AreEqual(reservations.Count(), 0);
+            Assert.AreEqual(failed, false);
 
             // Delete
-
             _useraccess.Delete(newestUser);
 
 
