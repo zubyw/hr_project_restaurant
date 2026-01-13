@@ -191,7 +191,7 @@ namespace Project.Presentation
         }
 
         // Update a reservation (same step flow as create: guests -> date -> arrow-time)
-        private void Update(ReservationModel updatedReservation)
+        public void Update(ReservationModel updatedReservation)
         {
             Console.WriteLine($"{updatedReservation.GuestCount}");
             updatedReservation = _reservationsLogic.ReloadReservation(updatedReservation);
@@ -277,15 +277,15 @@ namespace Project.Presentation
                             case 3:
                                 EditDishSelection(updatedReservation);
                                 break;
-                            case 4: // User gets send back to selecting a reservation.
-                                Start();
+                            case 4: // back
+                                editing = false;
                                 break;
                         }
                         break;
                 }
             }
         }
-        private void Delete(ReservationModel reservation)
+        public void Delete(ReservationModel reservation)
         {
             bool success = _reservationsLogic.CancelReservation(reservation.ID);
             if (!success)
