@@ -15,6 +15,7 @@ namespace UnitTests
         private readonly TableAccess _tableAccess = new TableAccess();
         private readonly UsersAccess _useraccess = new UsersAccess();
         private readonly ReservationsAccess _reservationaccess = new ReservationsAccess();
+        private readonly ReservationsLogic _reservationslogic = new ReservationsLogic();
 
         [TestMethod]
         [DataRow(1)]
@@ -72,8 +73,40 @@ namespace UnitTests
             }
         }
 
+        [TestMethod]
+        [DataRow(1, 6)]
+        [DataRow(7, 2)]
+        [DataRow(13, 4)]
+        public void WrongSizeReserved(int tableId, int guestCount)
+        {
+            // arange
+            UserModel newuser = new UserModel() { FirstName = "User", LastName = "User", Password = "User", PhoneNumber = "0000000000", EmailAddress = "NewUser@gmail.com", Roles = "customer" };
+            _useraccess.DeleteByEmail("NewUser@gmail.com");
+            _useraccess.Write(newuser);
+
+            UserModel? newestUser = _useraccess.GetByEmail("NewUser@gmail.com");
+
+            ReservationModel reservering = new ReservationModel()
+            {
+                UserId = newestUser.ID,
+                TableId = tableId,
+                GuestCount = guestCount,
+                StartAt = DateTime.Today.AddYears(100).ToString(),
+                CreatedAt = DateTime.Now.ToString(),
+                UpdatedAt = DateTime.Now.ToString()
+            };
+            // Act
+            
+            bool failed = _reservationslogic.CreateReservation(reservering);
+
+
+            // assert
+            Assert.AreEqual(failed, false);
+
+            // Delete
+            _useraccess.Delete(newestUser);
+
+
+        }
     }
-
-
-
 }

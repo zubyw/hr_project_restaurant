@@ -59,19 +59,11 @@ namespace Project.Logic
         }
 
         // Create a new reservation (only if between 1 and 6 guests)
-        public bool CreateReservation(int userId, int tableId, int guestCount, string startAt, string status = "Open")
+        public bool CreateReservation(ReservationModel reservation)
         {
-            if (guestCount < 1 || guestCount > 6)
+            if (reservation.GuestCount < 1 || reservation.GuestCount > 6)
                 return false;
-
-            ReservationModel reservation = new ReservationModel();
-            reservation.UserId = userId;
-            reservation.TableId = tableId;
-            reservation.GuestCount = guestCount;
-            reservation.StartAt = startAt;
-            reservation.Status = status;
-            reservation.CreatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
-            reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
+            if(!CorrectTableSize(reservation)) return false;
 
             _reservationsAccess.Write(reservation);
             return true;
@@ -220,6 +212,23 @@ namespace Project.Logic
             reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
             _reservationsAccess.Update(reservation);
+        }
+
+        public bool CorrectTableSize(ReservationModel reservation)
+        {
+            if (reservation.TableId == 1 || reservation.TableId == 2 || reservation.TableId == 3 || reservation.TableId == 4)
+            {
+                if(reservation.GuestCount == 1 || reservation.GuestCount == 2) return true;
+            }
+            if (reservation.TableId == 5 || reservation.TableId == 6 || reservation.TableId == 7 || reservation.TableId == 8 || reservation.TableId == 9 || reservation.TableId == 10)
+            {
+                if(reservation.GuestCount == 3 || reservation.GuestCount == 4) return true;
+            }
+            if (reservation.TableId == 11 || reservation.TableId == 12 || reservation.TableId == 13 || reservation.TableId == 14)
+            {
+                if(reservation.GuestCount == 5 || reservation.GuestCount == 6) return true;
+            }
+            return false;
         }
 
     }

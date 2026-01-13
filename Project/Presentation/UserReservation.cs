@@ -3,6 +3,7 @@ using Project.DataModels;
 using Project.Logic;
 using Project.Presentation;
 using System.Globalization;
+using System.Net;
 
 static class UserReservation
 {
@@ -132,9 +133,18 @@ static class UserReservation
         return null;
     }
 
-    private static bool CreateReservation(int userId, int tableId, int amountPeople, string completeStartDate)
+    private static bool CreateReservation(int userId, int tableId, int amountPeople, string completeStartDate, string status = "Open")
     {
-        return _reservationsLogic.CreateReservation(userId, tableId, amountPeople, completeStartDate);
+        ReservationModel reservation = new ReservationModel();
+            reservation.UserId = userId;
+            reservation.TableId = tableId;
+            reservation.GuestCount = amountPeople;
+            reservation.StartAt = completeStartDate;
+            reservation.Status = status;
+            reservation.CreatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
+            reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
+        
+        return _reservationsLogic.CreateReservation(reservation);
     }
 
     private static void HandleDishSelection(int amountPeople, string completeStartDate, int userId)
