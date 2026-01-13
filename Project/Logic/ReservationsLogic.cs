@@ -59,19 +59,10 @@ namespace Project.Logic
         }
 
         // Create a new reservation (only if between 1 and 6 guests)
-        public bool CreateReservation(int userId, int tableId, int guestCount, string startAt, string status = "Open")
+        public bool CreateReservation(ReservationModel reservation)
         {
-            if (guestCount < 1 || guestCount > 6)
+            if (reservation.GuestCount < 1 || reservation.GuestCount > 6)
                 return false;
-
-            ReservationModel reservation = new ReservationModel();
-            reservation.UserId = userId;
-            reservation.TableId = tableId;
-            reservation.GuestCount = guestCount;
-            reservation.StartAt = startAt;
-            reservation.Status = status;
-            reservation.CreatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
-            reservation.UpdatedAt = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
             _reservationsAccess.Write(reservation);
             return true;
@@ -221,6 +212,8 @@ namespace Project.Logic
 
             _reservationsAccess.Update(reservation);
         }
+
+        
 
     }
 }
