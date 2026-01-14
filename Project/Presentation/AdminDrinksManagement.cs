@@ -180,6 +180,7 @@ public static class AdminDrinksManagement
             "Edit name",
             "Edit price",
             "Edit alcohol percentage",
+            "Set as recommended for main dish",
             "Delete drink",
             "Back"
         };
@@ -211,10 +212,11 @@ public static class AdminDrinksManagement
                     break;
 
                 case 3:
-                    DeleteDrink(drink);
+                    SetDrinkAsRecommendedForMainDish(drink);
                     return;
 
                 case 4:
+                    DeleteDrink(drink);
                     return;
             }
         }
@@ -294,5 +296,73 @@ public static class AdminDrinksManagement
             : "Drink is linked to a dish and cannot be deleted.");
 
         Thread.Sleep(1500);
+    }
+
+    private static void SetDrinkAsRecommendedForMainDish(Drink drink)
+    {
+        DishLogic dishLogic = new DishLogic();
+        List<DishModel> mainDishes =
+            dishLogic.GetAllDishes()
+                    .Where(d => d.Type == "Main")
+                    .ToList();
+
+        if (mainDishes.Count == 0)
+        {
+            Console.WriteLine("No main dishes found.");
+            Thread.Sleep(1500);
+            return;
+        }
+
+        int index = 0;
+
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine($"=== Set recommended for drink: {drink.Name} ===");
+            Console.WriteLine("↑↓ Select main dish | ENTER confirm | ESC back\n");
+
+            for (int i = 0; i < mainDishes.Count; i++)
+            {
+                bool selected = i == index;
+                bool isCurrent = mainDishes[i].DrinkId == drink.ID;
+
+                if (selected)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                string marker = isCurrent ? " ★ current" : "";
+                Console.WriteLine($"{mainDishes[i].Name}{marker}");
+
+                if (selected)
+                    Console.ResetColor();
+            }
+
+            var key = Console.ReadKey(true).Key;
+
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    index = (index - 1 + mainDishes.Count) % mainDishes.Count;
+                    break;
+
+                case ConsoleKey.DownArrow:
+                    index = (index + 1) % mainDishes.Count;
+                    break;
+
+                case ConsoleKey.Enter:
+                    DishModel dish = mainDishes[index];
+                    dish.DrinkId = drink.ID;
+                    dishLogic.UpdateDish(dish);
+
+                    Console.WriteLine("\nRecommended drink set.");
+                    Thread.Sleep(1200);
+                    return;
+
+                case ConsoleKey.Escape:
+                    return;
+            }
+        }
     }
 }

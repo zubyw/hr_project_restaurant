@@ -428,22 +428,30 @@ public static class DishSelection
     if (drinks.Count == 0)
         return null;
 
-    Drink? recommended = drinks[0];
+    Drink? recommended = drinkLogic.GetDrinkForDish(dishId);
+
+    int index = 0;
+
+    if (recommended != null)
+    {
+        index = drinks.FindIndex(d => d.ID == recommended.ID);
+    }
+
 
     DishModel dish = dishLogic.GetById(dishId);
     string dishName = dish?.Name ?? "this dish";
 
-    int index = 0; // start direct op recommended
+    
 
     while (true)
     {
         Console.Clear();
         Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
         Console.WriteLine(
-            $"║ Our wine steward recommends this drink with {dishName.PadRight(17)}║"
+            $"║ Our wine steward recommends this drink for your dish       ║"
         );
         Console.WriteLine("╠════════════════════════════════════════════════════════════╣");
-        Console.WriteLine("║ ↑↓ Navigate | ENTER Select | ESC Skip                     ║");
+        Console.WriteLine("║ ↑↓ Navigate | ENTER Select | ESC Skip                      ║");
         Console.WriteLine("╚════════════════════════════════════════════════════════════╝");
         Console.WriteLine();
 
@@ -460,7 +468,7 @@ public static class DishSelection
             if (i < drinks.Count)
             {
                 Drink d = drinks[i];
-                bool isRecommended = d.ID == recommended.ID;
+                bool isRecommended = recommended != null && d.ID == recommended.ID;
                 string marker = isRecommended ? " ★ recommended" : "";
 
                 Console.WriteLine(

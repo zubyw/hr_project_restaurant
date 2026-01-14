@@ -47,7 +47,7 @@ namespace Project.DataAccess
 
         public override void Update(DishModel dish)
         {
-            string sql = $"UPDATE {Table} SET Name = @Name, Price = @Price, Description = @Description, Type = @Type WHERE ID = @ID";
+            string sql = $"UPDATE {Table} SET Name = @Name, Price = @Price, Description = @Description, Type = @Type, DrinkId = @DrinkId WHERE ID = @ID";
             using var connection = new SqliteConnection(_connectionString);
             connection.Execute(sql, dish);
         }
@@ -55,7 +55,7 @@ namespace Project.DataAccess
         public List<DishModel> GetDishByType(string type)
         {
             string DishesSql = @"
-        SELECT ID, Name, Price, Description, Type
+        SELECT ID, Name, Price, Description, Type, DrinkId
         FROM Dishes
         WHERE Type = @Type";
             using var connection = new SqliteConnection(_connectionString);
@@ -82,7 +82,7 @@ namespace Project.DataAccess
         public List<DishModel> GetDishesByIds(List<int> dishIds)
         {
             string sql = @"
-        SELECT ID, Name, Price, Description, Type
+        SELECT ID, Name, Price, Description, Type, DrinkId
         FROM Dishes
         WHERE ID IN @Ids";
             using var connection = new SqliteConnection(_connectionString);
@@ -110,7 +110,7 @@ namespace Project.DataAccess
         public List<DishModel> GetAllDishesByReservation(ReservationModel resm)
         {
             string sql = @"
-        SELECT d.ID, d.Name, d.Price, d.Description, d.Type
+        SELECT d.ID, d.Name, d.Price, d.Description, d.Type, d.DrinkId
         FROM Dishes d
         JOIN Reservations_Dishes rd ON d.ID = rd.DishId
         JOIN Reservations r ON r.ID = rd.ReservationId
@@ -185,7 +185,7 @@ namespace Project.DataAccess
         public List<DishModel> GetByTheme(ThemeModel theme)
         {
             string sql = @"
-                SELECT d.ID, d.Name, d.Price, d.Description, d.Type
+                SELECT d.ID, d.Name, d.Price, d.Description, d.Type, d.DrinkId
                 FROM Dishes d
                 JOIN Dishes_Themes dt ON dt.DishId = d.ID
                 WHERE dt.ThemeId = @ThemeId
@@ -211,7 +211,7 @@ namespace Project.DataAccess
         public List<DishModel> GetAllDishes()
         {
             string sql = @"
-            SELECT ID, Name, Price, Description, Type
+            SELECT ID, Name, Price, Description, Type, DrinkId
             FROM Dishes";
             using var connection = new SqliteConnection(_connectionString);
             List<DishModel> AllDishes = connection.Query<DishModel>(sql).ToList();
@@ -264,7 +264,7 @@ namespace Project.DataAccess
         public List<DishModel> GetAllDishesWithATheme()
         {
             string sql = @"
-            SELECT DISTINCT d.ID, d.Name, d.Price, d.Description, d.Type
+            SELECT DISTINCT d.ID, d.Name, d.Price, d.Description, d.Type, d.DrinkId
             FROM Dishes d
             JOIN Dishes_Themes dt ON dt.DishId = d.ID
             ORDER BY d.Type, d.Name;";
