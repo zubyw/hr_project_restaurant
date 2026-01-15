@@ -5,7 +5,7 @@ public class UsersLogic
     public bool CreateUser(UserModel newUser)
     {
         // Check if user already exists
-        var existingUser = _usersAccess.GetByEmail(newUser.EmailAddress);
+        UserModel? existingUser = _usersAccess.GetByEmail(newUser.EmailAddress);
         if (existingUser != null)
         {
             return false; // User already exists

@@ -161,8 +161,8 @@ static class Menu
 
         try
         {
-            var usersAccess = new UsersAccess();
-            var user = usersAccess.GetByEmail(CurrentUser.EmailAddress);
+            UsersAccess usersAccess = new UsersAccess();
+            UserModel? user = usersAccess.GetByEmail(CurrentUser.EmailAddress);
             return user?.Roles?.Contains("admin") == true;
         }
         catch

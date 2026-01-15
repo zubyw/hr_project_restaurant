@@ -44,7 +44,7 @@ namespace Project.Presentation
                     selecting = false;
                     selectedTable = null;
                 }
-                var result = FloorPlanLogic.HandleKey(key, floorPlan, reservedTableIds, guestCount, row, col);
+                (int newRow, int newCol, TableModel? selected) result = FloorPlanLogic.HandleKey(key, floorPlan, reservedTableIds, guestCount, row, col);
 
                 row = result.newRow;
                 col = result.newCol;

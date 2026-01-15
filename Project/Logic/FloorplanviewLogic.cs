@@ -33,7 +33,7 @@ namespace Project.Logic
                     break;
 
                 case ConsoleKey.Enter:
-                    var table = floorPlan[row][col];
+                    TableModel table = floorPlan[row][col];
                     if (IsSelectable(table, reservedTableIds, guestCount))
                         return (row, col, table);
                     break;
@@ -54,10 +54,8 @@ namespace Project.Logic
             return table.TableCapacity == 6;
         }
 
-        public static TableModel[][] BuildFloorPlan(List<TableModel> allTables)
+        public static TableModel[][] BuildFloorPlan(List<TableModel> t)
         {
-            var t = allTables.ToList();
-
             return new[]
             {
                 new[] { t[8], t[0], t[5], t[1] },           

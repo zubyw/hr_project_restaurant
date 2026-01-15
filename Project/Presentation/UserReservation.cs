@@ -145,7 +145,7 @@ static class UserReservation
 
     private static void HandleDishSelection(int amountPeople, string completeStartDate, int userId)
     {
-        var dishLogic = new DishLogic();
+        DishLogic dishLogic = new DishLogic();
         ThemeModel? correctTheme = dishLogic.GetCorrectTheme(completeStartDate);
 
         if (correctTheme == null)
@@ -166,8 +166,8 @@ static class UserReservation
             return;
         }
 
-        var userReservations = _reservationsLogic.GetReservationsByUserId(userId); // all reservations by user
-        var newReservation = userReservations.OrderByDescending(r => r.ID).FirstOrDefault();// latest reservation made by user
+        List<ReservationModel> userReservations = _reservationsLogic.GetReservationsByUserId(userId); // all reservations by user
+        ReservationModel? newReservation = userReservations.OrderByDescending(r => r.ID).FirstOrDefault();// latest reservation made by user
 
         if (newReservation != null)
         {
