@@ -42,7 +42,7 @@ static class ReservationManagement
 
                 for (int i = 0; i < reservations.Count; i++)
                 {
-                    var r = reservations[i];
+                    ReservationModel r = reservations[i];
                     string guestName = $"{r.GuestFirstName} {r.GuestLastName}";
                     string dateTime = DateTime.Parse(r.StartAt).ToString("dd-MM-yyyy HH:mm");
 

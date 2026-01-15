@@ -21,7 +21,7 @@ namespace Project.Presentation
                 return;
             }
 
-            var monthKeys = themes.Keys.ToList();
+            List<string>? monthKeys = themes.Keys.ToList();
 
             int currentIndex = 0;
             int startTop = Console.CursorTop;
@@ -37,7 +37,7 @@ namespace Project.Presentation
                 string rightArrow = currentIndex < monthKeys.Count - 1 ? " >" : "  ";
 
                 int themeId = themes[currentMonth];
-                var theme = _themeLogic.GetById(themeId);
+                ThemeModel? theme = _themeLogic.GetById(themeId);
 
                 if (theme != null)
                 {
@@ -71,9 +71,9 @@ namespace Project.Presentation
         {
             List<DishModel> dishes = _dishLogic.GetDishesByTheme(theme.ID);
 
-            var starters = dishes.Where(d => d.Type == "Starter").ToList();
-            var mains = dishes.Where(d => d.Type == "Main").ToList();
-            var desserts = dishes.Where(d => d.Type == "Dessert").ToList();
+            List<DishModel> starters = dishes.Where(d => d.Type == "Starter").ToList();
+            List<DishModel> mains = dishes.Where(d => d.Type == "Main").ToList();
+            List<DishModel> desserts = dishes.Where(d => d.Type == "Dessert").ToList();
 
             Console.WriteLine("Use ←/→ to switch months");
             Console.WriteLine($"Date : {leftArrow}{currentMonth}{rightArrow}");
@@ -89,7 +89,7 @@ namespace Project.Presentation
                 Console.WriteLine("═══ STARTERS ═══");
                 Console.ResetColor();
                 Console.WriteLine();
-                foreach (var dish in starters)
+                foreach (DishModel dish in starters)
                 {
                     DisplayDish(dish);
                 }
@@ -102,7 +102,7 @@ namespace Project.Presentation
                 Console.WriteLine("═══ MAIN COURSES ═══");
                 Console.ResetColor();
                 Console.WriteLine();
-                foreach (var dish in mains)
+                foreach (DishModel dish in mains)
                 {
                     DisplayDish(dish);
                 }
@@ -115,7 +115,7 @@ namespace Project.Presentation
                 Console.WriteLine("═══ DESSERTS ═══");
                 Console.ResetColor();
                 Console.WriteLine();
-                foreach (var dish in desserts)
+                foreach (DishModel dish in desserts)
                 {
                     DisplayDish(dish);
                 }

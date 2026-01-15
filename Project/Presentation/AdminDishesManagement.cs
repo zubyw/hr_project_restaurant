@@ -209,7 +209,7 @@ public static class AdminDishesManagement
 
             for (int i = 0; i < dishes.Count; i++)
             {
-                var dish = dishes[i];
+                DishModel dish = dishes[i];
 
                 string name = dish.Name.Length > 20 ? dish.Name[..17] + "..." : dish.Name;
                 string type = dish.Type.Length > 12 ? dish.Type[..9] + "..." : dish.Type;

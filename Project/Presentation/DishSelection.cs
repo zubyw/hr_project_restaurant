@@ -34,7 +34,7 @@ public static class DishSelection
         List<Drink?> selectedDrinkPerGuest = new List<Drink?>();
 
         List<DishModel> allSelectedDishes = new List<DishModel>();
-        var availableDishes = GetDishesByTheme(theme.ID);
+        List<DishModel> availableDishes = GetDishesByTheme(theme.ID);
 
         for (int guestNumber = 1; guestNumber <= guestCount; guestNumber++)
         {
@@ -43,9 +43,9 @@ public static class DishSelection
 
             List<DishModel> filteredDishes = ApplyAllergenFilters(availableDishes);
 
-            var starters = filteredDishes.Where(d => d.Type == "Starter").ToList();
-            var mains = filteredDishes.Where(d => d.Type == "Main").ToList();
-            var desserts = filteredDishes.Where(d => d.Type == "Dessert").ToList();
+            List<DishModel> starters = filteredDishes.Where(d => d.Type == "Starter").ToList();
+            List<DishModel> mains = filteredDishes.Where(d => d.Type == "Main").ToList();
+            List<DishModel> desserts = filteredDishes.Where(d => d.Type == "Dessert").ToList();
 
             Console.Clear();
             DisplayThemeHeader(theme.Name, guestNumber, guestCount);
@@ -53,12 +53,12 @@ public static class DishSelection
             bool isNotDishSelecting;
             List<DishModel?> guestDishes = new List<DishModel?>();
 
-            var starter = SelectDish(starters, "Starters", guestNumber, out isNotDishSelecting);
+            DishModel? starter = SelectDish(starters, "Starters", guestNumber, out isNotDishSelecting);
             if (isNotDishSelecting) return new List<DishModel>();
             guestDishes.Add(starter);
             if (starter != null) allSelectedDishes.Add(starter);
 
-            var main = SelectDish(mains, "Main Courses", guestNumber, out isNotDishSelecting);
+            DishModel? main = SelectDish(mains, "Main Courses", guestNumber, out isNotDishSelecting);
             if (isNotDishSelecting) return new List<DishModel>();
             guestDishes.Add(main);
             if (main != null) allSelectedDishes.Add(main);
@@ -69,7 +69,7 @@ public static class DishSelection
 
             selectedDrinkPerGuest.Add(drink);
 
-            var dessert = SelectDish(desserts, "Desserts", guestNumber, out isNotDishSelecting);
+            DishModel? dessert = SelectDish(desserts, "Desserts", guestNumber, out isNotDishSelecting);
             if (isNotDishSelecting) return new List<DishModel>();
             guestDishes.Add(dessert);
             if (dessert != null) allSelectedDishes.Add(dessert);
@@ -122,7 +122,7 @@ public static class DishSelection
                 }
                 if (i < dishes.Count)
                 {
-                    var dish = dishes[i];
+                    DishModel dish = dishes[i];
                     string dishLine = $"{i + 1}. {dish.Name.PadRight(30)} - €{dish.Price:F2}";
                     Console.WriteLine($"  {dishLine}");
 
@@ -174,7 +174,7 @@ public static class DishSelection
                     Console.WriteLine();
                     if (selectedIndex < dishes.Count)
                     {
-                        var selected = dishes[selectedIndex];
+                        DishModel selected = dishes[selectedIndex];
                         Console.WriteLine($"Selected: {selected.Name}");
                         Thread.Sleep(1200);
                         return selected;
@@ -209,12 +209,12 @@ public static class DishSelection
         {
             Console.WriteLine($"Guest #{guestNumber}:");
 
-            var guestDishes = allSelectedDishesPerGuest[guestNumber - 1];
+            List<DishModel?> guestDishes = allSelectedDishesPerGuest[guestNumber - 1];
             Drink? drink = selectedDrinkPerGuest[guestNumber - 1];
 
-            var starter = guestDishes.Count > 0 ? guestDishes[0] : null;
-            var main    = guestDishes.Count > 1 ? guestDishes[1] : null;
-            var dessert = guestDishes.Count > 2 ? guestDishes[2] : null;
+            DishModel? starter = guestDishes.Count > 0 ? guestDishes[0] : null;
+            DishModel? main    = guestDishes.Count > 1 ? guestDishes[1] : null;
+            DishModel? dessert = guestDishes.Count > 2 ? guestDishes[2] : null;
 
             if (starter != null)
             {
@@ -267,7 +267,7 @@ public static class DishSelection
         Console.WriteLine();
 
         Console.Write("Confirm this reservation? (Y/N): ");
-        var response = Console.ReadLine()?.Trim().ToUpper();
+        string? response = Console.ReadLine()?.Trim().ToUpper();
 
         if (response == "Y")
         {
@@ -286,7 +286,7 @@ public static class DishSelection
     
     private static List<DishModel> GetDishesByTheme(int themeId)
     {
-        var dishIds = _dishAccess.GetallDishIdByThemeId(themeId);
+        List<int> dishIds = _dishAccess.GetallDishIdByThemeId(themeId);
         
 
         if (dishIds.Count > 0)

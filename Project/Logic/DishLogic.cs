@@ -45,7 +45,7 @@ namespace Project.Logic
 
         public List<DishModel> GetDishesByTheme(int themeId)
         {
-            var dishIds = _dishaccess.GetallDishIdByThemeId(themeId);
+            List<int> dishIds = _dishaccess.GetallDishIdByThemeId(themeId);
             if (dishIds.Count > 0)
             {
                 return _dishaccess.GetDishesByIds(dishIds);
@@ -67,7 +67,7 @@ namespace Project.Logic
             DateTime parsedDate = DateTime.Parse(date);
             string formattedDate = parsedDate.ToString("yyyy-MM");
             formattedDate += "-01";
-            var themeAccess = new ThemeAccess();
+            ThemeAccess themeAccess = new ThemeAccess();
             return themeAccess.GetCorrectTheme(formattedDate);
         }
 

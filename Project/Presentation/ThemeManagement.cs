@@ -109,7 +109,7 @@ public static class ThemeManagement
 
             for (int i = 0; i < themes.Count; i++)
             {
-                var theme = themes[i];
+                ThemeModel theme = themes[i];
 
                 string name = theme.Name.Length > 26 ? theme.Name[..23] + "..." : theme.Name;
                 string description = theme.Course.Length > 60 ? theme.Course[..57] + "..." : theme.Course;
@@ -356,19 +356,20 @@ public static class ThemeManagement
         Console.WriteLine("├────────────────────────┼───────────────┼───────────┼───────────────────────────────┤");
 
         // Cache all themes for each dish to avoid repeated DB queries
-        var dishThemes = dishes.ToDictionary(
+        Dictionary<int, List<ThemeModel>> dishThemes = dishes.ToDictionary(
             d => d.ID,
             d => logic.themesLinkedToDish(d)
         );
-
+        
         for (int i = 0; i < dishes.Count; i++)
         {
-            var dish = dishes[i];
+            DishModel dish = dishes[i];
 
             string name = dish.Name.Length > 20 ? dish.Name[..17] + "..." : dish.Name;
             string type = dish.Type.Length > 12 ? dish.Type[..9] + "..." : dish.Type;
 
-            var themes = dishThemes[dish.ID];
+            List<ThemeModel> themes = dishThemes[dish.ID];
+            
             string themeNames = string.Join(", ", themes.Select(t => t.Name));
 
             if (themeNames.Length > 27) themeNames = themeNames[..24] + "...";
@@ -570,7 +571,7 @@ public static class ThemeManagement
         Console.WriteLine("Saved final month selection");
         Console.WriteLine("Final month selection:");
 
-        foreach (var month in chosenMonths)
+        foreach (string month in chosenMonths)
         {
             Console.WriteLine(" - " + month);
         }

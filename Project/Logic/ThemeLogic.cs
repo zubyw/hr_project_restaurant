@@ -206,7 +206,7 @@ public class ThemesLogic
         }
         if(hidden.Contains("t")){
         List<DishModel> dishesinthemes = _dishaccess.GetAllDishesWithATheme();
-        var themeIds = dishesinthemes.Select(t => t.ID).ToHashSet();
+        List<int> themeIds = dishesinthemes.Select(t => t.ID).ToHashSet().ToList();
         x = x.Where(d => !themeIds.Contains(d.ID));
         }
         return x.ToList();
@@ -223,9 +223,9 @@ public class ThemesLogic
             return "\nHIDDEN: None";
         }
 
-        var hiddenItems = new List<string>();
+        List<string> hiddenItems = new List<string>();
 
-        foreach (var h in hidden)
+        foreach (string h in hidden)
         {
             switch (h)
             {
