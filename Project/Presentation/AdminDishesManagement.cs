@@ -56,48 +56,10 @@ public static class AdminDishesManagement
         Console.Clear();
         Console.WriteLine("=== Create new dish ===");
         
-        Console.Write("Name: ");
-        string name = Console.ReadLine() ?? "";
-        if (string.IsNullOrWhiteSpace(name))
-        {
-        Console.WriteLine("Name cannot be empty.");
-        Add();
-        }
-        if(_logic.DoesDishExist(name))
-        {
-            Console.WriteLine("There already is a dish with this name");
-            Thread.Sleep(1500);
-            Start();
-        }
-        Console.Clear();
-        Console.WriteLine("=== Create new dish ===");
-        Console.Write("Price (example: 12.50): ");
-        string priceInput = Console.ReadLine() ?? "";
-        if (string.IsNullOrWhiteSpace(priceInput))
-        {
-        Console.WriteLine("Price cannot be empty.");
-        Add();
-        }
-        decimal price = decimal.Parse(priceInput.Replace(',', '.'),System.Globalization.CultureInfo.InvariantCulture);
-        
-        Console.Clear();
-        Console.WriteLine("=== Create new dish ===");
-        Console.Write("Description: ");
-        string description = Console.ReadLine() ?? "";
-        if (string.IsNullOrWhiteSpace(description))
-        {
-        Console.WriteLine("Description cannot be empty.");
-        Add();
-        }
-
-
-        Console.Clear();
-        Console.WriteLine("=== Create new dish ===\nType (Starter/Main/Dessert): ");
-        string[] types = { "Starter", "Main", "Dessert" };
-        int typeIndex = MenuHelper.ShowMenuUpDown(types, "=== Create new dish ===\nType (Starter/Main/Dessert): ");
-        string type = types[typeIndex];
-        
-        // Select allergens
+        string name = CreateDishName();
+        decimal price = CreateDishPrice();
+        string description = CreateDishDescription();
+        string type = CreateDishGiveType();
         List<int> selectedAllergenIds = SelectAllergens();
         
         DishModel dish = new DishModel(){Name = name, Price = price, Description = description, Type = type}; 
@@ -111,6 +73,79 @@ public static class AdminDishesManagement
 
         Console.WriteLine("Dish created.");
         Thread.Sleep(1500);
+    }
+    private static string CreateDishName()
+    {
+        Console.Write("Name: ");
+        string? name = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            Console.WriteLine("Name cannot be empty.");
+            Thread.Sleep(1500);
+            return CreateDishName(); // recursion until valid string for the name is given
+        }
+
+        if (_logic.DoesDishExist(name))
+        {
+            Console.WriteLine("There already is a dish with this name.");
+            Thread.Sleep(1500);
+            Start();
+        }
+
+        return name;
+    }
+
+    private static decimal CreateDishPrice()
+    {
+        Console.Write("Price (example: 12,50): ");
+        string? priceInput = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(priceInput))
+        {
+            Console.WriteLine("Price cannot be empty.");
+            Thread.Sleep(1500);
+            return CreateDishPrice();
+        }
+
+        if (priceInput.Contains("."))
+        {
+            Console.WriteLine("Please use a comma ',' as the decimal separator (example 12,50).");
+            Thread.Sleep(1500);
+            return CreateDishPrice();
+        }
+
+        try
+        {
+            return decimal.Parse(priceInput);
+        }
+        catch
+        {
+            Console.WriteLine("Invalid price format.");
+            Thread.Sleep(1500);
+            return CreateDishPrice(); // same as CreateDishName Recursion so that the price will be valid
+        }
+    }
+
+    private static string CreateDishDescription()
+    {
+        Console.Write("Description: ");
+        string? description = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            Console.WriteLine("Description cannot be empty.");
+            Thread.Sleep(1500);
+            return CreateDishDescription(); // again recursion until valid
+        }
+        return description;
+    }
+
+    private static string CreateDishGiveType()
+    {
+        string[] types = { "Starter", "Main", "Dessert" };
+        int typeIndex = MenuHelper.ShowMenuUpDown(types, "Type (Starter/Main/Dessert): ");
+        return types[typeIndex];
     }
 
     private static List<int> SelectAllergens()
@@ -310,62 +345,18 @@ public static class AdminDishesManagement
             switch (index)
             {
                 case 0:
-                    Console.Clear();
-                    Console.WriteLine($"Name: {dish.Name}");
-                    Console.WriteLine();
-                    string newname = Console.ReadLine() ?? "";
-                    if (string.IsNullOrWhiteSpace(newname))
-                    {
-                    Console.WriteLine("Name cannot be empty.");
-                    Thread.Sleep(1500);
-                    continue;
-                    }
-                    dish.Name = newname;
-                    _logic.UpdateDish(dish);
+                    EditDishName(dish);
                     break;
 
                 case 1:
-                    Console.Clear();
-                    Console.WriteLine($"Price: {dish.Price}");
-                    Console.WriteLine();
-                    string newprice = Console.ReadLine() ?? "";
-                    if (string.IsNullOrWhiteSpace(newprice))
-                    {
-                    Console.WriteLine("Price cannot be empty.");
-                    Thread.Sleep(1500);
-                    continue;
-                    }
-                    decimal price = decimal.Parse(newprice.Replace(',', '.'),System.Globalization.CultureInfo.InvariantCulture);
-                    dish.Price = price;
-                    _logic.UpdateDish(dish);
+                    EditDishPrice(dish);
                     break;
 
                 case 2:
-                    Console.Clear();
-                    Console.WriteLine($"Description: {dish.Description}");
-                    Console.WriteLine();
-                    string newDescription = Console.ReadLine() ?? "";
-                    if (string.IsNullOrWhiteSpace(newDescription))
-                    {
-                    Console.WriteLine("Description cannot be empty.");
-                    Thread.Sleep(1500);
-                    continue;
-                    }
-                    dish.Description = newDescription;
-                    _logic.UpdateDish(dish);
+                    EditDishDescription(dish);
                     break;
                 case 3:
-                    string[] types = { "Starter", "Main", "Dessert" };
-                    int typeIndex = MenuHelper.ShowMenuUpDown(types, $"Type: {dish.Type}");
-                    string type = types[typeIndex];
-                    if (type == dish.Type)
-                        {
-                            Console.WriteLine($"{type} is already this dish's type");
-                            Thread.Sleep(1500);
-                            continue;
-                        }
-                    dish.Type = type;
-                    _logic.UpdateDish(dish);
+                    EditDishType(dish);
                     break;
                 case 4:
                     ManageAllergens(dish);
@@ -382,6 +373,102 @@ public static class AdminDishesManagement
         }
     }
     }
+
+    public static void EditDishName(DishModel dish)
+    {
+        Console.Clear();
+        Console.WriteLine($"Current name: {dish.Name}");
+        Console.WriteLine("New name:");
+
+        string? newName = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(newName))
+        {
+            Console.WriteLine("Name cannot be empty.");
+            Thread.Sleep(1500);
+            return; // the input is empty sp return 
+        }
+
+        dish.Name = newName;
+        _logic.UpdateDish(dish);
+
+        Console.WriteLine("Name updated successfully.");
+        Thread.Sleep(1500);
+    }
+    public static void EditDishPrice(DishModel dish)
+    {
+        Console.Clear();
+        Console.WriteLine($"Current price: {dish.Price}");
+        Console.WriteLine("New price (example: 12,50):");
+
+        string? newPriceInput = Console.ReadLine();
+
+        if (newPriceInput.Contains("."))
+        {
+            Console.WriteLine("Please use a comma ',' as the decimal separator (example 12,50).");
+            Thread.Sleep(1500);
+            return;
+        }
+
+        try
+        {
+            decimal price = decimal.Parse(newPriceInput);
+
+            dish.Price = price;
+            _logic.UpdateDish(dish);
+
+            Console.WriteLine("Price updated successfully.");
+            Thread.Sleep(1500);
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Invalid price format.");
+            Thread.Sleep(1500);
+        }
+    }
+    public static void EditDishDescription(DishModel dish)
+    {
+        Console.Clear();
+        Console.WriteLine($"Current description: {dish.Description}");
+        Console.WriteLine("New description:");
+
+        string? newDescription = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(newDescription))
+        {
+            Console.WriteLine("Description cannot be empty.");
+            Thread.Sleep(1500);
+            return; // exit if invalid
+        }
+
+        dish.Description = newDescription;
+        _logic.UpdateDish(dish);
+
+        Console.WriteLine("Description updated successfully.");
+        Thread.Sleep(1500);
+    }
+    public static void EditDishType(DishModel dish)
+    {
+        string[] types = { "Starter", "Main", "Dessert" };
+
+        int typeIndex = MenuHelper.ShowMenuUpDown(types, $"Current type: {dish.Type}");
+        string selectedType = types[typeIndex];
+
+        if (selectedType == dish.Type)
+        {
+            Console.WriteLine($"{selectedType} is already this dish's type.");
+            Thread.Sleep(1500);
+            return; // exit if no change
+        }
+
+        dish.Type = selectedType;
+        _logic.UpdateDish(dish);
+
+        Console.WriteLine("Dish type updated successfully.");
+        Thread.Sleep(1500);
+    }
+
+
 
 
 
