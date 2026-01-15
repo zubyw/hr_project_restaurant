@@ -41,30 +41,34 @@ public static class AdminDrinksManagement
         Console.WriteLine("=== Create new drink ===");
 
         Console.Write("Name: ");
-        string name = Console.ReadLine() ?? "";
+        string? name = Console.ReadLine();
 
-        Console.Write("Price (€): ");
-        string priceInput = Console.ReadLine() ?? "";
+        Console.Write("Price (example: 12.50): ");
+        string? priceInput = Console.ReadLine();
 
         double alcoholPercentage = SelectAlcoholPercentage();
 
-        try
+        if (priceInput.Contains("."))
         {
-            decimal price = decimal.Parse(
-                priceInput.Replace(',', '.'),
-                System.Globalization.CultureInfo.InvariantCulture
-            );
-
-            DrinkLogic logic = new DrinkLogic();
-            logic.CreateDrink(name, price, alcoholPercentage);
-
-            Console.WriteLine();
-            Console.WriteLine("Drink created successfully.");
+            Console.WriteLine("Please use a comma ',' as the decimal separator (example 12,50).");
+            Thread.Sleep(1500);
+            return;
         }
-        catch (Exception ex)
+
+       try
+        {
+        decimal price = decimal.Parse(priceInput);
+
+        DrinkLogic logic = new DrinkLogic();
+        logic.CreateDrink(name, price, alcoholPercentage);
+
+        Console.WriteLine();
+        Console.WriteLine("Drink created successfully.");
+        }
+        catch
         {
             Console.WriteLine();
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine("Invalid price format.");
         }
 
         Thread.Sleep(1500);
@@ -226,7 +230,7 @@ public static class AdminDrinksManagement
     {
         Console.Clear();
         Console.Write("New name: ");
-        string newName = Console.ReadLine() ?? "";
+        string? newName = Console.ReadLine();
 
         if (string.IsNullOrWhiteSpace(newName))
             return;
@@ -239,18 +243,28 @@ public static class AdminDrinksManagement
     private static void EditDrinkPrice(Drink drink)
     {
         Console.Clear();
-        Console.Write("New price (€): ");
-        string input = Console.ReadLine() ?? "";
+        Console.Write("New price (example: 12.50): ");
+        string? input = Console.ReadLine();
 
-        if (!decimal.TryParse(
-            input.Replace(',', '.'),
-            System.Globalization.CultureInfo.InvariantCulture,
-            out decimal price))
+        if (input.Contains("."))
+        {
+            Console.WriteLine("Please use a comma ',' as the decimal separator (example 12,50).");
+            Thread.Sleep(1500);
             return;
+        }
 
-        drink.Price = price;
+        try
+        {
+            decimal price = decimal.Parse(input);
 
-        new DrinkLogic().UpdateDrink(drink);
+            drink.Price = price;
+            new DrinkLogic().UpdateDrink(drink);
+        }
+        catch
+        {
+            Console.WriteLine("Invalid price format.");
+            Thread.Sleep(1500);
+        }
     }
 
     private static void EditDrinkAlcohol(Drink drink)
